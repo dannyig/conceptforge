@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConceptForge — Requirements Definition</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      line-height: 1.7;
+      padding: 40px 20px 80px;
+    }
+
+    .container { max-width: 960px; margin: 0 auto; }
+
+    header {
+      border-bottom: 1px solid #21262d;
+      padding-bottom: 32px;
+      margin-bottom: 48px;
+    }
+
+    .logo {
+      font-size: 13px;
+      letter-spacing: 4px;
+      color: #f97316;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: #f0f6fc;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: #6e7681;
+    }
+
+    .version-badge {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 4px 12px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 20px;
+      font-size: 12px;
+      color: #8b949e;
+    }
+
+    section { margin-bottom: 56px; }
+
+    h2 {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #f97316;
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #21262d;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #e6edf3;
+      margin: 28px 0 12px;
+    }
+
+    p { color: #8b949e; margin-bottom: 12px; font-size: 14px; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+      font-size: 13.5px;
+    }
+
+    thead tr { background: #161b22; }
+
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      color: #8b949e;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1px solid #21262d;
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #161b22;
+      color: #c9d1d9;
+      vertical-align: top;
+    }
+
+    tr:hover td { background: #161b22; }
+
+    .req-id {
+      font-family: monospace;
+      font-size: 12px;
+      color: #f97316;
+      white-space: nowrap;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-core     { background: #1a3a2a; color: #34d399; border: 1px solid #10b98133; }
+    .badge-nice     { background: #1f2937; color: #94a3b8; border: 1px solid #47556933; }
+    .badge-out      { background: #2d1f1f; color: #f87171; border: 1px solid #ef444433; }
+
+    /* Code block */
+    pre {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      font-size: 13px;
+      color: #e6edf3;
+      line-height: 1.6;
+    }
+
+    code { font-family: "Fira Code", "Cascadia Code", monospace; }
+
+    /* Info cards */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .card-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #4b5563;
+      margin-bottom: 6px;
+    }
+
+    .card-value {
+      font-size: 15px;
+      color: #e6edf3;
+      font-weight: 500;
+    }
+
+    .card-value.accent { color: #f97316; }
+
+    /* Success criteria */
+    .criteria-list { list-style: none; }
+
+    .criteria-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #161b22;
+      font-size: 14px;
+      color: #c9d1d9;
+    }
+
+    .criteria-list li::before {
+      content: "✓";
+      color: #34d399;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid #21262d;
+      font-size: 12px;
+      color: #4b5563;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">ConceptForge</div>
+    <h1>Requirements Definition</h1>
+    <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
+    <span class="version-badge">v1.0 &nbsp;·&nbsp; March 2026</span>
+  </header>
+
+  <!-- 1. Overview -->
+  <section>
+    <h2>1. Overview</h2>
+    <p>ConceptForge is a personal, AI-assisted concept map creation web application. Users describe a topic or paste content, and the app generates an interactive visual concept map powered by the Claude API.</p>
+    <p>The AI can expand nodes, suggest connections, and help users explore and structure knowledge visually. The app runs entirely in the browser with no backend or database.</p>
+  </section>
+
+  <!-- 2. Goals -->
+  <section>
+    <h2>2. Goals</h2>
+    <div class="card-grid">
+      <div class="card"><div class="card-label">Primary Goal</div><div class="card-value">Rapid concept map creation from a text prompt</div></div>
+      <div class="card"><div class="card-label">AI Role</div><div class="card-value">Augment thinking — not replace it</div></div>
+      <div class="card"><div class="card-label">Architecture</div><div class="card-value">Browser-only · No backend · No database</div></div>
+      <div class="card"><div class="card-label">Complexity</div><div class="card-value accent">Simple · Fast · Dependency-light</div></div>
+    </div>
+  </section>
+
+  <!-- 3. Users -->
+  <section>
+    <h2>3. Users</h2>
+    <table>
+      <thead><tr><th>Attribute</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Type</td><td>Solo / personal use</td></tr>
+        <tr><td>Technical level</td><td>Moderate — comfortable with web apps</td></tr>
+        <tr><td>Use context</td><td>Research, learning, planning, knowledge structuring</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 4. Core Requirements -->
+  <section>
+    <h2>4. Core Requirements <span class="badge badge-core">MVP</span></h2>
+
+    <h3>4.1 Canvas</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td class="req-id">C-01</td><td>Display an interactive node-edge canvas using React Flow</td></tr>
+        <tr><td class="req-id">C-02</td><td>Allow users to add nodes manually via double-click or button</td></tr>
+        <tr><td class="req-id">C-03</td><td>Allow users to edit node labels inline</td></tr>
+        <tr><td class="req-id">C-04</td><td>Allow users to delete nodes and edges</td></tr>
+        <tr><td class="req-id">C-05</td><td>Allow users to draw edges between nodes manually</td></tr>
+        <tr><td class="req-id">C-06</td><td>Support pan and zoom on the canvas</td></tr>
+        <tr><td class="req-id">C-07</td><td>Display a minimap for navigation on large maps</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.2 AI — Map Generation</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td class="req-id">A-01</td><td>Provide a prompt input where users describe a topic or paste text</td></tr>
+        <tr><td class="req-id">A-02</td><td>On submit, call the Claude API and generate a structured concept map (nodes + edges)</td></tr>
+        <tr><td class="req-id">A-03</td><td>Render the AI-generated map on the canvas automatically</td></tr>
+        <tr><td class="req-id">A-04</td><td>Show a loading state while the AI is processing</td></tr>
+        <tr><td class="req-id">A-05</td><td>Handle and display API errors gracefully</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.3 AI — Node Expansion</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td class="req-id">A-06</td><td>Right-click a node to reveal an "Expand" option</td></tr>
+        <tr><td class="req-id">A-07</td><td>On expand, call the Claude API to generate related child nodes</td></tr>
+        <tr><td class="req-id">A-08</td><td>Append generated child nodes and edges to the existing map</td></tr>
+        <tr><td class="req-id">A-09</td><td>Prevent duplicate nodes from being added on repeated expansions</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.4 API Key Management</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td class="req-id">K-01</td><td>Provide a settings panel for the user to enter their Anthropic API key</td></tr>
+        <tr><td class="req-id">K-02</td><td>Store the API key in localStorage only — never transmitted to any server</td></tr>
+        <tr><td class="req-id">K-03</td><td>Prompt the user to enter their key if an AI action is triggered without one</td></tr>
+        <tr><td class="req-id">K-04</td><td>Allow the user to clear/update their stored API key</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.5 Persistence — Export & Import</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td class="req-id">P-01</td><td>Allow the user to save the current map as a JSON file</td></tr>
+        <tr><td class="req-id">P-02</td><td>Allow the user to load a previously saved JSON map file</td></tr>
+        <tr><td class="req-id">P-03</td><td>JSON format must preserve all node positions, labels, and edge data</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.6 Export</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td class="req-id">E-01</td><td>Allow the user to export the canvas as a PNG image</td></tr>
+        <tr><td class="req-id">E-02</td><td>PNG export must capture the full map, not just the visible viewport</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.7 Visual Design</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td class="req-id">V-01</td><td>Dark theme throughout — consistent with ConceptForge brand</td></tr>
+        <tr><td class="req-id">V-02</td><td>Nodes styled with clear label readability</td></tr>
+        <tr><td class="req-id">V-03</td><td>Edges rendered with directional arrows</td></tr>
+        <tr><td class="req-id">V-04</td><td>Responsive layout — usable on desktop screens (1280px+)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 5. Nice to Have -->
+  <section>
+    <h2>5. Nice to Have <span class="badge badge-nice">Post-MVP</span></h2>
+    <table>
+      <thead><tr><th>ID</th><th>Feature</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="req-id">N-01</td><td>Suggest connections</td><td>AI scans existing nodes and proposes new edges between them</td></tr>
+        <tr><td class="req-id">N-02</td><td>Document upload</td><td>Upload PDF, Word, or .txt — AI builds map from extracted text</td></tr>
+        <tr><td class="req-id">N-03</td><td>URL ingestion</td><td>Paste a URL — app fetches page content and generates a map</td></tr>
+        <tr><td class="req-id">N-04</td><td>SVG export</td><td>Export map as scalable vector graphic</td></tr>
+        <tr><td class="req-id">N-05</td><td>Node types</td><td>Visual distinction between concept, question, source, and insight nodes</td></tr>
+        <tr><td class="req-id">N-06</td><td>Undo / redo</td><td>Full history stack for canvas actions</td></tr>
+        <tr><td class="req-id">N-07</td><td>Keyboard shortcuts</td><td>Power-user shortcuts for common actions</td></tr>
+        <tr><td class="req-id">N-08</td><td>Onboarding</td><td>First-use guided prompt to help users get started</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 6. Technical Constraints -->
+  <section>
+    <h2>6. Technical Constraints</h2>
+    <table>
+      <thead><tr><th>Constraint</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Frontend only</td><td>No backend server required for MVP</td></tr>
+        <tr><td>AI provider</td><td>Anthropic Claude API (user-supplied key)</td></tr>
+        <tr><td>Node graph library</td><td>React Flow</td></tr>
+        <tr><td>Build tool</td><td>Vite</td></tr>
+        <tr><td>Language</td><td>TypeScript / React (JSX)</td></tr>
+        <tr><td>Deployment</td><td>fly.io — static nginx container</td></tr>
+        <tr><td>Browser support</td><td>Modern evergreen browsers (Chrome, Firefox, Edge, Safari)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 7. Out of Scope -->
+  <section>
+    <h2>7. Out of Scope <span class="badge badge-out">v1</span></h2>
+    <table>
+      <thead><tr><th>Feature</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>User authentication / accounts</td><td>No cloud storage — no need for identity</td></tr>
+        <tr><td>Cloud storage or sync</td><td>Local JSON export covers persistence needs</td></tr>
+        <tr><td>Real-time collaboration</td><td>Solo use only in v1</td></tr>
+        <tr><td>Mobile / touch support</td><td>Desktop-first, complex canvas interactions</td></tr>
+        <tr><td>Multi-language UI</td><td>English only for v1</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 8. AI Output Contract -->
+  <section>
+    <h2>8. AI Output Contract</h2>
+    <p>The Claude API must return concept map data in the following JSON structure. The app will validate and sanitise this output before rendering.</p>
+    <pre><code>{
+  "nodes": [
+    { "id": "1", "label": "Main Concept" },
+    { "id": "2", "label": "Related Concept" }
+  ],
+  "edges": [
+    { "source": "1", "target": "2", "label": "relates to" }
+  ]
+}</code></pre>
+  </section>
+
+  <!-- 9. Success Criteria -->
+  <section>
+    <h2>9. Success Criteria</h2>
+    <ul class="criteria-list">
+      <li>User can generate a concept map from a prompt in under 10 seconds</li>
+      <li>User can expand any node with one right-click action</li>
+      <li>Map can be saved as JSON and reloaded with full fidelity</li>
+      <li>PNG export captures the complete canvas</li>
+      <li>App works entirely offline except for Claude API calls</li>
+    </ul>
+  </section>
+
+  <footer>
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v1.0 &nbsp;·&nbsp; March 2026
+  </footer>
+
+</div>
+</body>
+</html>
