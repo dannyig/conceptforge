@@ -300,4 +300,45 @@ _Paths to be confirmed after project scaffold is complete._
 
 ---
 
+## 17. Feedback & Continuous Improvement
+
+<!--
+Describes the feedback loop that allows the development process to improve over time.
+
+### Raising Feedback
+Any agent that encounters a problem, ambiguity, or friction point must log it immediately.
+Run /feedback in Claude Code, or manually create a file in feedback/ using feedback/TEMPLATE.md.
+Do not wait until the end of a session — log as you go.
+
+### Feedback Categories
+tooling | types | claude-md | agentspec | structure | ci-cd | testing | react-flow | ai-layer | process
+
+### Processing Feedback
+The Improvement Agent (/improve) reads all open feedback entries, groups by category,
+identifies patterns, and implements fixes to: CLAUDE.md, agentspecs/, tooling config, src/types/index.ts.
+It then updates LESSONS.md and marks feedback entries resolved.
+
+### Architecture Decisions
+Significant tooling or architectural decisions are recorded as ADRs in decisions/.
+Agents must not change anything marked `accepted` in an ADR without creating a superseding ADR.
+
+### Cadence
+Run /improve:
+- After each feature agent completes and merges to main
+- When 3+ open feedback entries accumulate
+- Before starting a new agent session
+- Explicitly by the human at any time
+
+### Key Files
+- feedback/TEMPLATE.md    — template for new feedback entries
+- feedback/README.md      — category guide and processing overview
+- decisions/README.md     — ADR index
+- LESSONS.md              — running log of improvements and patterns
+- agentspecs/06-improvement-agent.md — full Improvement Agent task spec
+-->
+
+_See feedback/, decisions/, and LESSONS.md for current state._
+
+---
+
 *CLAUDE.md v0.1 — Sections defined, content pending Scaffolder agent — March 2026*
