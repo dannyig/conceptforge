@@ -16,6 +16,7 @@ ConceptForge is developed exclusively by AI agents using Claude Code. No human w
 | **Automation as quality gate** | Lint, type-check, and tests must pass before any merge |
 | **Requirements-driven** | Every branch maps to a requirement ID — no free-form development |
 | **Deployable at all times** | `main` is always in a working, deployed state |
+| **Process improves over time** | Friction, gaps, and errors are logged as feedback and acted on by the Improvement Agent |
 
 ---
 
@@ -29,6 +30,7 @@ ConceptForge is developed exclusively by AI agents using Claude Code. No human w
 | **Settings Agent** | API key input, localStorage storage, validation | K-01 → K-04 |
 | **Persistence Agent** | JSON save/load, PNG export | P-01 → E-02 |
 | **QA Agent** | Vitest unit tests, Playwright E2E tests across all features | All |
+| **Improvement Agent** | Processes feedback, updates CLAUDE.md/agentspecs/tooling, records ADRs, updates LESSONS.md | — |
 
 Each agent is self-contained. Agents coordinate through shared TypeScript types and CLAUDE.md — not through direct communication.
 
@@ -39,16 +41,17 @@ Each agent is self-contained. Agents coordinate through shared TypeScript types 
 Each agent follows this sequence for every task:
 
 ```
-1. Read CLAUDE.md — conventions, stack, constraints
-2. Read the relevant requirement ID from requirements/requirements.md
-3. Review shared types in src/types/index.ts
-4. Create a feature branch:  feature/<req-id>-<short-description>
-5. Write implementation + tests
-6. Run: pnpm lint && pnpm test
-7. Fix all failures before committing
-8. Commit with message referencing the requirement ID
-9. Push branch → CI runs automatically
-10. On CI green → merge to main → auto-deploys to fly.io
+1.  Read CLAUDE.md — conventions, stack, constraints
+2.  Read the relevant requirement ID from requirements/requirements.md
+3.  Review shared types in src/types/index.ts
+4.  Create a feature branch:  feature/<req-id>-<short-description>
+5.  Write implementation + tests
+6.  Log any friction, ambiguity, or issues encountered using /feedback
+7.  Run: pnpm lint && pnpm test
+8.  Fix all failures before committing
+9.  Commit with message referencing the requirement ID
+10. Push branch → CI runs automatically
+11. On CI green → merge to main → auto-deploys to fly.io
 ```
 
 ---
@@ -61,6 +64,7 @@ Each agent follows this sequence for every task:
 | `feature/<req-id>-<desc>` | One branch per requirement ID |
 | `fix/<short-desc>` | Bug fixes found during QA |
 | `chore/<short-desc>` | Tooling, config, dependency updates |
+| `chore/process-improvement-<YYYY-MM-DD>` | Improvement Agent changes to process, tooling, or agent instructions |
 
 **Examples:**
 ```
@@ -68,6 +72,7 @@ feature/C-01-react-flow-canvas
 feature/A-02-map-generation
 feature/K-01-api-key-settings
 fix/node-duplicate-on-expand
+chore/process-improvement-2026-03-09
 ```
 
 ---
@@ -80,7 +85,7 @@ fix/node-duplicate-on-expand
 | Framework | React | 18.x |
 | Build | Vite | 5.x |
 | Package manager | pnpm | latest |
-| Graph canvas | React Flow | 11.x |
+| Graph canvas | React Flow (`@xyflow/react`) | 12.x |
 | Linting | ESLint + Prettier | — |
 | Pre-commit hooks | Husky + lint-staged | — |
 | Unit tests | Vitest | — |
@@ -94,12 +99,25 @@ fix/node-duplicate-on-expand
 
 ```
 conceptforge/
+├── .claude/
+│   └── commands/              # slash commands — /scaffold, /improve, /feedback
 ├── .github/
 │   └── workflows/
 │       ├── ci.yml             # lint + test on every push
 │       └── deploy.yml         # deploy to fly.io on merge to main
+├── agentspecs/                # per-agent task specs — read before starting work
+│   ├── 00-scaffolder.md
+│   ├── 01-canvas-agent.md     # (pending)
+│   ├── 02-settings-agent.md   # (pending)
+│   ├── 03-ai-agent.md         # (pending)
+│   ├── 04-persistence-agent.md# (pending)
+│   ├── 05-qa-agent.md         # (pending)
+│   └── 06-improvement-agent.md
+├── decisions/                 # Architecture Decision Records (ADRs)
 ├── devmethod/                 # this folder — development strategy docs
+├── feedback/                  # open feedback entries from agents and humans
 ├── requirements/              # requirements definition (MD + HTML)
+├── resources/                 # reference projects and learning materials
 ├── src/
 │   ├── components/
 │   │   ├── canvas/            # React Flow canvas, custom nodes
@@ -112,13 +130,14 @@ conceptforge/
 │   │   ├── graph.ts           # node/edge helpers, layout logic
 │   │   └── export.ts          # JSON save/load, PNG export
 │   ├── types/
-│   │   └── index.ts           # shared TypeScript interfaces
+│   │   └── index.ts           # shared TypeScript interfaces — source of truth
 │   ├── App.tsx
 │   └── main.tsx
 ├── tests/
 │   ├── unit/                  # Vitest unit tests
 │   └── e2e/                   # Playwright E2E tests
 ├── CLAUDE.md                  # agent instructions and conventions
+├── LESSONS.md                 # running log of process improvements
 ├── Dockerfile
 ├── fly.toml
 ├── nginx.conf
@@ -182,8 +201,15 @@ Every agent reads `CLAUDE.md` at the start of each session. It contains:
 - File and folder conventions
 - Coding standards (no `any`, functional components only, inline styles)
 - Pre-commit checklist (`pnpm lint && pnpm test`)
-- Branch naming rules
+- Branch naming rules and Git conventions
 - AI output contract reference
+- Agent roles and responsibilities
+- Spec-driven workflow steps
+- Critical rules (error handling, UI states, async guards, API key safety)
+- Security rules
+- Feedback and continuous improvement process (section 17)
+
+CLAUDE.md is a living document — the Improvement Agent updates it when feedback identifies gaps or errors.
 
 ---
 
@@ -196,7 +222,9 @@ The human role in this workflow:
 | Review deployed app on fly.io | After each feature merge |
 | Review GitHub PR / commit diffs | Optional — CI is the primary gate |
 | Direct agents to next requirement | At the start of each session |
-| Update CLAUDE.md with new conventions | As patterns emerge |
+| Run `/improve` to process accumulated feedback | After each feature agent completes, or when 3+ feedback entries are open |
+| Review `LESSONS.md` for emerging patterns | Periodically |
+| Review `decisions/` before changing tooling or architecture | Before any structural change |
 | Approve post-MVP features | After MVP is stable |
 
 ---
@@ -230,14 +258,74 @@ GitHub Actions Deploy
 Agents are tasked in this order to manage dependencies:
 
 ```
-1. Scaffolder      → project setup, types, CLAUDE.md, CI/CD
-2. Canvas Agent    → core canvas (depends on: project scaffold)
-3. Settings Agent  → API key panel (depends on: project scaffold)
-4. AI Agent        → map generation + expansion (depends on: canvas + settings)
-5. Persistence Agent → save/load/export (depends on: canvas)
-6. QA Agent        → tests across all features (depends on: all above)
+1. Scaffolder         → project setup, types, CLAUDE.md, CI/CD
+                         run /improve before proceeding
+2. Canvas Agent       → core canvas (depends on: scaffold)
+3. Settings Agent     → API key panel (depends on: scaffold) [parallel with Canvas Agent]
+                         run /improve before proceeding
+4. AI Agent           → map generation + expansion (depends on: canvas + settings)
+5. Persistence Agent  → save/load/export (depends on: canvas) [parallel with AI Agent]
+                         run /improve before proceeding
+6. QA Agent           → tests across all features (depends on: all above)
+                         run /improve after QA completes
+
+Improvement Agent runs between each stage — not as a sequential step,
+but triggered by /improve whenever feedback accumulates.
 ```
 
 ---
 
-*Version 1.0 — March 2026*
+## 14. Feedback & Continuous Improvement
+
+The development process improves through a structured feedback loop running alongside feature development.
+
+### Raising Feedback
+
+Any agent that encounters friction — a missing instruction, ambiguous spec, broken tooling, unexpected library behaviour — logs it immediately using `/feedback`. Feedback is committed to the current working branch, not a separate branch.
+
+### Processing Feedback
+
+The Improvement Agent (`/improve`) reads all open feedback entries, groups them by category, identifies patterns, and implements fixes. Changes are committed on a `chore/process-improvement-<date>` branch, merged to main via CI.
+
+### Architecture Decisions
+
+Significant decisions are recorded as ADRs in `decisions/`. No agent may reverse an `accepted` ADR without first creating a superseding one.
+
+### Lessons Learned
+
+`LESSONS.md` accumulates a dated log of what changed and why. It is the institutional memory of the project — read it before starting any new agent session.
+
+### Feedback Loop Diagram
+
+```
+Agent encounters issue
+        ↓
+   /feedback → feedback/YYYY-MM-DD-<title>.md
+        ↓
+  3+ entries OR feature agent finishes
+        ↓
+   /improve → Improvement Agent
+        ↓
+  Fixes: CLAUDE.md | agentspecs/ | tooling | types
+  Records: decisions/ ADR (if needed)
+  Updates: LESSONS.md
+  Resolves: feedback entries
+        ↓
+  chore/process-improvement-<date> → CI → main
+```
+
+### Key Files
+
+| File/Folder | Purpose |
+|---|---|
+| `feedback/TEMPLATE.md` | Template for new feedback entries |
+| `feedback/README.md` | Category definitions and processing guide |
+| `decisions/README.md` | ADR index |
+| `LESSONS.md` | Dated log of improvements |
+| `agentspecs/06-improvement-agent.md` | Improvement Agent task spec |
+| `.claude/commands/improve.md` | `/improve` slash command |
+| `.claude/commands/feedback.md` | `/feedback` slash command |
+
+---
+
+*Version 1.1 — March 2026 (added feedback loop, Improvement Agent, ADRs, corrected project structure)*
