@@ -11,7 +11,7 @@
 
 ## Mission
 
-Verify that ConceptForge works correctly, end-to-end, across all requirement areas. When this agent is done, the full test suite (unit + E2E) must pass in CI, all requirement IDs must have test coverage, and a final Playwright MCP smoke test must confirm the live deployed app behaves correctly. The QA Agent does not write feature code — it writes tests and raises feedback for any bugs found.
+Verify that ConceptForge works correctly, end-to-end, across all requirement areas. When this agent is done, the full test suite (unit + E2E) must pass in CI, all requirement IDs must have test coverage, a human-readable HTML test case document must exist with full requirement traceability, and a final Playwright MCP smoke test must confirm the live deployed app behaves correctly. The QA Agent does not write feature code — it writes tests, documents them, and raises feedback for any bugs found.
 
 ---
 
@@ -102,7 +102,106 @@ Write Vitest + React Testing Library tests for key components and hooks. Mirror 
 
 ---
 
-### Group 3 — E2E Tests: Playwright
+### Group 3 — Human-Readable E2E Test Case Document
+
+Before writing any Playwright tests, produce a human-readable HTML document that defines every E2E test case in plain language with full traceability to requirement IDs. This document is the test plan — write it first, then implement it in Group 4.
+
+- [ ] Create `tests/e2e-test-cases.html`
+- [ ] Style the document consistently with the project's existing HTML docs (dark theme, orange accent, same CSS tokens as `devmethod/devmethod.html`)
+- [ ] The document must have:
+  - A **header** with title "ConceptForge — E2E Test Cases", version, and date
+  - A **summary bar** showing total test count and counts by status (Pending / Pass / Fail) — updateable
+  - One **section per feature area**: Canvas, Settings, AI, Persistence
+  - A **Requirement Traceability Matrix** at the bottom
+
+#### Test case table format (one table per feature area)
+
+Each row in the table must contain:
+
+| Column | Content |
+|---|---|
+| **Test ID** | `TC-{area}-{n}` — e.g. `TC-C-01`, `TC-K-02`, `TC-A-05`, `TC-P-03` |
+| **Requirement ID(s)** | Comma-separated IDs from `requirements/requirements.md` — e.g. `C-02`, `A-06, A-07` |
+| **Test Name** | Short imperative title — e.g. "Add node by double-clicking canvas" |
+| **Description** | One sentence describing what the test does |
+| **Preconditions** | What must be true before the test runs — e.g. "App is open, canvas is empty" |
+| **Steps** | Numbered list of user actions |
+| **Expected Result** | What the user should observe if the feature works correctly |
+| **Status** | Badge: `Pending` (initial) → updated to `Pass` or `Fail` after smoke test |
+
+#### Test IDs to define
+
+Define one test case row for every Playwright test listed in Group 4 below. Test IDs must match 1:1 with Playwright `test()` descriptions so the document and the code stay in sync.
+
+**Canvas (TC-C-01 → TC-C-08)**
+
+| Test ID | Requirement | Test Name |
+|---|---|---|
+| TC-C-01 | C-01, V-01 | Canvas loads with dark background |
+| TC-C-02 | C-02 | Add node by double-clicking canvas |
+| TC-C-03 | C-03 | Edit node label — confirm with Enter |
+| TC-C-04 | C-03 | Edit node label — cancel with Escape |
+| TC-C-05 | C-04 | Delete node with Backspace key |
+| TC-C-06 | C-05, V-03 | Draw edge between two nodes |
+| TC-C-07 | C-06 | Zoom canvas with mouse wheel |
+| TC-C-08 | C-07 | Minimap is visible on canvas load |
+
+**Settings (TC-K-01 → TC-K-04)**
+
+| Test ID | Requirement | Test Name |
+|---|---|---|
+| TC-K-01 | K-01 | Open settings panel via trigger button |
+| TC-K-02 | K-02 | Save API key — panel shows Key saved |
+| TC-K-03 | K-03 | AI action without key opens settings |
+| TC-K-04 | K-04 | Clear API key — panel shows No key stored |
+
+**AI (TC-A-01 → TC-A-07)**
+
+| Test ID | Requirement | Test Name |
+|---|---|---|
+| TC-A-01 | A-01 | Prompt panel is visible on load |
+| TC-A-02 | A-02, A-03 | Submit prompt — nodes render on canvas |
+| TC-A-03 | A-04 | Loading state shown during AI request |
+| TC-A-04 | A-05 | API error shown in UI not console |
+| TC-A-05 | A-06 | Right-click node shows Expand option |
+| TC-A-06 | A-07, A-08 | Expand node appends child nodes |
+| TC-A-07 | A-09 | Re-expand node — no duplicate labels |
+
+**Persistence (TC-P-01 → TC-P-05)**
+
+| Test ID | Requirement | Test Name |
+|---|---|---|
+| TC-P-01 | P-01 | Save map triggers JSON download |
+| TC-P-02 | P-02, P-03 | Load saved JSON restores canvas |
+| TC-P-03 | P-02 | Load invalid JSON shows error |
+| TC-P-04 | E-01 | Export PNG triggers image download |
+| TC-P-05 | — | Save and export disabled on empty canvas |
+
+#### Requirement Traceability Matrix
+
+At the bottom of the HTML document, include a traceability matrix table:
+
+| Requirement ID | Description | Test ID(s) | Status |
+|---|---|---|---|
+| C-01 | Interactive canvas | TC-C-01 | Pending |
+| C-02 | Add nodes | TC-C-02 | Pending |
+| … | … | … | … |
+
+Cover all MVP requirement IDs (C-01→C-07, A-01→A-09, K-01→K-04, P-01→P-03, E-01→E-02, V-01, V-03).
+
+#### Status badge rules
+
+- **Pending** — initial state (grey badge) before smoke test
+- **Pass** — updated after smoke test confirms the test passes (green badge)
+- **Fail** — updated if the smoke test reveals the test fails (red badge) — also raise a `/feedback` entry
+
+The QA Agent must update all status badges in `tests/e2e-test-cases.html` after completing the smoke test in Group 5.
+
+**Commit:** `docs: create E2E test case document with requirement traceability`
+
+---
+
+### Group 4 — E2E Tests: Playwright
 
 Write Playwright E2E tests covering all requirement areas. Place tests in `tests/e2e/`. One spec file per feature area.
 
@@ -144,7 +243,7 @@ Write Playwright E2E tests covering all requirement areas. Place tests in `tests
 
 ---
 
-### Group 4 — Coverage Check and Final Smoke Test
+### Group 5 — Coverage Check, Smoke Test, and Document Update
 
 - [ ] Run `pnpm test --coverage` — review coverage report:
   - All functions in `src/lib/` must have ≥ 80% coverage
@@ -165,7 +264,9 @@ Write Playwright E2E tests covering all requirement areas. Place tests in `tests
 
 - [ ] If any smoke test step fails, raise a `/feedback` entry referencing the failing requirement ID and the observed behaviour before marking the spec complete
 
-**Commit:** `test: coverage check and smoke test verification complete`
+- [ ] **Update `tests/e2e-test-cases.html` status badges** — after the smoke test, set every test case row to `Pass` or `Fail` based on observed results. Update the summary bar counts at the top. Commit the updated document alongside the smoke test findings.
+
+**Commit:** `test: coverage check, smoke test complete, test case document updated with results`
 
 ---
 
@@ -199,8 +300,9 @@ If a test reveals a bug in a feature agent's code:
 |---|---|
 | Vitest unit tests for all `src/lib/` and key components | Writing or modifying feature code in `src/` |
 | Playwright E2E tests for all requirement IDs | Fixing bugs found — raise feedback, let the relevant agent fix |
-| Playwright MCP smoke test of the full happy path | Adding features not covered by a requirement ID |
-| Coverage reporting and gap analysis | Changing shared types in `src/types/index.ts` |
+| `tests/e2e-test-cases.html` — test plan and results document | Adding features not covered by a requirement ID |
+| Playwright MCP smoke test of the full happy path | Changing shared types in `src/types/index.ts` |
+| Coverage reporting and gap analysis | Changing requirement descriptions in `requirements/requirements.md` |
 
 ---
 
@@ -212,25 +314,26 @@ When done, the following must exist and pass:
 tests/
 ├── unit/
 │   ├── lib/
-│   │   ├── apiKey.test.ts          ✓ passes
-│   │   ├── claude.test.ts          ✓ passes
-│   │   ├── export.test.ts          ✓ passes
-│   │   └── graph.test.ts           ✓ passes (if applicable)
+│   │   ├── apiKey.test.ts              ✓ passes
+│   │   ├── claude.test.ts              ✓ passes
+│   │   ├── export.test.ts              ✓ passes
+│   │   └── graph.test.ts               ✓ passes (if applicable)
 │   ├── components/
 │   │   ├── settings/
 │   │   │   └── SettingsPanel.test.tsx  ✓ passes
 │   │   └── ai/
 │   │       └── PromptPanel.test.tsx    ✓ passes
 │   └── hooks/
-│       └── useApiKey.test.ts       ✓ passes
-└── e2e/
-    ├── canvas.spec.ts              ✓ passes
-    ├── settings.spec.ts            ✓ passes
-    ├── ai.spec.ts                  ✓ passes
-    └── persistence.spec.ts         ✓ passes
+│       └── useApiKey.test.ts           ✓ passes
+├── e2e/
+│   ├── canvas.spec.ts                  ✓ passes
+│   ├── settings.spec.ts                ✓ passes
+│   ├── ai.spec.ts                      ✓ passes
+│   └── persistence.spec.ts             ✓ passes
+└── e2e-test-cases.html                 ✓ exists, all statuses updated (Pass/Fail)
 ```
 
-`pnpm test` — green. `pnpm test:e2e` — green. CI — green. MVP complete.
+`pnpm test` — green. `pnpm test:e2e` — green. CI — green. Test case document complete with results. MVP complete.
 
 ---
 
@@ -244,4 +347,4 @@ When this branch is merged to main and CI is green:
 
 ---
 
-*QA Agent Spec v1.0 — March 2026*
+*QA Agent Spec v1.1 — March 2026 (added Group 3: human-readable E2E test case document with requirement traceability)*

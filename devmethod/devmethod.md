@@ -138,7 +138,8 @@ conceptforge/
 │   └── main.tsx
 ├── tests/
 │   ├── unit/                  # Vitest unit tests
-│   └── e2e/                   # Playwright E2E tests
+│   ├── e2e/                   # Playwright E2E tests
+│   └── e2e-test-cases.html    # Human-readable test cases with requirement traceability
 ├── CLAUDE.md                  # agent instructions and conventions
 ├── LESSONS.md                 # running log of process improvements
 ├── Dockerfile
