@@ -145,6 +145,8 @@ Defines each named agent in the ConceptForge development system, their scope, an
 - Settings Agent: API key input panel, localStorage management, validation (K-01 → K-04)
 - Persistence Agent: JSON save/load, PNG export (P-01 → E-02)
 - QA Agent: writes and runs Vitest unit tests and Playwright E2E tests after each agent completes
+- Improvement Agent: processes feedback, updates CLAUDE.md/agentspecs/tooling, records ADRs — triggered by /improve
+- Requirements Agent: discovers and formalises requirements via Q&A with the human; updates requirements.md/.html and downstream docs — triggered by /requirements; runs before any implementation agent is assigned
 
 Each agent reads this file, reads their requirement IDs in requirements/requirements.md, and reads src/types/index.ts before writing a single line of code.
 Agents do not modify code outside their defined scope without explicit instruction.
@@ -356,4 +358,4 @@ _See feedback/, decisions/, and LESSONS.md for current state._
 
 ---
 
-*CLAUDE.md v0.3 — Added UI Verification gate rule (Section 12) and updated Section 7 Testing notes; all other sections pending Scaffolder agent — March 2026*
+*CLAUDE.md v0.4 — Added Requirements Agent to Section 9 comment; all content sections pending Scaffolder agent — March 2026*

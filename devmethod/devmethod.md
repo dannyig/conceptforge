@@ -31,6 +31,7 @@ ConceptForge is developed exclusively by AI agents using Claude Code. No human w
 | **Persistence Agent** | JSON save/load, PNG export | P-01 → E-02 |
 | **QA Agent** | Vitest unit tests, Playwright E2E tests across all features | All |
 | **Improvement Agent** | Processes feedback, updates CLAUDE.md/agentspecs/tooling, records ADRs, updates LESSONS.md | — |
+| **Requirements Agent** | Discovers and formalises requirements through Q&A with the human; updates requirements.md/.html, agentspecs, and devmethod | — |
 
 Each agent is self-contained. Agents coordinate through shared TypeScript types and CLAUDE.md — not through direct communication.
 
@@ -103,7 +104,7 @@ chore/process-improvement-2026-03-09
 ```
 conceptforge/
 ├── .claude/
-│   └── commands/              # slash commands — /scaffold, /improve, /feedback
+│   └── commands/              # slash commands — /scaffold, /improve, /feedback, /requirements
 ├── .github/
 │   └── workflows/
 │       ├── ci.yml             # lint + test on every push
@@ -115,7 +116,8 @@ conceptforge/
 │   ├── 03-ai-agent.md
 │   ├── 04-persistence-agent.md
 │   ├── 05-qa-agent.md
-│   └── 06-improvement-agent.md
+│   ├── 06-improvement-agent.md
+│   └── 07-requirements-agent.md
 ├── decisions/                 # Architecture Decision Records (ADRs)
 ├── devmethod/                 # this folder — development strategy docs
 ├── feedback/                  # open feedback entries from agents and humans
@@ -345,4 +347,4 @@ Where a `.md` file has a corresponding `.html` file, both must be updated in the
 
 ---
 
-*Version 1.3 — March 2026 (added Playwright MCP + Chrome UI Verification gate)*
+*Version 1.4 — March 2026 (added Requirements Agent)*
