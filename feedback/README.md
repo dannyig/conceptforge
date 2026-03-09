@@ -30,3 +30,4 @@ Processed entries are updated to `resolved` with a reference to the implementing
 | `react-flow` | Unexpected canvas behaviour, undocumented library quirk |
 | `ai-layer` | Claude API returned unexpected shape, prompt produced wrong output |
 | `process` | Branch naming confusion, commit convention unclear |
+| `other` | Anything not covered by the categories above |

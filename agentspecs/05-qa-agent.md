@@ -106,8 +106,8 @@ Write Vitest + React Testing Library tests for key components and hooks. Mirror 
 
 Before writing any Playwright tests, produce a human-readable HTML document that defines every E2E test case in plain language with full traceability to requirement IDs. This document is the test plan — write it first, then implement it in Group 4.
 
-- [ ] Create `tests/e2e-test-cases.html`
-- [ ] Style the document consistently with the project's existing HTML docs (dark theme, orange accent, same CSS tokens as `devmethod/devmethod.html`)
+- [ ] Create `tests/e2e-test-cases.html` — a **static HTML document** (plain HTML + inline CSS, no JavaScript framework or build step required)
+- [ ] Style the document consistently with the project's existing HTML docs: copy the CSS block from `devmethod/devmethod.html` `<style>` section as a starting point (dark theme, `#0d1117` background, `#f97316` orange accent, `#c9d1d9` body text, monospace code elements)
 - [ ] The document must have:
   - A **header** with title "ConceptForge — E2E Test Cases", version, and date
   - A **summary bar** showing total test count and counts by status (Pending / Pass / Fail) — updateable
@@ -279,6 +279,7 @@ Write Playwright E2E tests covering all requirement areas. Place tests in `tests
 | File downloads | `URL.createObjectURL` + anchor click in unit tests; `page.waitForEvent('download')` in E2E |
 | File picker | `FileReader` mock in unit tests; `page.on('filechooser')` in E2E |
 | Real API key | **Never use one** — all tests use placeholder strings like `"test-api-key"` |
+| Date / time | Mock `Date.now()` or `new Date()` to return fixed timestamps — ensures deterministic export filenames and any date-stamped output |
 
 ---
 
@@ -303,6 +304,7 @@ If a test reveals a bug in a feature agent's code:
 | `tests/e2e-test-cases.html` — test plan and results document | Adding features not covered by a requirement ID |
 | Playwright MCP smoke test of the full happy path | Changing shared types in `src/types/index.ts` |
 | Coverage reporting and gap analysis | Changing requirement descriptions in `requirements/requirements.md` |
+| Logging `/feedback` for missing or incorrect types | Modifying `src/types/index.ts` directly — log feedback; the Improvement Agent applies type changes |
 
 ---
 

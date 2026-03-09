@@ -133,7 +133,7 @@ Merge to `main` — CI must pass.
 - Change requirement IDs or requirement descriptions in `requirements/requirements.md`
 - Delete feedback entries — only mark them `resolved`
 - Override an `accepted` ADR without creating a superseding one
-- Make changes not traceable to at least one feedback entry
+- Make changes not traceable to at least one feedback entry or an identified pattern across multiple entries — pattern-based changes must cite the pattern in the commit message (e.g. "Pattern: 3 entries flagged missing error states in AI components")
 
 ---
 

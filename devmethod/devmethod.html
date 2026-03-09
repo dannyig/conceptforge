@@ -68,8 +68,8 @@
   <header>
     <div class="logo">ConceptForge</div>
     <h1>Development Method</h1>
-    <p class="subtitle">Agent-Driven Development Strategy — v1.5</p>
-    <span class="version-badge">v1.5 &nbsp;·&nbsp; March 2026</span>
+    <p class="subtitle">Agent-Driven Development Strategy — v1.6</p>
+    <span class="version-badge">v1.6 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -108,7 +108,7 @@
       <thead><tr><th>Agent</th><th>Responsibilities</th><th>Req IDs</th></tr></thead>
       <tbody>
         <tr><td><span class="agent-name">Scaffolder</span></td><td>Project setup, toolchain, CLAUDE.md, shared types, CI/CD pipeline</td><td><span class="req-range">—</span></td></tr>
-        <tr><td><span class="agent-name">Canvas Agent</span></td><td>React Flow canvas, node/edge CRUD, pan, zoom, minimap</td><td><span class="req-range">C-01 → C-07</span></td></tr>
+        <tr><td><span class="agent-name">Canvas Agent</span></td><td>React Flow canvas, node/edge CRUD, pan, zoom, minimap, dark theme</td><td><span class="req-range">C-01 → C-07, V-01 → V-04</span></td></tr>
         <tr><td><span class="agent-name">AI Agent</span></td><td>Claude API integration, map generation, node expansion</td><td><span class="req-range">A-01 → A-09</span></td></tr>
         <tr><td><span class="agent-name">Settings Agent</span></td><td>API key input, localStorage storage, validation</td><td><span class="req-range">K-01 → K-04</span></td></tr>
         <tr><td><span class="agent-name">Persistence Agent</span></td><td>JSON save/load, PNG export</td><td><span class="req-range">P-01 → E-02</span></td></tr>
@@ -133,7 +133,7 @@
       <li style="background:#1a1208; border-radius:4px; padding-left:8px;">Log any friction, ambiguity, or issues encountered using <code>/feedback</code></li>
       <li>Run: <code>pnpm lint &amp;&amp; pnpm test</code></li>
       <li>Fix all failures before committing</li>
-      <li style="background:#0d1f2d; border-radius:4px; padding-left:8px;"><span class="new-badge">NEW</span> <strong style="color:#60a5fa;">[Frontend agents]</strong> Start the dev server (<code>pnpm dev</code>) and use <strong>Playwright MCP + Chrome</strong> to verify the feature in the browser — check visual output, interactive behaviour, and browser console errors before committing</li>
+      <li style="background:#0d1f2d; border-radius:4px; padding-left:8px;"><span class="new-badge">NEW</span> <strong style="color:#60a5fa;">[Frontend agents only: Canvas (01), Settings (02), AI (03), Persistence (04)]</strong> Start the dev server (<code>pnpm dev</code>) and use <strong>Playwright MCP + Chrome</strong> to verify the feature in the browser — check visual output, interactive behaviour, and browser console errors before committing</li>
       <li>Commit with message referencing the requirement ID</li>
       <li>Push branch → CI runs automatically</li>
       <li>On CI green → merge to main → auto-deploys to fly.io</li>
@@ -269,6 +269,12 @@ export interface MapData {
 export interface ClaudeMapResponse {
   nodes: Array&lt;{ id: string; label: string }&gt;
   edges: Array&lt;{ source: string; target: string; label?: string }&gt;
+}
+
+export interface ExpandNodeRequest {
+  nodeId: string
+  nodeLabel: string
+  existingNodes: ConceptNode[]
 }</code></pre>
   </section>
 
@@ -465,7 +471,7 @@ export interface ClaudeMapResponse {
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Development Method v1.5 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Development Method v1.6 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>

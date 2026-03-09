@@ -171,7 +171,7 @@ Replace each placeholder with real content:
 | 7. Testing | Vitest setup, Playwright setup, file locations, mock strategy for Claude API |
 | 8. Git Conventions | Branch naming, Conventional Commits, CI gate |
 | 9. Agent Roles | Confirmed role list from devmethod.md — add any detail discovered during scaffold |
-| 10. Spec-Driven Workflow | Full 10-step cycle referencing agentspecs/ folder |
+| 10. Spec-Driven Workflow | Full 12-step cycle referencing agentspecs/ folder (step 9: Playwright MCP UI verification — frontend agents only) |
 | 11. Skill Activation | Update with any skills installed during scaffold |
 | 12. Critical Rules | UI states, error handling, async guards, API key safety, canvas mutation rules |
 | 13. Security | localStorage key handling, no intermediate server, CSP, input sanitisation |

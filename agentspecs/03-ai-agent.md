@@ -44,7 +44,7 @@ Populate the stub at `src/lib/claude.ts`. This file is the single interface to t
 
 - [ ] Implement `generateMap(prompt: string, apiKey: string): Promise<ClaudeMapResponse>`:
   - POST to `https://api.anthropic.com/v1/messages`
-  - Model: `claude-3-5-haiku-20241022` (fast, cost-effective for structured output)
+  - Model: `claude-haiku-4-5-20251001` (fast, cost-effective for structured output)
   - System prompt: instructs Claude to return only a JSON object matching the `ClaudeMapResponse` schema — no prose, no markdown fences
   - User message: the user's topic prompt
   - Parse and validate the response against `ClaudeMapResponse` before returning

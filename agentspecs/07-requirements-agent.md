@@ -120,7 +120,7 @@ Using the answers from Step 2, produce a draft in the standard format used in `r
 | Nice to Have | `N-` | N-09 |
 | New area (no existing prefix) | Choose a new two-letter prefix, explain the choice |
 
-- If promoting a Nice-to-Have (N-XX), retire the N-XX ID and replace it with the appropriate area prefix
+- If promoting a Nice-to-Have (N-XX): **retire the N-XX ID entirely** — remove it from Section 5 (Nice to Have), move it to the correct Section 4 subsection with a new area prefix ID. Do not keep both IDs. Update any agentspec or devmethod reference that cited the old N-XX ID
 
 Present the draft to the human. Do not proceed to Step 4 until the human approves the draft or provides corrections.
 
@@ -158,7 +158,7 @@ Once approved, update both the paired documents:
 - Update the version badge and footer
 - Add `NEW` or `UPDATED` badges on changed rows/sections, consistent with the project's badge style
 
-**Both files must be committed together — never one without the other.**
+**Both files must be committed together — never one without the other.** Verify that both files have matching version numbers and dates before committing.
 
 ---
 
@@ -179,7 +179,9 @@ After updating the requirements documents, assess downstream impact. For each ch
 If the new requirements represent a substantial new feature area (multiple IDs, new component tree, new lib module) that doesn't fit cleanly into any existing agent's scope:
 - Propose a new agent to the human and confirm before creating the spec
 - Create `agentspecs/NN-<agent-name>.md` following the established spec format
-- Add the agent to the devmethod agent roles table (Step 7)
+- Add the agent to **devmethod.md Section 3** (Agent Roles table) with its name, responsibilities, and requirement ID range
+- Add the agent to **devmethod.md Section 13** (MVP Delivery Sequence) with its dependencies, any parallel opportunities, and `/improve` triggers
+- Update `devmethod/devmethod.html` to match (paired document rule)
 
 #### Does `devmethod/devmethod.md` need updating?
 

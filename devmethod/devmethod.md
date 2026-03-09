@@ -25,7 +25,7 @@ ConceptForge is developed exclusively by AI agents using Claude Code. No human w
 | Agent | Responsibilities | Requirement IDs |
 |---|---|---|
 | **Scaffolder** | Project setup, toolchain, CLAUDE.md, shared types, CI/CD pipeline | — |
-| **Canvas Agent** | React Flow canvas, node/edge CRUD, pan, zoom, minimap | C-01 → C-07 |
+| **Canvas Agent** | React Flow canvas, node/edge CRUD, pan, zoom, minimap, dark theme | C-01 → C-07, V-01 → V-04 |
 | **AI Agent** | Claude API integration, map generation, node expansion | A-01 → A-09 |
 | **Settings Agent** | API key input, localStorage storage, validation | K-01 → K-04 |
 | **Persistence Agent** | JSON save/load, PNG export | P-01 → E-02 |
@@ -50,9 +50,10 @@ Each agent follows this sequence for every task:
 6.  Log any friction, ambiguity, or issues encountered using /feedback
 7.  Run: pnpm lint && pnpm test
 8.  Fix all failures before committing
-9.  [Frontend agents] Start the dev server (pnpm dev) and use Playwright MCP
-    + Chrome to verify the feature in the browser — check visual output,
-    interactive behaviour, and browser console errors before committing
+9.  [Frontend agents only: Canvas (01), Settings (02), AI (03), Persistence (04)]
+    Start the dev server (pnpm dev) and use Playwright MCP + Chrome to verify
+    the feature in the browser — check visual output, interactive behaviour,
+    and browser console errors before committing
 10. Commit with message referencing the requirement ID
 11. Push branch → CI runs automatically
 12. On CI green → merge to main → auto-deploys to fly.io
@@ -200,6 +201,12 @@ export interface MapData {
 export interface ClaudeMapResponse {
   nodes: Array<{ id: string; label: string }>
   edges: Array<{ source: string; target: string; label?: string }>
+}
+
+export interface ExpandNodeRequest {
+  nodeId: string
+  nodeLabel: string
+  existingNodes: ConceptNode[]
 }
 ```
 
@@ -359,4 +366,4 @@ Where a `.md` file has a corresponding `.html` file, both must be updated in the
 
 ---
 
-*Version 1.5 — March 2026 (Requirements Agent: added to branching table, human oversight, delivery sequence, key files)*
+*Version 1.6 — March 2026 (consistency pass: Canvas Agent V-IDs, step 9 agent names, ExpandNodeRequest added to type contracts)*
