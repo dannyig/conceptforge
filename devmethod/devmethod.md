@@ -69,6 +69,7 @@ Each agent follows this sequence for every task:
 | `fix/<short-desc>` | Bug fixes found during QA |
 | `chore/<short-desc>` | Tooling, config, dependency updates |
 | `chore/process-improvement-<YYYY-MM-DD>` | Improvement Agent changes to process, tooling, or agent instructions |
+| `chore/requirements-<YYYY-MM-DD>-<short-title>` | Requirements Agent changes to requirements and downstream docs |
 
 **Examples:**
 ```
@@ -77,6 +78,7 @@ feature/A-02-map-generation
 feature/K-01-api-key-settings
 fix/node-duplicate-on-expand
 chore/process-improvement-2026-03-09
+chore/requirements-2026-03-09-undo-redo
 ```
 
 ---
@@ -230,11 +232,12 @@ The human role in this workflow:
 |---|---|
 | Review deployed app on fly.io | After each feature merge |
 | Review GitHub PR / commit diffs | Optional — CI is the primary gate |
+| Run `/requirements` to discover and formalise requirements | Before assigning any implementation agent; when a new feature idea needs to be specified or an existing requirement needs clarification |
 | Direct agents to next requirement | At the start of each session |
 | Run `/improve` to process accumulated feedback | After each feature agent completes, or when 3+ feedback entries are open |
 | Review `LESSONS.md` for emerging patterns | Periodically |
 | Review `decisions/` before changing tooling or architecture | Before any structural change |
-| Approve post-MVP features | After MVP is stable |
+| Approve post-MVP features | After MVP is stable — run `/requirements` to promote N-XX items before assigning implementation |
 
 ---
 
@@ -267,6 +270,10 @@ GitHub Actions Deploy
 Agents are tasked in this order to manage dependencies:
 
 ```
+0. Requirements Agent → /requirements — define or refine requirements
+                         run before assigning any implementation agent
+                         [initial MVP requirements already complete]
+
 1. Scaffolder         → project setup, types, CLAUDE.md, CI/CD
                          run /improve before proceeding
 2. Canvas Agent       → core canvas (depends on: scaffold)
@@ -280,6 +287,9 @@ Agents are tasked in this order to manage dependencies:
 
 Improvement Agent runs between each stage — not as a sequential step,
 but triggered by /improve whenever feedback accumulates.
+
+Requirements Agent runs outside this sequence — it can be triggered at any
+point to define, refine, or promote requirements before work is assigned.
 ```
 
 ---
@@ -342,9 +352,11 @@ Where a `.md` file has a corresponding `.html` file, both must be updated in the
 | `decisions/README.md` | ADR index |
 | `LESSONS.md` | Dated log of improvements |
 | `agentspecs/06-improvement-agent.md` | Improvement Agent task spec |
+| `agentspecs/07-requirements-agent.md` | Requirements Agent task spec |
 | `.claude/commands/improve.md` | `/improve` slash command |
 | `.claude/commands/feedback.md` | `/feedback` slash command |
+| `.claude/commands/requirements.md` | `/requirements` slash command |
 
 ---
 
-*Version 1.4 — March 2026 (added Requirements Agent)*
+*Version 1.5 — March 2026 (Requirements Agent: added to branching table, human oversight, delivery sequence, key files)*

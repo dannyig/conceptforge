@@ -68,8 +68,8 @@
   <header>
     <div class="logo">ConceptForge</div>
     <h1>Development Method</h1>
-    <p class="subtitle">Agent-Driven Development Strategy — v1.4</p>
-    <span class="version-badge">v1.4 &nbsp;·&nbsp; March 2026</span>
+    <p class="subtitle">Agent-Driven Development Strategy — v1.5</p>
+    <span class="version-badge">v1.5 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -151,6 +151,7 @@
         <tr><td><code class="branch-name">fix/&lt;short-desc&gt;</code></td><td>Bug fixes found during QA</td></tr>
         <tr><td><code class="branch-name">chore/&lt;short-desc&gt;</code></td><td>Tooling, config, dependency updates</td></tr>
         <tr style="background:#1a1208"><td><code class="branch-name">chore/process-improvement-&lt;date&gt;</code> <span class="new-badge">NEW</span></td><td>Improvement Agent changes to process, tooling, or agent instructions</td></tr>
+        <tr style="background:#1a1208"><td><code class="branch-name">chore/requirements-&lt;date&gt;-&lt;title&gt;</code> <span class="new-badge">NEW</span></td><td>Requirements Agent changes to requirements and downstream docs</td></tr>
       </tbody>
     </table>
   </section>
@@ -299,11 +300,12 @@ export interface ClaudeMapResponse {
       <tbody>
         <tr><td>Review deployed app on fly.io</td><td>After each feature merge</td></tr>
         <tr><td>Review GitHub PR / commit diffs</td><td>Optional — CI is the primary gate</td></tr>
+        <tr style="background:#1a1208"><td>Run <code>/requirements</code> to discover and formalise requirements <span class="new-badge">NEW</span></td><td>Before assigning any implementation agent; when a new feature idea needs to be specified or an existing requirement needs clarification</td></tr>
         <tr><td>Direct agents to next requirement</td><td>At the start of each session</td></tr>
         <tr style="background:#1a1208"><td>Run <code>/improve</code> to process accumulated feedback <span class="new-badge">NEW</span></td><td>After each feature agent completes, or when 3+ feedback entries are open</td></tr>
         <tr style="background:#1a1208"><td>Review <code>LESSONS.md</code> for emerging patterns <span class="new-badge">NEW</span></td><td>Periodically</td></tr>
         <tr style="background:#1a1208"><td>Review <code>decisions/</code> before changing tooling or architecture <span class="new-badge">NEW</span></td><td>Before any structural change</td></tr>
-        <tr><td>Approve post-MVP features</td><td>After MVP is stable</td></tr>
+        <tr><td>Approve post-MVP features</td><td>After MVP is stable — run <code>/requirements</code> to promote N-XX items before assigning implementation</td></tr>
       </tbody>
     </table>
   </section>
@@ -336,6 +338,15 @@ export interface ClaudeMapResponse {
   <section>
     <h2>13. MVP Delivery Sequence <span class="updated-badge">UPDATED</span></h2>
     <ul class="sequence-list">
+      <li style="background:#0d1f2d; border-radius:6px; padding:8px 0;">
+        <div class="seq-num" style="background:#1e3a5f; color:#60a5fa;">0</div>
+        <div>
+          <div class="seq-agent" style="color:#60a5fa;">Requirements Agent <span class="new-badge">NEW</span></div>
+          <div>Run <code>/requirements</code> — define or refine requirements before assigning any implementation agent</div>
+          <div class="seq-dep">Depends on: nothing — runs at any time</div>
+          <div style="font-size:12px; color:#4b5563; margin-top:4px;">Initial MVP requirements already complete — trigger again for new features or refinements</div>
+        </div>
+      </li>
       <li>
         <div class="seq-num">1</div>
         <div>
@@ -390,6 +401,7 @@ export interface ClaudeMapResponse {
       </li>
     </ul>
     <p style="margin-top:16px; font-size:13px;">The Improvement Agent runs between each stage — triggered by <code>/improve</code> whenever feedback accumulates, not as a fixed sequential step.</p>
+    <p style="font-size:13px; color:#60a5fa;">The Requirements Agent runs outside this sequence — trigger <code>/requirements</code> at any point to define, refine, or promote requirements before work is assigned.</p>
   </section>
 
   <!-- 14. Feedback Loop (NEW) -->
@@ -444,14 +456,16 @@ export interface ClaudeMapResponse {
         <tr><td>decisions/README.md</td><td>ADR index — all accepted architectural decisions</td></tr>
         <tr><td>LESSONS.md</td><td>Dated log of improvements and patterns identified</td></tr>
         <tr><td>agentspecs/06-improvement-agent.md</td><td>Improvement Agent full task spec</td></tr>
+        <tr><td>agentspecs/07-requirements-agent.md</td><td>Requirements Agent full task spec</td></tr>
         <tr><td>.claude/commands/improve.md</td><td><code>/improve</code> slash command</td></tr>
         <tr><td>.claude/commands/feedback.md</td><td><code>/feedback</code> slash command</td></tr>
+        <tr><td>.claude/commands/requirements.md</td><td><code>/requirements</code> slash command</td></tr>
       </tbody>
     </table>
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Development Method v1.4 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Development Method v1.5 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>
