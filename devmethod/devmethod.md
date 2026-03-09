@@ -49,9 +49,12 @@ Each agent follows this sequence for every task:
 6.  Log any friction, ambiguity, or issues encountered using /feedback
 7.  Run: pnpm lint && pnpm test
 8.  Fix all failures before committing
-9.  Commit with message referencing the requirement ID
-10. Push branch → CI runs automatically
-11. On CI green → merge to main → auto-deploys to fly.io
+9.  [Frontend agents] Start the dev server (pnpm dev) and use Playwright MCP
+    + Chrome to verify the feature in the browser — check visual output,
+    interactive behaviour, and browser console errors before committing
+10. Commit with message referencing the requirement ID
+11. Push branch → CI runs automatically
+12. On CI green → merge to main → auto-deploys to fly.io
 ```
 
 ---
@@ -148,13 +151,16 @@ conceptforge/
 
 ## 8. Quality Gates
 
-No code reaches `main` without passing all three gates:
+No code reaches `main` without passing all four gates:
 
 | Gate | Tool | Runs |
 |---|---|---|
 | Code style | ESLint + Prettier | Pre-commit (Husky) + CI |
 | Type safety | `tsc --noEmit` | CI |
 | Tests | Vitest + Playwright | CI |
+| UI Verification | Playwright MCP + Chrome | Frontend agents — browser assessment before commit |
+
+The UI Verification gate applies to all frontend feature agents (Canvas, Settings, AI, Persistence). Before committing, the agent starts the dev server and uses the Playwright MCP to navigate the feature in Chrome, confirming correct visual output, interaction behaviour, and a clean browser console.
 
 CI is configured in `.github/workflows/ci.yml`. Merging to `main` without green CI is blocked at the GitHub branch protection level.
 
@@ -338,4 +344,4 @@ Where a `.md` file has a corresponding `.html` file, both must be updated in the
 
 ---
 
-*Version 1.2 — March 2026 (Improvement Agent now updates devmethod; added paired document sync rule)*
+*Version 1.3 — March 2026 (added Playwright MCP + Chrome UI Verification gate)*

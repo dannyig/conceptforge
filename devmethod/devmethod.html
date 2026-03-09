@@ -68,8 +68,8 @@
   <header>
     <div class="logo">ConceptForge</div>
     <h1>Development Method</h1>
-    <p class="subtitle">Agent-Driven Development Strategy — v1.2</p>
-    <span class="version-badge">v1.2 &nbsp;·&nbsp; March 2026</span>
+    <p class="subtitle">Agent-Driven Development Strategy — v1.3</p>
+    <span class="version-badge">v1.3 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -132,6 +132,7 @@
       <li style="background:#1a1208; border-radius:4px; padding-left:8px;">Log any friction, ambiguity, or issues encountered using <code>/feedback</code></li>
       <li>Run: <code>pnpm lint &amp;&amp; pnpm test</code></li>
       <li>Fix all failures before committing</li>
+      <li style="background:#0d1f2d; border-radius:4px; padding-left:8px;"><span class="new-badge">NEW</span> <strong style="color:#60a5fa;">[Frontend agents]</strong> Start the dev server (<code>pnpm dev</code>) and use <strong>Playwright MCP + Chrome</strong> to verify the feature in the browser — check visual output, interactive behaviour, and browser console errors before committing</li>
       <li>Commit with message referencing the requirement ID</li>
       <li>Push branch → CI runs automatically</li>
       <li>On CI green → merge to main → auto-deploys to fly.io</li>
@@ -225,13 +226,15 @@
 
   <!-- 8. Quality Gates -->
   <section>
-    <h2>8. Quality Gates</h2>
-    <p>No code reaches <code>main</code> without passing all three gates:</p>
+    <h2>8. Quality Gates <span class="updated-badge">UPDATED</span></h2>
+    <p>No code reaches <code>main</code> without passing all four gates:</p>
     <div class="gate-grid">
       <div class="gate-card"><div class="gate-card-title">Code Style</div><div class="gate-card-tool">ESLint + Prettier</div><div class="gate-card-when">Pre-commit (Husky) + CI</div></div>
       <div class="gate-card"><div class="gate-card-title">Type Safety</div><div class="gate-card-tool">tsc --noEmit</div><div class="gate-card-when">CI only</div></div>
       <div class="gate-card"><div class="gate-card-title">Tests</div><div class="gate-card-tool">Vitest + Playwright</div><div class="gate-card-when">CI only</div></div>
+      <div class="gate-card" style="border-color:#1e3a5f;"><div class="gate-card-title" style="color:#60a5fa;">UI Verification <span class="new-badge">NEW</span></div><div class="gate-card-tool">Playwright MCP + Chrome</div><div class="gate-card-when">Frontend agents — before commit</div></div>
     </div>
+    <p style="margin-top:8px; font-size:13px;">The UI Verification gate applies to all frontend feature agents (Canvas, Settings, AI, Persistence). Before committing, the agent starts the dev server and uses the Playwright MCP to navigate the feature in Chrome — confirming correct visual output, interaction behaviour, and a clean browser console.</p>
   </section>
 
   <!-- 9. Type Contracts -->
@@ -445,7 +448,7 @@ export interface ClaudeMapResponse {
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Development Method v1.2 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Development Method v1.3 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>

@@ -110,6 +110,9 @@ Describes the full testing strategy agents must follow:
 - Mocking: how to mock the Claude API client in tests (no real API calls in tests)
 - QA Agent responsibility: the QA Agent writes tests after each feature agent completes
 - Gate: all tests must pass before any merge to main
+- UI Verification gate: frontend feature agents (Canvas, Settings, AI, Persistence) must use
+  Playwright MCP + Chrome to visually verify their feature before committing — this is
+  separate from and in addition to the automated Playwright E2E tests run in CI
 -->
 
 _To be completed by the Scaffolder agent._
@@ -196,6 +199,8 @@ _To be completed after skills are installed._
 ## 12. Critical Rules
 
 > **Active rule — Paired Document Sync:** Where a `.md` file has a paired `.html` file, both must be updated in the same commit. Pairs: `devmethod/devmethod.md ↔ devmethod/devmethod.html` · `requirements/requirements.md ↔ requirements/requirements.html` · `resources/resources.md ↔ resources/resources.html`. This applies to every agent including the Improvement Agent.
+
+> **Active rule — UI Verification Gate:** All frontend feature agents (Canvas, Settings, AI, Persistence) must verify their work in Chrome using the Playwright MCP before committing. Start the dev server (`pnpm dev`), then use Playwright MCP to navigate and interact with the feature — confirm visual correctness, interactive behaviour, and a clean browser console. This is a mandatory step between "fix all failures" and "commit".
 
 <!--
 Non-negotiable rules that apply to every agent on every task. Organised into named subsections:
@@ -351,4 +356,4 @@ _See feedback/, decisions/, and LESSONS.md for current state._
 
 ---
 
-*CLAUDE.md v0.2 — Added paired document sync rule (Section 12); all other sections pending Scaffolder agent — March 2026*
+*CLAUDE.md v0.3 — Added UI Verification gate rule (Section 12) and updated Section 7 Testing notes; all other sections pending Scaffolder agent — March 2026*
