@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConceptForge — Development Resources</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      line-height: 1.7;
+      padding: 40px 20px 80px;
+    }
+
+    .container { max-width: 960px; margin: 0 auto; }
+
+    header {
+      border-bottom: 1px solid #21262d;
+      padding-bottom: 32px;
+      margin-bottom: 48px;
+    }
+
+    .logo { font-size: 13px; letter-spacing: 4px; color: #f97316; text-transform: uppercase; margin-bottom: 12px; }
+    h1 { font-size: 36px; font-weight: 700; color: #f0f6fc; margin-bottom: 8px; }
+    .subtitle { font-size: 15px; color: #6e7681; }
+    .version-badge {
+      display: inline-block; margin-top: 16px; padding: 4px 12px;
+      background: #161b22; border: 1px solid #30363d; border-radius: 20px;
+      font-size: 12px; color: #8b949e;
+    }
+
+    section { margin-bottom: 56px; }
+
+    h2 {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: #f97316; margin-bottom: 24px; padding-bottom: 8px;
+      border-bottom: 1px solid #21262d;
+    }
+
+    p { color: #8b949e; font-size: 14px; margin-bottom: 10px; }
+
+    /* Resource cards */
+    .resource-list { display: flex; flex-direction: column; gap: 16px; }
+
+    .resource-card {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 10px;
+      padding: 20px 24px;
+      transition: border-color 0.15s;
+    }
+
+    .resource-card:hover { border-color: #f9731640; }
+
+    .resource-card.featured { border-color: #f9731633; background: #1a1208; }
+
+    .resource-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .resource-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #e6edf3;
+      text-decoration: none;
+    }
+
+    .resource-title:hover { color: #f97316; }
+
+    .badge {
+      display: inline-block; padding: 2px 10px; border-radius: 12px;
+      font-size: 11px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
+    }
+
+    .badge-twin     { background: #1a3a2a; color: #34d399; border: 1px solid #10b98133; }
+    .badge-official { background: #1e2a4a; color: #60a5fa; border: 1px solid #3b82f633; }
+    .badge-tool     { background: #2d1f4e; color: #a78bfa; border: 1px solid #7c3aed33; }
+    .badge-read     { background: #1f2937; color: #94a3b8; border: 1px solid #47556933; }
+    .badge-community{ background: #2a1a0a; color: #fb923c; border: 1px solid #f9731633; }
+
+    .resource-url {
+      font-family: monospace; font-size: 12px; color: #4b5563;
+      margin-bottom: 8px; word-break: break-all;
+    }
+
+    .resource-desc { font-size: 13.5px; color: #8b949e; line-height: 1.6; }
+
+    .resource-note {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: #0d1117;
+      border-left: 2px solid #f97316;
+      font-size: 12.5px;
+      color: #c9d1d9;
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* Code block */
+    pre {
+      background: #0d1117; border: 1px solid #21262d; border-radius: 6px;
+      padding: 12px 16px; overflow-x: auto; font-size: 12px;
+      color: #e6edf3; line-height: 1.6; margin-top: 10px;
+    }
+    code { font-family: "Fira Code", "Cascadia Code", monospace; }
+
+    /* Priority table */
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    thead tr { background: #161b22; }
+    th {
+      text-align: left; padding: 10px 14px; color: #8b949e;
+      font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+      border-bottom: 1px solid #21262d;
+    }
+    td { padding: 10px 14px; border-bottom: 1px solid #161b22; color: #c9d1d9; vertical-align: top; }
+    tr:hover td { background: #161b22; }
+
+    .priority-num {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #f9731620; border: 1px solid #f9731640;
+      color: #f97316; font-size: 12px; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+
+    a { color: inherit; }
+
+    footer {
+      margin-top: 64px; padding-top: 24px; border-top: 1px solid #21262d;
+      font-size: 12px; color: #4b5563; text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">ConceptForge</div>
+    <h1>Development Resources</h1>
+    <p class="subtitle">Curated reference projects, tools, and reading for Claude Code-driven frontend development</p>
+    <span class="version-badge">v1.0 &nbsp;·&nbsp; March 2026</span>
+  </header>
+
+  <!-- 1. Architecturally Closest -->
+  <section>
+    <h2>1. Architecturally Closest Projects</h2>
+    <div class="resource-list">
+
+      <div class="resource-card featured">
+        <div class="resource-header">
+          <a class="resource-title" href="https://github.com/shrimbly/node-banana" target="_blank">shrimbly/node-banana</a>
+          <span class="badge badge-twin">Closest Twin</span>
+        </div>
+        <div class="resource-url">github.com/shrimbly/node-banana</div>
+        <div class="resource-desc">Free, open-source, node-based generative AI workflow editor built with Next.js + TypeScript + React Flow. BYOK API key model. Has a CLAUDE.md — built with Claude Code assistance. MIT licence.</div>
+        <div class="resource-note">Study its node type system, handle typing, canvas interaction patterns, and CLAUDE.md structure. Closest architectural twin to ConceptForge.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://github.com/FlowiseAI/Flowise" target="_blank">FlowiseAI/Flowise</a>
+          <span class="badge badge-read">35k+ stars</span>
+        </div>
+        <div class="resource-url">github.com/FlowiseAI/Flowise</div>
+        <div class="resource-desc">Most prominent open-source AI workflow builder using a React Flow drag-and-drop canvas. React + TypeScript + Node backend. Gold standard for node component architecture and edge type patterns.</div>
+        <div class="resource-note">Study the UI source for node component structure even if you don't need the backend.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://github.com/langgenius/dify" target="_blank">langgenius/dify</a>
+          <span class="badge badge-read">Reference</span>
+        </div>
+        <div class="resource-url">github.com/langgenius/dify</div>
+        <div class="resource-desc">Production-grade agentic workflow builder with a React Flow visual canvas. Large-scale open-source project. Good reference for how a mature team structures complex canvas-based AI apps with React + TypeScript.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://github.com/claudio-silva/claude-artifact-runner" target="_blank">claudio-silva/claude-artifact-runner</a>
+          <span class="badge badge-twin">Stack Match</span>
+        </div>
+        <div class="resource-url">github.com/claudio-silva/claude-artifact-runner</div>
+        <div class="resource-desc">Vite + React 18 + TypeScript + Tailwind template mirroring Claude's Artifact execution environment. No backend. Deploys to Vercel or Cloudflare Pages. Bootstrap with <code>npx run-claude-artifact</code>.</div>
+        <div class="resource-note">Exact stack match — use as a structural reference for ConceptForge's Vite + React + no-backend setup.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://github.com/xyflow/xyflow" target="_blank">xyflow/xyflow (React Flow)</a>
+          <span class="badge badge-tool">Core Library</span>
+        </div>
+        <div class="resource-url">github.com/xyflow/xyflow · reactflow.dev/showcase</div>
+        <div class="resource-desc">The React Flow library itself. The Showcase page lists real-world apps built with React Flow. Pro Examples include workflow builders and canvas apps directly applicable to ConceptForge.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 2. Claude Code Dev Method -->
+  <section>
+    <h2>2. Claude Code Workflow &amp; Dev Method</h2>
+    <div class="resource-list">
+
+      <div class="resource-card featured">
+        <div class="resource-header">
+          <a class="resource-title" href="https://github.com/Pimzino/claude-code-spec-workflow" target="_blank">Pimzino/claude-code-spec-workflow</a>
+          <span class="badge badge-tool">Slash Commands</span>
+        </div>
+        <div class="resource-url">github.com/Pimzino/claude-code-spec-workflow</div>
+        <div class="resource-desc">Automated slash-command workflows for Claude Code: Requirements → Design → Tasks → Implementation and Bug Fix → Analyze → Fix → Verify cycles.</div>
+        <div class="resource-note">Directly applicable to ConceptForge's requirement ID-driven devmethod. Integrate these slash commands into the project workflow.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://github.com/github/spec-kit" target="_blank">github/spec-kit</a>
+          <span class="badge badge-official">GitHub Official</span>
+        </div>
+        <div class="resource-url">github.com/github/spec-kit</div>
+        <div class="resource-desc">GitHub's official Spec-Driven Development toolkit for Claude Code. Produces structured spec artifacts (requirements, design, tasks) that guide agents. Integrates with CLAUDE.md workflows.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://github.com/ChrisWiles/claude-code-showcase" target="_blank">ChrisWiles/claude-code-showcase</a>
+          <span class="badge badge-read">Reference</span>
+        </div>
+        <div class="resource-url">github.com/ChrisWiles/claude-code-showcase</div>
+        <div class="resource-desc">Comprehensive Claude Code project configuration example covering hooks, skills, custom agents, slash commands, and GitHub Actions. Stack includes React + TypeScript. Good CLAUDE.md structure reference.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://github.com/senaiverse/claude-code-reactnative-expo-agent-system" target="_blank">senaiverse/claude-code-reactnative-expo-agent-system</a>
+          <span class="badge badge-tool">Multi-Agent</span>
+        </div>
+        <div class="resource-url">github.com/senaiverse/claude-code-reactnative-expo-agent-system</div>
+        <div class="resource-desc">7 production sub-agents for React apps: accessibility, design systems, security, performance, testing. Built for Claude Code v2.0.5+. Reference for defining specialised agent roles.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 3. Official Anthropic -->
+  <section>
+    <h2>3. Official Anthropic Resources</h2>
+    <div class="resource-list">
+
+      <div class="resource-card featured">
+        <div class="resource-header">
+          <a class="resource-title" href="https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design" target="_blank">frontend-design Claude Code Plugin</a>
+          <span class="badge badge-official">Install First</span>
+        </div>
+        <div class="resource-url">github.com/anthropics/claude-code/tree/main/plugins/frontend-design</div>
+        <div class="resource-desc">Official Claude Code skill that guides agents toward distinctive typography, bold colour palettes, and high-impact UI design. Directly prevents generic "AI slop" aesthetics. Essential for ConceptForge's dark theme.</div>
+        <div class="resource-note">
+          Install before starting UI development:
+          <pre><code>claude code skills install frontend-design</code></pre>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://claude.com/blog/improving-frontend-design-through-skills" target="_blank">Improving Frontend Design Through Skills — Anthropic Blog</a>
+          <span class="badge badge-official">Official</span>
+        </div>
+        <div class="resource-url">claude.com/blog/improving-frontend-design-through-skills</div>
+        <div class="resource-desc">Official blog post introducing the frontend-design skill with dramatic before/after UI examples. Read this to understand what the skill changes and why it matters.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://platform.claude.com/cookbook/coding-prompting-for-frontend-aesthetics" target="_blank">Anthropic Cookbook — Prompting for Frontend Aesthetics</a>
+          <span class="badge badge-official">Official</span>
+        </div>
+        <div class="resource-url">platform.claude.com/cookbook/coding-prompting-for-frontend-aesthetics</div>
+        <div class="resource-desc">Official guide for prompting Claude to produce quality frontend UI output. Read before writing any UI-related agent prompts for ConceptForge.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://code.claude.com/docs/en/skills" target="_blank">Claude Code Skills Documentation</a>
+          <span class="badge badge-official">Docs</span>
+        </div>
+        <div class="resource-url">code.claude.com/docs/en/skills</div>
+        <div class="resource-desc">Official documentation for installing and creating Claude Code skills. Required reading for managing the frontend-design skill and any custom skills added to ConceptForge.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 4. Blog Posts -->
+  <section>
+    <h2>4. Blog Posts &amp; Case Studies</h2>
+    <div class="resource-list">
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://ancuta.org/posts/ai-building-react-frontend-with-claude-code/" target="_blank">Building React Applications with Claude Code — ancuta.org</a>
+          <span class="badge badge-read">Practical</span>
+        </div>
+        <div class="resource-url">ancuta.org/posts/ai-building-react-frontend-with-claude-code/</div>
+        <div class="resource-desc">Production-tested patterns: standardising specs for Claude to parse, Figma component links, and prompt engineering for consistent agent output. Practical and grounded in real usage.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://medium.com/cars24/claude-code-for-react-react-native-workflows-that-actually-move-the-needle-33b8bb410b14" target="_blank">Claude Code for React & React Native — Cars24 Engineering</a>
+          <span class="badge badge-read">Feb 2026</span>
+        </div>
+        <div class="resource-url">medium.com/cars24/claude-code-for-react...</div>
+        <div class="resource-desc">A production team's real workflow for React development with Claude Code. Covers patterns that save meaningful time vs. patterns that don't. Fresh and relevant.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://alexop.dev/posts/spec-driven-development-claude-code-in-action/" target="_blank">Spec-Driven Development with Claude Code — alexop.dev</a>
+          <span class="badge badge-read">Workflow</span>
+        </div>
+        <div class="resource-url">alexop.dev/posts/spec-driven-development-claude-code-in-action/</div>
+        <div class="resource-desc">Practical walkthrough using separate SPEC_frontend.md and SPEC_backend.md files per domain. Directly applicable to ConceptForge's requirements folder structure and devmethod.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://rajeevpentyala.com/2026/02/22/github-spec-kit-with-claude-code-build-a-react-app-using-spec-driven-ai/" target="_blank">GitHub Spec-Kit with Claude Code — rajeevpentyala.com</a>
+          <span class="badge badge-read">Feb 2026</span>
+        </div>
+        <div class="resource-url">rajeevpentyala.com</div>
+        <div class="resource-desc">Builds a Vite + React + TypeScript app using GitHub's spec-kit with auto-generated unit tests. Good template for structuring ConceptForge specs for Claude Code agents.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://strapi.io/blog/building-faster-with-v0-and-claude-code-lessons-learned-from-vibe-coding" target="_blank">Building Faster with V0 and Claude Code — Strapi</a>
+          <span class="badge badge-read">Case Study</span>
+        </div>
+        <div class="resource-url">strapi.io/blog/building-faster-with-v0-and-claude-code...</div>
+        <div class="resource-desc">Combining Vercel v0 (UI scaffolding) with Claude Code (agent-driven implementation). Covers the agentic loop workflow increasingly common for frontend apps.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://blog.logrocket.com/claude-web-app/" target="_blank">How to Use Claude to Build a Web App — LogRocket</a>
+          <span class="badge badge-read">Tutorial</span>
+        </div>
+        <div class="resource-url">blog.logrocket.com/claude-web-app/</div>
+        <div class="resource-desc">Demonstrates migrating a project from Create React App to Vite with Claude Code handling the refactor. Useful precedent since ConceptForge is Vite-based.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://anishgandhi.com/how-i-used-claude-code-to-build-a-full-stack-react-app-a-step-by-step-development-guide" target="_blank">Building a Full-Stack React App with Claude — anishgandhi.com</a>
+          <span class="badge badge-read">Step-by-step</span>
+        </div>
+        <div class="resource-url">anishgandhi.com</div>
+        <div class="resource-desc">Step-by-step guide. Evolved from prototype to 252 tests. Covers multi-provider API integration, security hardening, and documentation practices with Claude Code.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 5. Community -->
+  <section>
+    <h2>5. Community &amp; Discovery</h2>
+    <div class="resource-list">
+
+      <div class="resource-card featured">
+        <div class="resource-header">
+          <a class="resource-title" href="https://github.com/hesreallyhim/awesome-claude-code" target="_blank">hesreallyhim/awesome-claude-code</a>
+          <span class="badge badge-community">21k+ stars</span>
+        </div>
+        <div class="resource-url">github.com/hesreallyhim/awesome-claude-code</div>
+        <div class="resource-desc">Primary curated index of the entire Claude Code ecosystem. Covers skills, hooks, slash commands, agent orchestrators, applications, and plugins. Start here for any Claude Code discovery.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://github.com/travisvn/awesome-claude-skills" target="_blank">travisvn/awesome-claude-skills</a>
+          <span class="badge badge-community">Skills Index</span>
+        </div>
+        <div class="resource-url">github.com/travisvn/awesome-claude-skills</div>
+        <div class="resource-desc">Curated list of Claude Skills for customising Claude Code workflows. Good for finding reusable frontend development skills applicable to ConceptForge.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://discord.com/invite/6PPFFzqPDZ" target="_blank">Anthropic Official Discord</a>
+          <span class="badge badge-community">66k+ members</span>
+        </div>
+        <div class="resource-url">discord.com/invite/6PPFFzqPDZ</div>
+        <div class="resource-desc">Primary real-time community for Claude Code questions, patterns, and troubleshooting. Most active channel for agent-driven frontend development discussion.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://awesomeclaude.ai" target="_blank">awesomeclaude.ai</a>
+          <span class="badge badge-community">Directory</span>
+        </div>
+        <div class="resource-url">awesomeclaude.ai</div>
+        <div class="resource-desc">Community-maintained browsable directory of Claude AI resources, tools, and projects. Frontend over the awesome-claude ecosystem.</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-header">
+          <a class="resource-title" href="https://claudelog.com/claude-code-mcps/awesome-claude-code/" target="_blank">claudelog.com</a>
+          <span class="badge badge-community">Updated Often</span>
+        </div>
+        <div class="resource-url">claudelog.com</div>
+        <div class="resource-desc">Tracks Claude Code tools, MCP servers, and resources. Updated frequently. Good for staying current as the ecosystem evolves.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 6. Priority Actions -->
+  <section>
+    <h2>6. Priority Actions Before Development Starts</h2>
+    <table>
+      <thead><tr><th>#</th><th>Action</th><th>Resource</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="priority-num">1</span></td>
+          <td>Study node-banana repo structure, CLAUDE.md, and node type patterns</td>
+          <td><a href="https://github.com/shrimbly/node-banana" target="_blank">shrimbly/node-banana</a></td>
+        </tr>
+        <tr>
+          <td><span class="priority-num">2</span></td>
+          <td>Install the frontend-design Claude Code skill</td>
+          <td><a href="https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design" target="_blank">Anthropic plugin</a></td>
+        </tr>
+        <tr>
+          <td><span class="priority-num">3</span></td>
+          <td>Read spec-workflow slash commands — integrate into devmethod</td>
+          <td><a href="https://github.com/Pimzino/claude-code-spec-workflow" target="_blank">Pimzino/claude-code-spec-workflow</a></td>
+        </tr>
+        <tr>
+          <td><span class="priority-num">4</span></td>
+          <td>Read the Anthropic frontend aesthetics cookbook entry</td>
+          <td><a href="https://platform.claude.com/cookbook/coding-prompting-for-frontend-aesthetics" target="_blank">Anthropic Cookbook</a></td>
+        </tr>
+        <tr>
+          <td><span class="priority-num">5</span></td>
+          <td>Browse awesome-claude-code for new relevant skills or tools</td>
+          <td><a href="https://github.com/hesreallyhim/awesome-claude-code" target="_blank">hesreallyhim/awesome-claude-code</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    ConceptForge &nbsp;·&nbsp; Development Resources v1.0 &nbsp;·&nbsp; March 2026
+  </footer>
+
+</div>
+</body>
+</html>
