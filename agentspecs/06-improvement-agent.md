@@ -62,13 +62,17 @@ For each group with open feedback, apply the appropriate fix:
 | `testing` | `vitest.config.ts`, `playwright.config.ts`, test helper files |
 | `react-flow` | CLAUDE.md section 4 (Architecture) or section 12 (Critical Rules) |
 | `ai-layer` | `src/lib/claude.ts` patterns, CLAUDE.md section 4 |
-| `process` | CLAUDE.md section 8 (Git Conventions) or section 10 (Spec-Driven Workflow) |
+| `process` | CLAUDE.md section 8 (Git Conventions) or section 10 (Spec-Driven Workflow); update `devmethod/devmethod.md` and `devmethod/devmethod.html` to reflect any workflow, agent role, or delivery sequence changes |
 
 **Rules for making changes:**
 - Do not change anything marked `accepted` in an ADR without first creating a new ADR superseding it
 - Do not change shared type contracts (`src/types/index.ts`) without notifying in the commit message which agents are affected
 - Do not remove CLAUDE.md sections — only add or clarify
 - Verify `pnpm lint && pnpm typecheck && pnpm test` passes after every change
+- **Paired document rule:** Where a `.md` file has a corresponding `.html` file, both must be updated in the same commit. Paired files in this project:
+  - `devmethod/devmethod.md` ↔ `devmethod/devmethod.html`
+  - `requirements/requirements.md` ↔ `requirements/requirements.html`
+  - `resources/resources.md` ↔ `resources/resources.html`
 
 ---
 

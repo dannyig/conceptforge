@@ -195,6 +195,8 @@ _To be completed after skills are installed._
 
 ## 12. Critical Rules
 
+> **Active rule — Paired Document Sync:** Where a `.md` file has a paired `.html` file, both must be updated in the same commit. Pairs: `devmethod/devmethod.md ↔ devmethod/devmethod.html` · `requirements/requirements.md ↔ requirements/requirements.html` · `resources/resources.md ↔ resources/resources.html`. This applies to every agent including the Improvement Agent.
+
 <!--
 Non-negotiable rules that apply to every agent on every task. Organised into named subsections:
 
@@ -219,6 +221,14 @@ Never commit the API key — not even in a test file.
 ### Canvas Mutations
 All canvas state mutations go through React Flow's setNodes / setEdges.
 Never mutate node or edge objects directly.
+
+### Paired Document Sync
+Where a `.md` file has a corresponding `.html` file, both must be updated in the same commit — never update one without the other.
+Paired files in this project:
+- `devmethod/devmethod.md` ↔ `devmethod/devmethod.html`
+- `requirements/requirements.md` ↔ `requirements/requirements.html`
+- `resources/resources.md` ↔ `resources/resources.html`
+This rule applies to all agents, including the Improvement Agent.
 -->
 
 _To be completed by the Scaffolder agent._
@@ -341,4 +351,4 @@ _See feedback/, decisions/, and LESSONS.md for current state._
 
 ---
 
-*CLAUDE.md v0.1 — Sections defined, content pending Scaffolder agent — March 2026*
+*CLAUDE.md v0.2 — Added paired document sync rule (Section 12); all other sections pending Scaffolder agent — March 2026*

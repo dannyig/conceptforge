@@ -6,121 +6,60 @@
   <title>ConceptForge — Development Method</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #0d1117;
-      color: #c9d1d9;
-      line-height: 1.7;
-      padding: 40px 20px 80px;
-    }
-
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0d1117; color: #c9d1d9; line-height: 1.7; padding: 40px 20px 80px; }
     .container { max-width: 960px; margin: 0 auto; }
-
-    header {
-      border-bottom: 1px solid #21262d;
-      padding-bottom: 32px;
-      margin-bottom: 48px;
-    }
-
+    header { border-bottom: 1px solid #21262d; padding-bottom: 32px; margin-bottom: 48px; }
     .logo { font-size: 13px; letter-spacing: 4px; color: #f97316; text-transform: uppercase; margin-bottom: 12px; }
     h1 { font-size: 36px; font-weight: 700; color: #f0f6fc; margin-bottom: 8px; }
     .subtitle { font-size: 15px; color: #6e7681; }
-    .version-badge {
-      display: inline-block; margin-top: 16px; padding: 4px 12px;
-      background: #161b22; border: 1px solid #30363d; border-radius: 20px;
-      font-size: 12px; color: #8b949e;
-    }
-
+    .version-badge { display: inline-block; margin-top: 16px; padding: 4px 12px; background: #161b22; border: 1px solid #30363d; border-radius: 20px; font-size: 12px; color: #8b949e; }
     section { margin-bottom: 56px; }
-
-    h2 {
-      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
-      color: #f97316; margin-bottom: 20px; padding-bottom: 8px;
-      border-bottom: 1px solid #21262d;
-    }
-
-    h3 { font-size: 15px; font-weight: 600; color: #e6edf3; margin: 28px 0 12px; }
-    p { color: #8b949e; margin-bottom: 12px; font-size: 14px; }
-
+    h2 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #f97316; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #21262d; }
+    h3 { font-size: 14px; font-weight: 600; color: #e6edf3; margin: 24px 0 10px; }
+    p { color: #8b949e; font-size: 14px; margin-bottom: 12px; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13.5px; }
     thead tr { background: #161b22; }
-    th {
-      text-align: left; padding: 10px 14px; color: #8b949e;
-      font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
-      border-bottom: 1px solid #21262d;
-    }
+    th { text-align: left; padding: 10px 14px; color: #8b949e; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid #21262d; }
     td { padding: 10px 14px; border-bottom: 1px solid #161b22; color: #c9d1d9; vertical-align: top; }
     tr:hover td { background: #161b22; }
-
-    .agent-name { color: #f97316; font-weight: 600; font-size: 13px; }
-    .req-range { font-family: monospace; font-size: 12px; color: #60a5fa; }
-    .branch-name { font-family: monospace; font-size: 12px; color: #34d399; }
-
-    pre {
-      background: #161b22; border: 1px solid #21262d; border-radius: 8px;
-      padding: 20px 24px; overflow-x: auto; font-size: 13px;
-      color: #e6edf3; line-height: 1.6; margin-bottom: 16px;
-    }
-    code { font-family: "Fira Code", "Cascadia Code", monospace; }
-
+    pre { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 20px 24px; overflow-x: auto; font-size: 13px; color: #e6edf3; line-height: 1.7; margin-bottom: 16px; }
+    code { font-family: "Fira Code", "Cascadia Code", monospace; font-size: 12px; }
     .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 24px; }
     .card { background: #161b22; border: 1px solid #21262d; border-radius: 10px; padding: 18px; }
     .card-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #4b5563; margin-bottom: 6px; }
     .card-value { font-size: 14px; color: #e6edf3; font-weight: 500; }
     .card-value.accent { color: #f97316; }
-
-    .pipeline {
-      background: #161b22; border: 1px solid #21262d; border-radius: 10px;
-      padding: 28px 32px; font-family: monospace; font-size: 13px;
-      color: #c9d1d9; line-height: 2;
-    }
+    .agent-name { color: #f97316; font-weight: 600; }
+    .req-range { font-family: monospace; font-size: 12px; color: #60a5fa; }
+    .branch-name { font-family: monospace; font-size: 12px; color: #34d399; }
+    .new-badge { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; background: #1a3a2a; color: #34d399; border: 1px solid #10b98133; margin-left: 6px; vertical-align: middle; }
+    .updated-badge { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; background: #1e2a4a; color: #60a5fa; border: 1px solid #3b82f633; margin-left: 6px; vertical-align: middle; }
+    .workflow-steps { list-style: none; counter-reset: workflow; }
+    .workflow-steps li { counter-increment: workflow; display: flex; gap: 14px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #161b22; font-size: 14px; color: #c9d1d9; }
+    .workflow-steps li::before { content: counter(workflow); width: 24px; height: 24px; border-radius: 4px; background: #21262d; color: #8b949e; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .gate-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+    .gate-card { background: #161b22; border: 1px solid #1a3a2a; border-radius: 10px; padding: 18px 20px; }
+    .gate-card-title { font-size: 13px; font-weight: 600; color: #34d399; margin-bottom: 4px; }
+    .gate-card-tool { font-size: 12px; color: #8b949e; margin-bottom: 6px; }
+    .gate-card-when { font-size: 11px; color: #4b5563; }
+    .pipeline { background: #161b22; border: 1px solid #21262d; border-radius: 10px; padding: 28px 32px; font-family: monospace; font-size: 13px; color: #c9d1d9; line-height: 2.2; }
     .pipeline .step { color: #60a5fa; }
     .pipeline .arrow { color: #4b5563; }
     .pipeline .gate { color: #34d399; }
     .pipeline .deploy { color: #f97316; }
-
     .sequence-list { list-style: none; }
-    .sequence-list li {
-      display: flex; align-items: flex-start; gap: 14px;
-      padding: 12px 0; border-bottom: 1px solid #161b22; font-size: 14px;
-    }
-    .seq-num {
-      width: 26px; height: 26px; border-radius: 50%;
-      background: #f9731620; border: 1px solid #f9731640;
-      color: #f97316; font-size: 12px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
+    .sequence-list li { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid #161b22; font-size: 14px; }
+    .seq-num { width: 26px; height: 26px; border-radius: 50%; background: #f9731620; border: 1px solid #f9731640; color: #f97316; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .seq-agent { font-weight: 600; color: #e6edf3; }
     .seq-dep { font-size: 12px; color: #4b5563; margin-top: 2px; }
-
-    .workflow-steps { list-style: none; counter-reset: workflow; }
-    .workflow-steps li {
-      counter-increment: workflow;
-      display: flex; gap: 14px; align-items: flex-start;
-      padding: 10px 0; border-bottom: 1px solid #161b22; font-size: 14px; color: #c9d1d9;
-    }
-    .workflow-steps li::before {
-      content: counter(workflow);
-      width: 24px; height: 24px; border-radius: 4px;
-      background: #21262d; color: #8b949e; font-size: 11px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-
-    .gate-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
-    .gate-card {
-      background: #161b22; border: 1px solid #1a3a2a; border-radius: 10px;
-      padding: 18px 20px;
-    }
-    .gate-card-title { font-size: 13px; font-weight: 600; color: #34d399; margin-bottom: 4px; }
-    .gate-card-tool { font-size: 12px; color: #8b949e; margin-bottom: 8px; }
-    .gate-card-when { font-size: 11px; color: #4b5563; }
-
-    footer {
-      margin-top: 64px; padding-top: 24px; border-top: 1px solid #21262d;
-      font-size: 12px; color: #4b5563; text-align: center;
-    }
+    .seq-improve { font-size: 11px; color: #34d399; margin-top: 3px; }
+    .feedback-loop { background: #161b22; border: 1px solid #21262d; border-radius: 10px; padding: 28px 32px; font-family: monospace; font-size: 13px; line-height: 2.2; }
+    .feedback-loop .trigger { color: #a78bfa; }
+    .feedback-loop .action { color: #60a5fa; }
+    .feedback-loop .output { color: #34d399; }
+    .feedback-loop .arrow { color: #4b5563; }
+    .file-table td:first-child { font-family: monospace; font-size: 12px; color: #f97316; white-space: nowrap; }
+    footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid #21262d; font-size: 12px; color: #4b5563; text-align: center; }
   </style>
 </head>
 <body>
@@ -129,8 +68,8 @@
   <header>
     <div class="logo">ConceptForge</div>
     <h1>Development Method</h1>
-    <p class="subtitle">Agent-Driven Development Strategy — Initial Version</p>
-    <span class="version-badge">v1.0 &nbsp;·&nbsp; March 2026</span>
+    <p class="subtitle">Agent-Driven Development Strategy — v1.2</p>
+    <span class="version-badge">v1.2 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -157,46 +96,24 @@
         <tr><td>Automation as quality gate</td><td>Lint, type-check, and tests must pass before any merge</td></tr>
         <tr><td>Requirements-driven</td><td>Every branch maps to a requirement ID — no free-form development</td></tr>
         <tr><td>Deployable at all times</td><td><code>main</code> is always in a working, deployed state</td></tr>
+        <tr><td>Process improves over time <span class="new-badge">NEW</span></td><td>Friction, gaps, and errors are logged as feedback and acted on by the Improvement Agent</td></tr>
       </tbody>
     </table>
   </section>
 
   <!-- 3. Agent Roles -->
   <section>
-    <h2>3. Agent Roles</h2>
+    <h2>3. Agent Roles <span class="updated-badge">UPDATED</span></h2>
     <table>
       <thead><tr><th>Agent</th><th>Responsibilities</th><th>Req IDs</th></tr></thead>
       <tbody>
-        <tr>
-          <td><span class="agent-name">Scaffolder</span></td>
-          <td>Project setup, toolchain, CLAUDE.md, shared types, CI/CD pipeline</td>
-          <td><span class="req-range">—</span></td>
-        </tr>
-        <tr>
-          <td><span class="agent-name">Canvas Agent</span></td>
-          <td>React Flow canvas, node/edge CRUD, pan, zoom, minimap</td>
-          <td><span class="req-range">C-01 → C-07</span></td>
-        </tr>
-        <tr>
-          <td><span class="agent-name">AI Agent</span></td>
-          <td>Claude API integration, map generation, node expansion</td>
-          <td><span class="req-range">A-01 → A-09</span></td>
-        </tr>
-        <tr>
-          <td><span class="agent-name">Settings Agent</span></td>
-          <td>API key input, localStorage storage, validation</td>
-          <td><span class="req-range">K-01 → K-04</span></td>
-        </tr>
-        <tr>
-          <td><span class="agent-name">Persistence Agent</span></td>
-          <td>JSON save/load, PNG export</td>
-          <td><span class="req-range">P-01 → E-02</span></td>
-        </tr>
-        <tr>
-          <td><span class="agent-name">QA Agent</span></td>
-          <td>Vitest unit tests, Playwright E2E tests across all features</td>
-          <td><span class="req-range">All</span></td>
-        </tr>
+        <tr><td><span class="agent-name">Scaffolder</span></td><td>Project setup, toolchain, CLAUDE.md, shared types, CI/CD pipeline</td><td><span class="req-range">—</span></td></tr>
+        <tr><td><span class="agent-name">Canvas Agent</span></td><td>React Flow canvas, node/edge CRUD, pan, zoom, minimap</td><td><span class="req-range">C-01 → C-07</span></td></tr>
+        <tr><td><span class="agent-name">AI Agent</span></td><td>Claude API integration, map generation, node expansion</td><td><span class="req-range">A-01 → A-09</span></td></tr>
+        <tr><td><span class="agent-name">Settings Agent</span></td><td>API key input, localStorage storage, validation</td><td><span class="req-range">K-01 → K-04</span></td></tr>
+        <tr><td><span class="agent-name">Persistence Agent</span></td><td>JSON save/load, PNG export</td><td><span class="req-range">P-01 → E-02</span></td></tr>
+        <tr><td><span class="agent-name">QA Agent</span></td><td>Vitest unit tests, Playwright E2E tests across all features</td><td><span class="req-range">All</span></td></tr>
+        <tr style="background:#1a1208"><td><span class="agent-name">Improvement Agent</span> <span class="new-badge">NEW</span></td><td>Processes feedback, updates CLAUDE.md/agentspecs/tooling, records ADRs, updates LESSONS.md</td><td><span class="req-range">—</span></td></tr>
       </tbody>
     </table>
     <p>Each agent is self-contained. Agents coordinate through shared TypeScript types and CLAUDE.md — not through direct communication.</p>
@@ -204,7 +121,7 @@
 
   <!-- 4. Agent Workflow -->
   <section>
-    <h2>4. Agent Workflow</h2>
+    <h2>4. Agent Workflow <span class="updated-badge">UPDATED</span></h2>
     <p>Each agent follows this sequence for every task:</p>
     <ol class="workflow-steps">
       <li>Read CLAUDE.md — conventions, stack, constraints</li>
@@ -212,6 +129,7 @@
       <li>Review shared types in src/types/index.ts</li>
       <li>Create a feature branch: <code class="branch-name">feature/&lt;req-id&gt;-&lt;short-description&gt;</code></li>
       <li>Write implementation + tests</li>
+      <li style="background:#1a1208; border-radius:4px; padding-left:8px;">Log any friction, ambiguity, or issues encountered using <code>/feedback</code></li>
       <li>Run: <code>pnpm lint &amp;&amp; pnpm test</code></li>
       <li>Fix all failures before committing</li>
       <li>Commit with message referencing the requirement ID</li>
@@ -222,7 +140,7 @@
 
   <!-- 5. Branching -->
   <section>
-    <h2>5. Branching Strategy</h2>
+    <h2>5. Branching Strategy <span class="updated-badge">UPDATED</span></h2>
     <table>
       <thead><tr><th>Branch</th><th>Purpose</th></tr></thead>
       <tbody>
@@ -230,62 +148,95 @@
         <tr><td><code class="branch-name">feature/&lt;req-id&gt;-&lt;desc&gt;</code></td><td>One branch per requirement ID</td></tr>
         <tr><td><code class="branch-name">fix/&lt;short-desc&gt;</code></td><td>Bug fixes found during QA</td></tr>
         <tr><td><code class="branch-name">chore/&lt;short-desc&gt;</code></td><td>Tooling, config, dependency updates</td></tr>
+        <tr style="background:#1a1208"><td><code class="branch-name">chore/process-improvement-&lt;date&gt;</code> <span class="new-badge">NEW</span></td><td>Improvement Agent changes to process, tooling, or agent instructions</td></tr>
       </tbody>
     </table>
-    <p>Examples:</p>
-    <pre><code>feature/C-01-react-flow-canvas
-feature/A-02-map-generation
-feature/K-01-api-key-settings
-fix/node-duplicate-on-expand</code></pre>
   </section>
 
   <!-- 6. Toolchain -->
   <section>
-    <h2>6. Toolchain</h2>
+    <h2>6. Toolchain <span class="updated-badge">UPDATED</span></h2>
     <table>
-      <thead><tr><th>Layer</th><th>Tool</th><th>Purpose</th></tr></thead>
+      <thead><tr><th>Layer</th><th>Tool</th><th>Version</th></tr></thead>
       <tbody>
-        <tr><td>Language</td><td>TypeScript (strict)</td><td>Types act as contracts agents must satisfy</td></tr>
-        <tr><td>Framework</td><td>React 18</td><td>Component model, hooks</td></tr>
-        <tr><td>Build</td><td>Vite 5</td><td>Fast dev server, optimised production builds</td></tr>
-        <tr><td>Package manager</td><td>pnpm</td><td>Fast installs, strict dependency resolution</td></tr>
-        <tr><td>Graph canvas</td><td>React Flow 11</td><td>Node-edge interactive canvas</td></tr>
-        <tr><td>Linting</td><td>ESLint + Prettier</td><td>Consistent, auto-correctable code style</td></tr>
-        <tr><td>Pre-commit</td><td>Husky + lint-staged</td><td>Blocks bad commits automatically</td></tr>
-        <tr><td>Unit tests</td><td>Vitest</td><td>Vite-native, fast feedback loop</td></tr>
-        <tr><td>E2E tests</td><td>Playwright</td><td>Headless UI verification</td></tr>
-        <tr><td>CI/CD</td><td>GitHub Actions</td><td>Automated quality gate on every push</td></tr>
-        <tr><td>Deployment</td><td>fly.io (nginx container)</td><td>Static app hosting, already configured</td></tr>
+        <tr><td>Language</td><td>TypeScript (strict mode)</td><td>5.x</td></tr>
+        <tr><td>Framework</td><td>React</td><td>18.x</td></tr>
+        <tr><td>Build</td><td>Vite</td><td>5.x</td></tr>
+        <tr><td>Package manager</td><td>pnpm</td><td>latest</td></tr>
+        <tr><td>Graph canvas</td><td>React Flow (<code>@xyflow/react</code>)</td><td>12.x</td></tr>
+        <tr><td>Linting</td><td>ESLint + Prettier</td><td>—</td></tr>
+        <tr><td>Pre-commit hooks</td><td>Husky + lint-staged</td><td>—</td></tr>
+        <tr><td>Unit tests</td><td>Vitest</td><td>—</td></tr>
+        <tr><td>E2E tests</td><td>Playwright</td><td>—</td></tr>
+        <tr><td>CI/CD</td><td>GitHub Actions</td><td>—</td></tr>
+        <tr><td>Deployment</td><td>fly.io (nginx container)</td><td>—</td></tr>
       </tbody>
     </table>
   </section>
 
-  <!-- 7. Quality Gates -->
+  <!-- 7. Project Structure -->
   <section>
-    <h2>7. Quality Gates</h2>
+    <h2>7. Project Structure <span class="updated-badge">UPDATED</span></h2>
+    <pre><code>conceptforge/
+├── .claude/
+│   └── commands/              # slash commands — /scaffold, /improve, /feedback
+├── .github/
+│   └── workflows/
+│       ├── ci.yml             # lint + test on every push
+│       └── deploy.yml         # deploy to fly.io on merge to main
+├── agentspecs/                # per-agent task specs — read before starting work
+│   ├── 00-scaffolder.md
+│   ├── 01-canvas-agent.md     # (pending)
+│   ├── 02-settings-agent.md   # (pending)
+│   ├── 03-ai-agent.md         # (pending)
+│   ├── 04-persistence-agent.md# (pending)
+│   ├── 05-qa-agent.md         # (pending)
+│   └── 06-improvement-agent.md
+├── decisions/                 # Architecture Decision Records (ADRs)
+├── devmethod/                 # this folder — development strategy docs
+├── feedback/                  # open feedback entries from agents and humans
+├── requirements/              # requirements definition (MD + HTML)
+├── resources/                 # reference projects and learning materials
+├── src/
+│   ├── components/
+│   │   ├── canvas/            # React Flow canvas, custom nodes
+│   │   ├── ai/                # prompt panel, expansion UI
+│   │   ├── toolbar/           # top bar actions (save, load, export)
+│   │   └── settings/          # API key management panel
+│   ├── hooks/                 # custom React hooks
+│   ├── lib/
+│   │   ├── claude.ts          # Claude API client + prompt templates
+│   │   ├── graph.ts           # node/edge helpers, layout logic
+│   │   └── export.ts          # JSON save/load, PNG export
+│   ├── types/
+│   │   └── index.ts           # shared TypeScript interfaces — source of truth
+│   ├── App.tsx
+│   └── main.tsx
+├── tests/
+│   ├── unit/                  # Vitest unit tests
+│   └── e2e/                   # Playwright E2E tests
+├── CLAUDE.md                  # agent instructions and conventions
+├── LESSONS.md                 # running log of process improvements
+├── Dockerfile
+├── fly.toml
+├── nginx.conf
+└── package.json</code></pre>
+  </section>
+
+  <!-- 8. Quality Gates -->
+  <section>
+    <h2>8. Quality Gates</h2>
     <p>No code reaches <code>main</code> without passing all three gates:</p>
     <div class="gate-grid">
-      <div class="gate-card">
-        <div class="gate-card-title">Code Style</div>
-        <div class="gate-card-tool">ESLint + Prettier</div>
-        <div class="gate-card-when">Pre-commit (Husky) + CI</div>
-      </div>
-      <div class="gate-card">
-        <div class="gate-card-title">Type Safety</div>
-        <div class="gate-card-tool">tsc --noEmit</div>
-        <div class="gate-card-when">CI only</div>
-      </div>
-      <div class="gate-card">
-        <div class="gate-card-title">Tests</div>
-        <div class="gate-card-tool">Vitest + Playwright</div>
-        <div class="gate-card-when">CI only</div>
-      </div>
+      <div class="gate-card"><div class="gate-card-title">Code Style</div><div class="gate-card-tool">ESLint + Prettier</div><div class="gate-card-when">Pre-commit (Husky) + CI</div></div>
+      <div class="gate-card"><div class="gate-card-title">Type Safety</div><div class="gate-card-tool">tsc --noEmit</div><div class="gate-card-when">CI only</div></div>
+      <div class="gate-card"><div class="gate-card-title">Tests</div><div class="gate-card-tool">Vitest + Playwright</div><div class="gate-card-when">CI only</div></div>
     </div>
   </section>
 
-  <!-- 8. Type Contracts -->
+  <!-- 9. Type Contracts -->
   <section>
-    <h2>8. Shared Type Contracts</h2>
+    <h2>9. Shared Type Contracts</h2>
     <p>Types are defined before any implementation begins. All agents program to these contracts.</p>
     <pre><code>// src/types/index.ts
 
@@ -314,9 +265,46 @@ export interface ClaudeMapResponse {
 }</code></pre>
   </section>
 
-  <!-- 9. Deployment Pipeline -->
+  <!-- 10. CLAUDE.md -->
   <section>
-    <h2>9. Deployment Pipeline</h2>
+    <h2>10. CLAUDE.md — Agent Instructions <span class="updated-badge">UPDATED</span></h2>
+    <p>Every agent reads <code>CLAUDE.md</code> at the start of each session. It is a living document updated by the Improvement Agent when feedback identifies gaps or errors. It contains:</p>
+    <table>
+      <thead><tr><th>Section</th><th>Content</th></tr></thead>
+      <tbody>
+        <tr><td>Stack & toolchain</td><td>Framework, build tool, library versions</td></tr>
+        <tr><td>Project structure</td><td>Annotated directory map</td></tr>
+        <tr><td>Code standards</td><td>No <code>any</code>, functional components, inline styles</td></tr>
+        <tr><td>Git conventions</td><td>Branch naming, Conventional Commits, CI gate</td></tr>
+        <tr><td>Agent roles</td><td>Who does what, scope boundaries</td></tr>
+        <tr><td>Spec-driven workflow</td><td>11-step process per task</td></tr>
+        <tr><td>Critical rules</td><td>Error handling, UI states, async guards, API key safety</td></tr>
+        <tr><td>Security rules</td><td>localStorage key handling, no intermediate server</td></tr>
+        <tr><td>Feedback loop <span class="new-badge">NEW</span></td><td>How to log feedback, when to run /improve</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 11. Human Oversight -->
+  <section>
+    <h2>11. Human Oversight <span class="updated-badge">UPDATED</span></h2>
+    <table>
+      <thead><tr><th>Activity</th><th>Frequency</th></tr></thead>
+      <tbody>
+        <tr><td>Review deployed app on fly.io</td><td>After each feature merge</td></tr>
+        <tr><td>Review GitHub PR / commit diffs</td><td>Optional — CI is the primary gate</td></tr>
+        <tr><td>Direct agents to next requirement</td><td>At the start of each session</td></tr>
+        <tr style="background:#1a1208"><td>Run <code>/improve</code> to process accumulated feedback <span class="new-badge">NEW</span></td><td>After each feature agent completes, or when 3+ feedback entries are open</td></tr>
+        <tr style="background:#1a1208"><td>Review <code>LESSONS.md</code> for emerging patterns <span class="new-badge">NEW</span></td><td>Periodically</td></tr>
+        <tr style="background:#1a1208"><td>Review <code>decisions/</code> before changing tooling or architecture <span class="new-badge">NEW</span></td><td>Before any structural change</td></tr>
+        <tr><td>Approve post-MVP features</td><td>After MVP is stable</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 12. Deployment -->
+  <section>
+    <h2>12. Deployment Pipeline</h2>
     <div class="pipeline">
       <div><span class="step">push to feature branch</span></div>
       <div><span class="arrow">       │</span></div>
@@ -338,10 +326,9 @@ export interface ClaudeMapResponse {
     </div>
   </section>
 
-  <!-- 10. MVP Delivery Sequence -->
+  <!-- 13. Delivery Sequence -->
   <section>
-    <h2>10. MVP Delivery Sequence</h2>
-    <p>Agents are tasked in dependency order:</p>
+    <h2>13. MVP Delivery Sequence <span class="updated-badge">UPDATED</span></h2>
     <ul class="sequence-list">
       <li>
         <div class="seq-num">1</div>
@@ -349,6 +336,7 @@ export interface ClaudeMapResponse {
           <div class="seq-agent">Scaffolder</div>
           <div>Project setup, CLAUDE.md, shared types, CI/CD pipeline</div>
           <div class="seq-dep">Depends on: nothing</div>
+          <div class="seq-improve">→ run /improve before proceeding</div>
         </div>
       </li>
       <li>
@@ -362,9 +350,10 @@ export interface ClaudeMapResponse {
       <li>
         <div class="seq-num">3</div>
         <div>
-          <div class="seq-agent">Settings Agent</div>
+          <div class="seq-agent">Settings Agent <span style="font-size:11px;color:#4b5563">[parallel with Canvas Agent]</span></div>
           <div>API key input, localStorage, validation</div>
           <div class="seq-dep">Depends on: Scaffolder</div>
+          <div class="seq-improve">→ run /improve before proceeding</div>
         </div>
       </li>
       <li>
@@ -378,9 +367,10 @@ export interface ClaudeMapResponse {
       <li>
         <div class="seq-num">5</div>
         <div>
-          <div class="seq-agent">Persistence Agent</div>
+          <div class="seq-agent">Persistence Agent <span style="font-size:11px;color:#4b5563">[parallel with AI Agent]</span></div>
           <div>JSON save/load, PNG export</div>
           <div class="seq-dep">Depends on: Canvas Agent</div>
+          <div class="seq-improve">→ run /improve before proceeding</div>
         </div>
       </li>
       <li>
@@ -389,28 +379,73 @@ export interface ClaudeMapResponse {
           <div class="seq-agent">QA Agent</div>
           <div>Vitest unit tests + Playwright E2E across all features</div>
           <div class="seq-dep">Depends on: all agents above</div>
+          <div class="seq-improve">→ run /improve after QA completes</div>
         </div>
       </li>
     </ul>
+    <p style="margin-top:16px; font-size:13px;">The Improvement Agent runs between each stage — triggered by <code>/improve</code> whenever feedback accumulates, not as a fixed sequential step.</p>
   </section>
 
-  <!-- 11. Human Oversight -->
+  <!-- 14. Feedback Loop (NEW) -->
   <section>
-    <h2>11. Human Oversight</h2>
+    <h2>14. Feedback &amp; Continuous Improvement <span class="new-badge">NEW</span></h2>
+    <p>The development process improves through a structured feedback loop running alongside feature development.</p>
+
+    <h3>Raising Feedback</h3>
+    <p>Any agent that encounters friction — a missing instruction, ambiguous spec, broken tooling, unexpected library behaviour — logs it immediately using <code>/feedback</code>. Feedback is committed to the current working branch, not a separate branch.</p>
+
+    <h3>Processing Feedback <span class="updated-badge">UPDATED</span></h3>
+    <p>The Improvement Agent (<code>/improve</code>) reads all open entries, groups by category, identifies patterns, and implements fixes. In addition to updating CLAUDE.md, agentspecs, tooling, and types, the Improvement Agent also updates <code>devmethod/devmethod.md</code> (and its paired <code>devmethod/devmethod.html</code>) to reflect any changes to agent roles, workflow steps, or delivery sequence. Changes are committed on a <code>chore/process-improvement-&lt;date&gt;</code> branch, merged to main via CI.</p>
+
+    <h3>Architecture Decisions</h3>
+    <p>Significant decisions are recorded as ADRs in <code>decisions/</code>. No agent may reverse an <code>accepted</code> ADR without first creating a superseding one.</p>
+
+    <h3>Feedback Loop</h3>
+    <div class="feedback-loop">
+      <div><span class="trigger">Agent encounters issue</span></div>
+      <div><span class="arrow">        ↓</span></div>
+      <div><span class="action">   /feedback → feedback/YYYY-MM-DD-&lt;title&gt;.md</span></div>
+      <div><span class="arrow">        ↓</span></div>
+      <div><span class="trigger">  3+ entries OR feature agent finishes</span></div>
+      <div><span class="arrow">        ↓</span></div>
+      <div><span class="action">   /improve → Improvement Agent</span></div>
+      <div><span class="arrow">        ↓</span></div>
+      <div><span class="output">  Fixes:   CLAUDE.md | agentspecs/ | tooling | types | devmethod/</span></div>
+      <div><span class="output">  Records: decisions/ ADR (if needed)</span></div>
+      <div><span class="output">  Updates: LESSONS.md</span></div>
+      <div><span class="output">  Resolves: feedback entries → status: resolved</span></div>
+      <div><span class="arrow">        ↓</span></div>
+      <div><span class="action">  chore/process-improvement-&lt;date&gt; → CI → main</span></div>
+    </div>
+
+    <h3 style="margin-top:24px;">Paired Document Rule <span class="new-badge">NEW</span></h3>
+    <p>Where a <code>.md</code> file has a corresponding <code>.html</code> file, both must be updated in the same commit — never update one without the other. This rule applies to all agents including the Improvement Agent.</p>
     <table>
-      <thead><tr><th>Activity</th><th>Frequency</th></tr></thead>
+      <thead><tr><th>Markdown File</th><th>Paired HTML File</th></tr></thead>
       <tbody>
-        <tr><td>Review deployed app on fly.io</td><td>After each feature merge</td></tr>
-        <tr><td>Review GitHub commit diffs</td><td>Optional — CI is the primary gate</td></tr>
-        <tr><td>Direct agents to next requirement</td><td>At the start of each session</td></tr>
-        <tr><td>Update CLAUDE.md with new conventions</td><td>As patterns emerge</td></tr>
-        <tr><td>Approve post-MVP features</td><td>After MVP is stable</td></tr>
+        <tr><td><code>devmethod/devmethod.md</code></td><td><code>devmethod/devmethod.html</code></td></tr>
+        <tr><td><code>requirements/requirements.md</code></td><td><code>requirements/requirements.html</code></td></tr>
+        <tr><td><code>resources/resources.md</code></td><td><code>resources/resources.html</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:24px;">Key Files</h3>
+    <table class="file-table">
+      <thead><tr><th>File / Folder</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>feedback/TEMPLATE.md</td><td>Template for new feedback entries</td></tr>
+        <tr><td>feedback/README.md</td><td>Category definitions and processing guide</td></tr>
+        <tr><td>decisions/README.md</td><td>ADR index — all accepted architectural decisions</td></tr>
+        <tr><td>LESSONS.md</td><td>Dated log of improvements and patterns identified</td></tr>
+        <tr><td>agentspecs/06-improvement-agent.md</td><td>Improvement Agent full task spec</td></tr>
+        <tr><td>.claude/commands/improve.md</td><td><code>/improve</code> slash command</td></tr>
+        <tr><td>.claude/commands/feedback.md</td><td><code>/feedback</code> slash command</td></tr>
       </tbody>
     </table>
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Development Method v1.0 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Development Method v1.2 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>

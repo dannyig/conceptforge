@@ -285,7 +285,7 @@ Any agent that encounters friction — a missing instruction, ambiguous spec, br
 
 ### Processing Feedback
 
-The Improvement Agent (`/improve`) reads all open feedback entries, groups them by category, identifies patterns, and implements fixes. Changes are committed on a `chore/process-improvement-<date>` branch, merged to main via CI.
+The Improvement Agent (`/improve`) reads all open feedback entries, groups them by category, identifies patterns, and implements fixes. In addition to updating CLAUDE.md, agentspecs, tooling, and types, the Improvement Agent also updates `devmethod/devmethod.md` (and its paired `devmethod/devmethod.html`) to reflect any changes to agent roles, workflow steps, or delivery sequence. Changes are committed on a `chore/process-improvement-<date>` branch, merged to main via CI.
 
 ### Architecture Decisions
 
@@ -306,13 +306,23 @@ Agent encounters issue
         ↓
    /improve → Improvement Agent
         ↓
-  Fixes: CLAUDE.md | agentspecs/ | tooling | types
+  Fixes:   CLAUDE.md | agentspecs/ | tooling | types | devmethod/
   Records: decisions/ ADR (if needed)
   Updates: LESSONS.md
   Resolves: feedback entries
         ↓
   chore/process-improvement-<date> → CI → main
 ```
+
+### Paired Document Rule
+
+Where a `.md` file has a corresponding `.html` file, both must be updated in the same commit — never update one without the other. This rule applies to all agents including the Improvement Agent.
+
+| Markdown file | Paired HTML file |
+|---|---|
+| `devmethod/devmethod.md` | `devmethod/devmethod.html` |
+| `requirements/requirements.md` | `requirements/requirements.html` |
+| `resources/resources.md` | `resources/resources.html` |
 
 ### Key Files
 
@@ -328,4 +338,4 @@ Agent encounters issue
 
 ---
 
-*Version 1.1 — March 2026 (added feedback loop, Improvement Agent, ADRs, corrected project structure)*
+*Version 1.2 — March 2026 (Improvement Agent now updates devmethod; added paired document sync rule)*
