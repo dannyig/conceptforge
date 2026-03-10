@@ -88,19 +88,77 @@ Complete all items below in order. Commit after each group.
 
 ### Group 4 — Visual Design (V-01, V-02, V-04)
 
-- [ ] Dark theme throughout (V-01):
-  - Canvas background: `#0d1117`
-  - Node background: `#161b22`, border: `#30363d`
-  - Node text: `#e6edf3`
-  - Edge stroke: `#4b5563`
-  - Selected node border: `#f97316`
-- [ ] Create `src/lib/theme.ts` — exports all colour tokens as named constants
-  - All components must import colours from this file, not hardcode them
-- [ ] Node labels legible at default zoom (V-02) — minimum font size 13px, no overflow clipping
-- [ ] Responsive layout — canvas fills the viewport, usable at 1280px+ (V-04)
-- [ ] Verify no inline `style` values are hardcoded — all colours from `theme.ts`
+#### Colour tokens (V-01)
 
-**Commit:** `feat(V-01,V-02,V-04): dark theme, node styles, responsive layout`
+- [ ] Create `src/lib/theme.ts` — exports every design token as a named constant. No component hardcodes a value:
+
+```ts
+// Colour tokens
+export const COLOR_CANVAS_BG       = '#0d1117'
+export const COLOR_NODE_BG         = '#161b22'
+export const COLOR_NODE_BORDER     = '#30363d'
+export const COLOR_NODE_TEXT       = '#e6edf3'
+export const COLOR_NODE_SELECTED   = '#f97316'
+export const COLOR_NODE_GLOW       = 'rgba(249,115,22,0.25)'  // selected glow
+export const COLOR_EDGE            = '#4b5563'
+export const COLOR_EDGE_SELECTED   = '#f97316'
+export const COLOR_HANDLE          = '#4b5563'
+export const COLOR_HANDLE_HOVER    = '#f97316'
+export const COLOR_BG_DOT          = '#21262d'  // Background dot colour
+
+// Background dot geometry
+export const BG_DOT_SIZE  = 1.5
+export const BG_DOT_GAP   = 24
+
+// Typography
+export const FONT_FAMILY  = "'JetBrains Mono', 'Fira Code', monospace"  // monospace for the technical/code aesthetic
+export const FONT_SIZE_NODE_LABEL = '13px'
+export const FONT_WEIGHT_NODE_LABEL = '500'
+
+// Motion — all transitions use these timings
+export const TRANSITION_FAST   = '100ms ease'
+export const TRANSITION_NORMAL = '180ms ease'
+```
+
+#### Node visual quality (V-01, V-02)
+
+- [ ] `ConceptNode.tsx` renders with:
+  - Border-radius: `6px` — angular enough to feel technical, not pill-shaped
+  - Padding: `10px 16px`
+  - Min-width: `120px`
+  - Font: `FONT_FAMILY`, `FONT_SIZE_NODE_LABEL`, `FONT_WEIGHT_NODE_LABEL`
+  - Default state: `COLOR_NODE_BG` background, `COLOR_NODE_BORDER` border (1px solid)
+  - **Hover state:** border transitions to `COLOR_NODE_SELECTED` at 60% opacity (`TRANSITION_FAST`) — nodes must visibly respond to pointer without being selected
+  - **Selected state:** border `COLOR_NODE_SELECTED` (full opacity) + `box-shadow: 0 0 0 3px COLOR_NODE_GLOW` — the glow makes selection unmistakable
+  - All transitions use `TRANSITION_NORMAL` unless specified otherwise
+  - No overflow clipping — labels expand the node vertically before truncating
+
+#### Canvas atmosphere
+
+- [ ] `<Background>` uses `BackgroundVariant.Dots` with:
+  - `color={COLOR_BG_DOT}`, `size={BG_DOT_SIZE}`, `gap={BG_DOT_GAP}` — all from `theme.ts`
+  - Do not use React Flow's default dot size or colour — they are too subtle on dark backgrounds
+
+#### Edge handles
+
+- [ ] Connection handles (`<Handle>`) render at `8px` diameter
+  - Default: `COLOR_HANDLE`, 1px border same colour
+  - Hover: fill transitions to `COLOR_HANDLE_HOVER` (`TRANSITION_FAST`)
+
+#### Layout
+
+- [ ] Responsive layout — canvas fills the viewport, usable at 1280px+ (V-04)
+
+#### Anti-slop verification
+
+Before committing Group 4, visually confirm all of the following are absent:
+- [ ] No purple, indigo, or blue accent colours anywhere
+- [ ] No soft drop-shadows with large blur radius
+- [ ] No gradient fills on nodes or backgrounds
+- [ ] No border-radius above `8px` on nodes
+- [ ] No font from the Inter / Roboto / Arial family
+
+**Commit:** `feat(V-01,V-02,V-04): dark theme, token system, micro-interactions, node and canvas atmosphere`
 
 ---
 
@@ -115,6 +173,11 @@ Before committing Group 4, start the dev server and use Playwright MCP + Chrome 
 - [ ] Dragging from one node handle to another creates a directional edge
 - [ ] Minimap is visible and reflects canvas contents
 - [ ] Zoom and pan work via mouse wheel and drag
+- [ ] Hovering a node visibly changes its border colour (transition, not instant)
+- [ ] Selecting a node shows the orange border + glow — distinct from hover
+- [ ] Node labels render in the monospace font (not a system sans-serif)
+- [ ] Background dots are clearly visible against the canvas background
+- [ ] No purple, blue, or gradient colours appear anywhere on screen
 - [ ] No errors in browser console
 
 Log any visual or interaction issues found as `/feedback` entries before committing.
@@ -162,4 +225,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.0 — March 2026*
+*Canvas Agent Spec v1.1 — Added Visual Design Intentionality: theme.ts token system, micro-interactions, canvas atmosphere, anti-slop checklist — March 2026*

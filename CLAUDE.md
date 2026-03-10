@@ -204,6 +204,13 @@ _To be completed after skills are installed._
 
 > **Active rule — UI Verification Gate:** All frontend feature agents (Canvas, Settings, AI, Persistence) must verify their work in Chrome using the Playwright MCP before committing. Start the dev server (`pnpm dev`), then use Playwright MCP to navigate and interact with the feature — confirm visual correctness, interactive behaviour, and a clean browser console. This is a mandatory step between "fix all failures" and "commit".
 
+> **Active rule — Visual Design Intentionality:** ConceptForge has a fixed design system defined in `src/lib/theme.ts`. Agents must never hardcode colours or improvise substitutes. Beyond colour tokens, the design must be executed with intentionality — not just functionally correct but visually deliberate:
+> - **Micro-interactions:** every interactive element (nodes, buttons, handles, menu items) must have a CSS transition on hover, focus, and active states. No state change should be instant. Timing constants belong in `theme.ts`.
+> - **Typography:** node labels must use a characterful font suited to a dark tech tool — never Inter, Roboto, Arial, or unspecified system fonts. Define the font family once in `theme.ts` and apply it everywhere.
+> - **Canvas atmosphere:** specify the `<Background>` dot colour, dot size, and gap deliberately in `theme.ts` — do not accept React Flow defaults. The canvas should feel like a crafted space, not a library demo.
+> - **Depth and selection:** the selected-node state must feel distinct and intentional — border colour alone is not enough. Use a subtle box-shadow or glow (using the orange accent `#f97316` at low opacity) in addition to the border change.
+> - **Anti-slop:** never use purple gradients, soft-pastel shadows, generic pill-shaped nodes, or any pattern that could appear in a random UI kit. Every visual decision must be traceable to the ConceptForge aesthetic: dark, precise, technical, with deliberate orange accents.
+
 <!--
 Non-negotiable rules that apply to every agent on every task. Organised into named subsections:
 
@@ -358,4 +365,4 @@ _See feedback/, decisions/, and LESSONS.md for current state._
 
 ---
 
-*CLAUDE.md v0.4 — Added Requirements Agent to Section 9 comment; all content sections pending Scaffolder agent — March 2026*
+*CLAUDE.md v0.5 — Added Visual Design Intentionality active rule to Section 12 — March 2026*
