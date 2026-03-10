@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "playwright-best-practices": {
+      "source": "currents-dev/playwright-best-practices-skill",
+      "sourceType": "github",
+      "computedHash": "650ef2a7fb562fbc8f1a8149e9bd0fae08bc24f75b126dbee3a44065e793ca16"
+    }
+  }
+}

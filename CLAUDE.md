@@ -180,21 +180,42 @@ _To be completed by the Scaffolder agent._
 
 ## 11. Skill Activation
 
+> **Active rule — Playwright Skill:** When writing, debugging, or maintaining Playwright tests, activate the `playwright-best-practices` skill before starting. Use its activity-based reference table to load only the relevant guidance for the current task — do not load all reference files at once.
+
 <!--
 Conditional routing table: when a task matches a skill, the agent activates that skill before proceeding.
-Format: task type → skill name → skill file path
 
-Expected entries:
-- UI component development → frontend-design skill (installed from Anthropic plugin)
-- Writing tests → testing-patterns skill
-- Claude API integration → ai-output-contract reference in this file
-- Canvas node development → React Flow pro examples reference
-- Export implementation → html2canvas / React Flow snapshot docs
+### Installed skills
 
-Agents must check this table before implementing any task.
+| Skill | Trigger | Path |
+|---|---|---|
+| `playwright-best-practices` | Any Playwright test work — writing, debugging, flaky tests, mocking, CI/CD | `.claude/skills/playwright-best-practices/SKILL.md` |
+
+### Playwright skill — reference routing
+
+Consult the skill's activity table to load the right reference file for the task at hand:
+
+| Task | Reference file |
+|---|---|
+| Writing E2E tests | `references/test-organization.md`, `references/locators.md`, `references/assertions-waiting.md` |
+| Testing canvas / React Flow interactions | `references/canvas-webgl.md` |
+| Mocking Claude API at network level | `references/network-advanced.md` |
+| Testing error states and network failures | `references/error-testing.md` |
+| Monitoring browser console errors | `references/console-errors.md` |
+| Mocking Date / time for export filenames | `references/clock-mocking.md` |
+| Debugging flaky tests | `references/flaky-tests.md`, `references/debugging.md` |
+| Fixing selector / locator issues | `references/locators.md`, `references/debugging.md` |
+| Structuring tests with Page Object Model | `references/page-object-model.md` |
+| Handling file download assertions | `references/file-operations.md` |
+| CI/CD Playwright configuration | `references/ci-cd.md` |
+
+### Skills not yet installed
+
+- UI component development → `frontend-design` skill (Anthropic) — principles baked into CLAUDE.md Section 12 and Canvas Agent spec instead
+- Claude API integration → AI output contract defined in Section 5 of this file
+
+Agents must check this table before implementing any Playwright work.
 -->
-
-_To be completed after skills are installed._
 
 ---
 
@@ -365,4 +386,4 @@ _See feedback/, decisions/, and LESSONS.md for current state._
 
 ---
 
-*CLAUDE.md v0.5 — Added Visual Design Intentionality active rule to Section 12 — March 2026*
+*CLAUDE.md v0.6 — Section 11 populated: playwright-best-practices skill installed and wired with reference routing table — March 2026*

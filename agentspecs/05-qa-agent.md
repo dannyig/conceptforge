@@ -22,10 +22,11 @@ Read these in full before taking any action:
 | Document | Path | Why |
 |---|---|---|
 | Requirements | `requirements/requirements.md` | Every requirement ID is a test target |
-| Agent instructions | `CLAUDE.md` | Testing strategy, mock rules, quality gates |
+| Agent instructions | `CLAUDE.md` | Testing strategy, mock rules, quality gates, skill activation table |
 | Shared types | `src/types/index.ts` | Types used in test fixtures |
 | All feature agent output | `src/` | Read every file you will test before writing tests |
 | Dev method | `devmethod/devmethod.md` | Understand the full quality gate picture |
+| Playwright skill | `.claude/skills/playwright-best-practices/SKILL.md` | Activate before any Playwright work — use its reference routing table |
 | This spec | `agentspecs/05-qa-agent.md` | Your task list |
 
 ---
@@ -203,6 +204,8 @@ The QA Agent must update all status badges in `tests/e2e-test-cases.html` after 
 
 ### Group 4 — E2E Tests: Playwright
 
+> **Activate skill before starting this group:** Read `.claude/skills/playwright-best-practices/SKILL.md` and use its reference routing table to load the relevant guidance. At minimum load: `references/test-organization.md`, `references/locators.md`, `references/assertions-waiting.md`, `references/network-advanced.md` (for Claude API mocking), `references/canvas-webgl.md` (for React Flow interactions), and `references/console-errors.md`.
+
 Write Playwright E2E tests covering all requirement areas. Place tests in `tests/e2e/`. One spec file per feature area.
 
 #### `tests/e2e/canvas.spec.ts` (C-01 → C-07)
@@ -252,7 +255,7 @@ Write Playwright E2E tests covering all requirement areas. Place tests in `tests
 
 - [ ] Run `pnpm test:e2e` — all E2E tests must pass against the local dev server
 
-- [ ] **Playwright MCP Smoke Test** — start the dev server and use Playwright MCP + Chrome to manually verify the full happy path end-to-end:
+- [ ] **Playwright MCP Smoke Test** — if any step behaves unexpectedly, consult `references/debugging.md` and `references/flaky-tests.md` from the `playwright-best-practices` skill before raising feedback. Start the dev server and use Playwright MCP + Chrome to manually verify the full happy path end-to-end:
   1. Open the app — canvas loads
   2. Open Settings — enter an API key (use a test key) — save
   3. Enter a prompt — generate a map — nodes appear on canvas
@@ -349,4 +352,4 @@ When this branch is merged to main and CI is green:
 
 ---
 
-*QA Agent Spec v1.1 — March 2026 (added Group 3: human-readable E2E test case document with requirement traceability)*
+*QA Agent Spec v1.2 — March 2026 (wired playwright-best-practices skill into Input Documents, Group 4, and Group 5 smoke test)*
