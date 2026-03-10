@@ -1,4 +1,4 @@
-import React, { useCallback, useImperativeHandle } from 'react'
+import React, { useCallback, useImperativeHandle, useRef } from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -119,11 +119,18 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
     [setEdges]
   )
 
-  // Double-click on the pane background (not on a node) to create a new node
-  const onWrapperDoubleClick = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>): void => {
-      const target = event.target as HTMLElement
-      if (!target.classList.contains('react-flow__pane')) return
+  // React Flow consumes dblclick events internally (for pan). Use onPaneClick with a
+  // time-based double-click detector instead — this uses React Flow's own callback.
+  const lastPaneClickTime = useRef<number>(0)
+  const DOUBLE_CLICK_MS = 350
+
+  const onPaneClick = useCallback(
+    (event: React.MouseEvent): void => {
+      const now = Date.now()
+      const delta = now - lastPaneClickTime.current
+      lastPaneClickTime.current = now
+      if (delta > DOUBLE_CLICK_MS) return // single click — ignore
+
       const position = screenToFlowPosition({ x: event.clientX, y: event.clientY })
       const newNode: ConceptFlowNode = {
         id: crypto.randomUUID(),
@@ -138,8 +145,12 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
 
   return (
     <div
-      style={{ width: '100vw', height: '100vh', backgroundColor: COLOR_CANVAS_BG }}
-      onDoubleClick={onWrapperDoubleClick}
+      style={{
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: COLOR_CANVAS_BG,
+        touchAction: 'manipulation',
+      }}
     >
       {/* Scoped overrides for React Flow internals that cannot be styled via inline styles */}
       <style>{`
@@ -190,6 +201,7 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onPaneClick={onPaneClick}
         nodeTypes={NODE_TYPES}
         defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
         fitView

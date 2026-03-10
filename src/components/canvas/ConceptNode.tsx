@@ -74,9 +74,20 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
 
   const boxShadow = selected ? `0 0 0 3px ${COLOR_NODE_GLOW}` : 'none'
 
+  const onNodeKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>): void => {
+      if (!editing && (e.key === 'Enter' || e.key === 'F2')) {
+        e.preventDefault()
+        startEdit()
+      }
+    },
+    [editing, startEdit]
+  )
+
   return (
     <div
       onDoubleClick={startEdit}
+      onKeyDown={onNodeKeyDown}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -134,7 +145,6 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
           style={{
             background: 'transparent',
             border: 'none',
-            outline: 'none',
             color: COLOR_NODE_TEXT,
             fontFamily: FONT_FAMILY,
             fontSize: FONT_SIZE_NODE_LABEL,
@@ -148,8 +158,14 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
         <span>{data.label}</span>
       )}
 
-      {/* Handle hover styles injected once per node mount — targets React Flow handle elements */}
-      <style>{`.react-flow__handle:hover { background-color: ${COLOR_HANDLE_HOVER} !important; }`}</style>
+      {/* Handle hover + input focus-visible styles — pseudo-class styles not possible with inline styles */}
+      <style>{`
+        .react-flow__handle:hover { background-color: ${COLOR_HANDLE_HOVER} !important; }
+        .react-flow__node input:focus-visible { outline: 1px solid ${COLOR_NODE_SELECTED}; outline-offset: 2px; border-radius: 2px; }
+        @media (prefers-reduced-motion: reduce) {
+          .react-flow__handle { transition: none !important; }
+        }
+      `}</style>
     </div>
   )
 }
