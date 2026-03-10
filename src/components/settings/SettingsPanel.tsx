@@ -1,0 +1,338 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  clearApiKey,
+  getApiKey,
+  isValidApiKeyFormat,
+  setApiKey,
+  API_KEY_CHANGED_EVENT,
+} from '@/lib/apiKey'
+import {
+  COLOR_BUTTON_GHOST_HOVER_BG,
+  COLOR_BUTTON_PRIMARY_BG,
+  COLOR_BUTTON_PRIMARY_HOVER_BG,
+  COLOR_BUTTON_PRIMARY_TEXT,
+  COLOR_INPUT_BG,
+  COLOR_INPUT_BORDER,
+  COLOR_INPUT_FOCUS_BORDER,
+  COLOR_NODE_BORDER,
+  COLOR_NODE_TEXT,
+  COLOR_PANEL_BG,
+  COLOR_PANEL_OVERLAY,
+  COLOR_STATUS_ERROR,
+  COLOR_STATUS_SUCCESS,
+  COLOR_TEXT_MUTED,
+  FONT_FAMILY,
+  FONT_SIZE_BASE,
+  FONT_SIZE_SMALL,
+  SETTINGS_PANEL_WIDTH,
+  TRANSITION_FAST,
+  TRANSITION_NORMAL,
+  TRANSITION_PANEL,
+} from '@/lib/theme'
+
+type KeyStatus = 'empty' | 'saved' | 'error'
+
+interface SettingsPanelProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JSX.Element {
+  const [draft, setDraft] = useState('')
+  const [status, setStatus] = useState<KeyStatus>(() => (getApiKey() ? 'saved' : 'empty'))
+  const [errorMsg, setErrorMsg] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+
+  // Sync status when key changes externally (e.g. cleared from another hook)
+  useEffect((): (() => void) => {
+    const sync = (): void => setStatus(getApiKey() ? 'saved' : 'empty')
+    window.addEventListener(API_KEY_CHANGED_EVENT, sync)
+    return (): void => window.removeEventListener(API_KEY_CHANGED_EVENT, sync)
+  }, [])
+
+  // Focus management — move focus into panel on open, restore on close
+  useEffect((): void => {
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 50)
+    }
+  }, [isOpen])
+
+  const handleSave = useCallback((): void => {
+    const trimmed = draft.trim()
+    if (!trimmed) {
+      setErrorMsg('API key cannot be empty.')
+      setStatus('error')
+      return
+    }
+    if (!isValidApiKeyFormat(trimmed)) {
+      setErrorMsg('Key must start with sk-ant- and be at least 20 characters.')
+      setStatus('error')
+      return
+    }
+    setApiKey(trimmed)
+    setDraft('')
+    setStatus('saved')
+    setErrorMsg('')
+  }, [draft])
+
+  const handleClear = useCallback((): void => {
+    clearApiKey()
+    setDraft('')
+    setStatus('empty')
+    setErrorMsg('')
+  }, [])
+
+  const handleClose = useCallback((): void => {
+    setDraft('')
+    setErrorMsg('')
+    onClose()
+  }, [onClose])
+
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent): void => {
+      if (e.key === 'Escape') handleClose()
+    },
+    [handleClose]
+  )
+
+  const hasStoredKey = status === 'saved'
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={handleClose}
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: COLOR_PANEL_OVERLAY,
+          opacity: isOpen ? 1 : 0,
+          pointerEvents: isOpen ? 'auto' : 'none',
+          transition: `opacity ${TRANSITION_PANEL}`,
+          zIndex: 40,
+        }}
+      />
+
+      {/* Panel */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Settings"
+        onKeyDown={onKeyDown}
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          width: SETTINGS_PANEL_WIDTH,
+          height: '100vh',
+          backgroundColor: COLOR_PANEL_BG,
+          borderLeft: `1px solid ${COLOR_NODE_BORDER}`,
+          display: 'flex',
+          flexDirection: 'column',
+          transform: isOpen ? 'translateX(0)' : `translateX(${SETTINGS_PANEL_WIDTH})`,
+          transition: `transform ${TRANSITION_PANEL}`,
+          zIndex: 50,
+          fontFamily: FONT_FAMILY,
+          color: COLOR_NODE_TEXT,
+        }}
+      >
+        {/* Scoped button hover styles */}
+        <style>{`
+          .cf-btn-primary:hover { background-color: ${COLOR_BUTTON_PRIMARY_HOVER_BG} !important; }
+          .cf-btn-ghost:hover { background-color: ${COLOR_BUTTON_GHOST_HOVER_BG} !important; }
+          .cf-btn-danger:hover { background-color: ${COLOR_BUTTON_GHOST_HOVER_BG} !important; color: ${COLOR_STATUS_ERROR} !important; }
+          .cf-input:focus { border-color: ${COLOR_INPUT_FOCUS_BORDER} !important; outline: none; }
+          @media (prefers-reduced-motion: reduce) {
+            .cf-btn-primary, .cf-btn-ghost, .cf-btn-danger, .cf-input { transition: none !important; }
+          }
+        `}</style>
+
+        {/* Header */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '20px 24px 16px',
+            borderBottom: `1px solid ${COLOR_NODE_BORDER}`,
+          }}
+        >
+          <span style={{ fontSize: FONT_SIZE_BASE, fontWeight: '600' }}>Settings</span>
+          <button
+            ref={closeButtonRef}
+            onClick={handleClose}
+            aria-label="Close settings"
+            className="cf-btn-ghost"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: COLOR_TEXT_MUTED,
+              cursor: 'pointer',
+              padding: '4px 6px',
+              borderRadius: 4,
+              fontSize: '18px',
+              lineHeight: 1,
+              transition: `background-color ${TRANSITION_FAST}, color ${TRANSITION_FAST}`,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* Section label */}
+          <div>
+            <span
+              style={{
+                fontSize: FONT_SIZE_SMALL,
+                color: COLOR_TEXT_MUTED,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                fontWeight: '600',
+              }}
+            >
+              Anthropic API Key
+            </span>
+          </div>
+
+          {/* Status indicator */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              fontSize: FONT_SIZE_SMALL,
+            }}
+          >
+            <span
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: '50%',
+                backgroundColor: hasStoredKey ? COLOR_STATUS_SUCCESS : COLOR_TEXT_MUTED,
+                flexShrink: 0,
+                transition: `background-color ${TRANSITION_NORMAL}`,
+              }}
+              aria-hidden="true"
+            />
+            <span style={{ color: hasStoredKey ? COLOR_STATUS_SUCCESS : COLOR_TEXT_MUTED }}>
+              {hasStoredKey ? 'Key saved' : 'No key stored'}
+            </span>
+          </div>
+
+          {/* Key input */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <label
+              htmlFor="cf-api-key-input"
+              style={{ fontSize: FONT_SIZE_SMALL, color: COLOR_TEXT_MUTED }}
+            >
+              {hasStoredKey ? 'Replace key' : 'Enter key'}
+            </label>
+            <input
+              ref={inputRef}
+              id="cf-api-key-input"
+              type="password"
+              className="cf-input"
+              value={draft}
+              onChange={e => {
+                setDraft(e.target.value)
+                if (status === 'error') setStatus(hasStoredKey ? 'saved' : 'empty')
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') handleSave()
+                e.stopPropagation()
+              }}
+              placeholder="sk-ant-…"
+              autoComplete="off"
+              spellCheck={false}
+              aria-label="Anthropic API key"
+              aria-describedby={status === 'error' ? 'cf-key-error' : undefined}
+              style={{
+                width: '100%',
+                padding: '9px 12px',
+                backgroundColor: COLOR_INPUT_BG,
+                border: `1px solid ${status === 'error' ? COLOR_STATUS_ERROR : COLOR_INPUT_BORDER}`,
+                borderRadius: 6,
+                color: COLOR_NODE_TEXT,
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_SMALL,
+                boxSizing: 'border-box',
+                transition: `border-color ${TRANSITION_FAST}`,
+              }}
+            />
+            {status === 'error' && (
+              <span
+                id="cf-key-error"
+                role="alert"
+                aria-live="polite"
+                style={{ fontSize: FONT_SIZE_SMALL, color: COLOR_STATUS_ERROR }}
+              >
+                {errorMsg}
+              </span>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={handleSave}
+              className="cf-btn-primary"
+              style={{
+                flex: 1,
+                padding: '8px 16px',
+                backgroundColor: COLOR_BUTTON_PRIMARY_BG,
+                color: COLOR_BUTTON_PRIMARY_TEXT,
+                border: 'none',
+                borderRadius: 6,
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_SMALL,
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: `background-color ${TRANSITION_FAST}`,
+              }}
+            >
+              Save key
+            </button>
+            {hasStoredKey && (
+              <button
+                onClick={handleClear}
+                className="cf-btn-danger"
+                aria-label="Clear stored API key"
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: 'transparent',
+                  color: COLOR_TEXT_MUTED,
+                  border: `1px solid ${COLOR_INPUT_BORDER}`,
+                  borderRadius: 6,
+                  fontFamily: FONT_FAMILY,
+                  fontSize: FONT_SIZE_SMALL,
+                  cursor: 'pointer',
+                  transition: `background-color ${TRANSITION_FAST}, color ${TRANSITION_FAST}`,
+                }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          {/* Help text */}
+          <p
+            style={{
+              fontSize: FONT_SIZE_SMALL,
+              color: COLOR_TEXT_MUTED,
+              margin: 0,
+              lineHeight: 1.6,
+            }}
+          >
+            Your key is stored only in your browser&apos;s localStorage and sent directly to{' '}
+            <span style={{ color: COLOR_NODE_TEXT }}>api.anthropic.com</span>. It never touches any
+            server.
+          </p>
+        </div>
+      </div>
+    </>
+  )
+}

@@ -46,6 +46,13 @@ export default [
         AbortController: 'readonly',
         AbortSignal: 'readonly',
         navigator: 'readonly',
+        CustomEvent: 'readonly',
+        HTMLButtonElement: 'readonly',
+        HTMLAnchorElement: 'readonly',
+        HTMLFormElement: 'readonly',
+        HTMLSelectElement: 'readonly',
+        HTMLTextAreaElement: 'readonly',
+        StorageEvent: 'readonly',
       },
     },
     plugins: {
