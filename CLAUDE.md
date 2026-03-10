@@ -14,7 +14,15 @@ States the deployment target (fly.io) and the no-backend constraint.
 Links to requirements/requirements.md for full feature scope.
 -->
 
-_To be completed by the Scaffolder agent._
+ConceptForge is an AI-assisted concept mapping tool that lets users generate and explore interactive knowledge graphs via the Claude API. Users enter a topic or question; ConceptForge calls the Anthropic Claude API to produce a structured graph of related concepts, and renders it as a fully interactive canvas. Users can expand any node to drill deeper, pan and zoom the canvas, save their maps as JSON, and export them as PNG.
+
+**Tech stack:** React 19 · Vite 7 · TypeScript 5 (strict) · @xyflow/react 12 (React Flow) · Anthropic Claude API (direct browser fetch).
+
+**Constraints:** No backend server or database. Everything runs in the browser. Users supply their own Anthropic API key, which is stored only in `localStorage` and passed directly to `api.anthropic.com` — no proxy, no server-side handling.
+
+**Deployment:** Dockerised static SPA (Vite build → nginx) deployed to fly.io. App name: `conceptforge`. Region: `lhr`.
+
+Full feature scope and requirement IDs: `requirements/requirements.md`.
 
 ---
 
@@ -32,7 +40,43 @@ Each script listed as: `pnpm <script>` followed by a one-line description.
 No ambiguity — agents must be able to run the right command without inference.
 -->
 
-_To be completed by the Scaffolder agent._
+### Development
+
+| Command | Description |
+|---|---|
+| `pnpm dev` | Start Vite dev server with HMR on `http://localhost:5173` |
+| `pnpm preview` | Serve production build locally on `http://localhost:4173` |
+
+### Build
+
+| Command | Description |
+|---|---|
+| `pnpm build` | `tsc -b && vite build` — type-check then emit production bundle to `dist/` |
+
+### Quality
+
+| Command | Description |
+|---|---|
+| `pnpm lint` | ESLint flat config over `src/` (auto-fixable issues resolved in pre-commit hook) |
+| `pnpm typecheck` | TypeScript strict-mode check with no emit — run before every commit |
+| `pnpm format` | Prettier format all `src/` files |
+
+### Testing
+
+| Command | Description |
+|---|---|
+| `pnpm test` | Vitest unit tests — single run |
+| `pnpm test:watch` | Vitest in interactive watch mode |
+| `pnpm test:coverage` | Vitest with coverage report |
+| `pnpm test:e2e` | Playwright E2E suite — auto-starts `pnpm dev` if not already running |
+
+### Deployment
+
+Agents must **not** run deployment commands manually unless explicitly instructed. Deployment is handled automatically by GitHub Actions on merge to `main`.
+
+```
+flyctl deploy --remote-only   # CI only — requires FLY_API_TOKEN env var
+```
 
 ---
 
@@ -45,7 +89,48 @@ Covers: components/, hooks/, lib/, types/, tests/unit/, tests/e2e/.
 Agents use this to know exactly where to create new files without asking.
 -->
 
-_To be completed by the Scaffolder agent._
+```
+conceptforge/
+├── src/
+│   ├── App.tsx                    # Root component — canvas layout and top-level state
+│   ├── main.tsx                   # React entry point — createRoot + StrictMode
+│   ├── test-setup.ts              # Vitest setup — imports @testing-library/jest-dom
+│   ├── components/
+│   │   ├── canvas/                # React Flow canvas, custom node types, edge types
+│   │   ├── ai/                    # Prompt panel, node context menu (AI actions)
+│   │   ├── toolbar/               # Top toolbar — save, load, export, clear actions
+│   │   └── settings/              # API key input panel, settings drawer
+│   ├── hooks/                     # Custom React hooks (shared logic across components)
+│   ├── lib/
+│   │   ├── claude.ts              # Anthropic API client — generateMap, expandNode, parseClaudeResponse
+│   │   ├── graph.ts               # Graph utilities — autoLayout (Dagre or ELK)
+│   │   └── export.ts              # JSON save/load (MapData), PNG export
+│   └── types/
+│       └── index.ts               # Shared TypeScript contracts — source of truth for all agents
+├── tests/
+│   ├── unit/                      # Vitest unit tests — mirror src/ folder structure
+│   └── e2e/                       # Playwright E2E tests — one spec file per feature area
+├── .claude/
+│   ├── commands/                  # Slash command prompt files
+│   └── skills/                    # Installed skills (playwright-best-practices, web-design-guidelines, vercel-react-best-practices)
+├── .github/workflows/
+│   ├── ci.yml                     # PR and push CI — lint, typecheck, test, E2E
+│   └── deploy.yml                 # Auto-deploy to fly.io on merge to main
+├── agentspecs/                    # Per-agent task specifications
+├── requirements/                  # requirements.md + requirements.html
+├── devmethod/                     # devmethod.md + devmethod.html
+├── decisions/                     # Architecture Decision Records (ADRs)
+├── feedback/                      # Feedback entries and TEMPLATE.md
+├── Dockerfile                     # Multi-stage: Node 20 build → nginx:alpine serve
+├── nginx.conf                     # SPA fallback, gzip, asset caching
+├── fly.toml                       # fly.io config (app=conceptforge, region=lhr)
+├── vite.config.ts                 # Vite + Vitest config, @/ path alias
+├── tsconfig.json                  # TypeScript strict config, project references
+├── tsconfig.node.json             # TypeScript config for Vite config file (composite: true)
+├── eslint.config.js               # ESLint v10 flat config
+├── .prettierrc                    # Prettier formatting rules
+└── playwright.config.ts           # Playwright config (chromium, baseURL: localhost:5173)
+```
 
 ---
 
@@ -63,7 +148,37 @@ Describes the key architectural decisions that govern how the app is built:
 References src/types/index.ts as the single source of type truth.
 -->
 
-_To be completed by the Scaffolder agent._
+### Component model
+Functional components only — no class components. Props are destructured inline at the function signature. Named exports for all components; default exports only for page-level components (currently just `App`).
+
+### State management
+Local React state only for MVP: `useState`, `useCallback`, `useMemo`, `useRef`. No Redux, no Zustand, no Jotai. Canvas node and edge state lives at the `App` level and is passed down to React Flow. Settings (API key) state lives in the Settings component backed by `localStorage`.
+
+### Canvas layer
+`@xyflow/react` (React Flow v12) owns the canvas. Nodes and edges are stored as `ConceptNode[]` / `ConceptEdge[]` (from `src/types/index.ts`) and adapted to React Flow's `Node<ConceptNode>` / `Edge<ConceptEdge>` format inside the Canvas component. All canvas mutations go through `setNodes` / `setEdges` — never direct object mutation.
+
+### AI layer
+`src/lib/claude.ts` is the only place in the codebase that calls the Anthropic API. It reads the API key from `localStorage`, constructs the fetch request, and returns a typed `ClaudeMapResponse`. The response is validated and mapped to `MapData` by `parseClaudeResponse` before any canvas state is updated.
+
+### Data flow
+```
+User prompt input
+  → claude.ts generateMap(prompt, apiKey)
+  → Anthropic API (api.anthropic.com)
+  → ClaudeMapResponse (validated)
+  → parseClaudeResponse → MapData { nodes: ConceptNode[], edges: ConceptEdge[] }
+  → autoLayout (graph.ts) → positioned nodes
+  → setNodes / setEdges → React Flow canvas re-renders
+```
+
+### No backend
+ConceptForge is a pure client-side SPA. There is no Express/Fastify/Next.js server. The user provides their Anthropic API key through the Settings panel; it is stored in `localStorage` and sent directly to `api.anthropic.com` in the `Authorization` header — it never touches any intermediate server.
+
+### Export layer
+`src/lib/export.ts` handles persistence:
+- **JSON save/load:** serialises/deserialises `MapData` to/from a `.json` file via the browser's File API
+- **PNG export:** renders the canvas DOM node to a PNG blob and triggers a download
+- All validation uses the `MapData` type — malformed JSON is rejected before touching canvas state
 
 ---
 
@@ -77,7 +192,48 @@ Rules: no `any`, use `unknown` and narrow, annotate all function return types.
 Explains the AI output contract — what shape Claude API responses must conform to before being passed to the canvas.
 -->
 
-_To be completed by the Scaffolder agent._
+All shared TypeScript interfaces live in **`src/types/index.ts`** — the single source of truth for all agents. Do not define types inline in component files for anything shared across components.
+
+### Canonical types
+
+```typescript
+interface ConceptNode {
+  id: string
+  label: string
+  position: { x: number; y: number }
+  type?: 'concept' | 'question' | 'source' | 'insight'
+}
+
+interface ConceptEdge {
+  id: string
+  source: string
+  target: string
+  label?: string
+}
+
+interface MapData {
+  nodes: ConceptNode[]
+  edges: ConceptEdge[]
+}
+
+interface ClaudeMapResponse {
+  nodes: Array<{ id: string; label: string }>
+  edges: Array<{ source: string; target: string; label?: string }>
+}
+
+interface ExpandNodeRequest {
+  nodeId: string
+  nodeLabel: string
+  existingNodes: ConceptNode[]
+}
+```
+
+### Rules
+- **Never use `any`.** Use `unknown` and narrow with type guards.
+- **Annotate all function return types** — no implicit `any` returns.
+- **Types before implementation** — if a new shared type is needed, add it to `src/types/index.ts` before writing the consuming code.
+- **AI output contract:** `ClaudeMapResponse` is the validated shape of every Claude API response. `parseClaudeResponse` must throw (not silently swallow) if the response does not conform. Canvas state is only updated with validated data.
+- If modifying `src/types/index.ts`, update this section accordingly — the comment at the top of that file says as much.
 
 ---
 
@@ -95,7 +251,42 @@ Covers all coding conventions agents must follow consistently:
 - Prefer early returns over nested conditionals
 -->
 
-_To be completed by the Scaffolder agent._
+### TypeScript
+- Strict mode enforced via `tsconfig.json` (`"strict": true`)
+- No `any` — use `unknown` and narrow with type guards
+- Explicit return types on all functions
+- Path alias `@/` resolves to `src/` — use `@/components/...` not relative `../../...`
+
+### Components
+- Functional components only — no class components
+- Props destructured inline: `function Foo({ bar, baz }: FooProps)`
+- Named exports for all components; default export only for `App`
+- No inline anonymous arrow functions as component definitions
+
+### Styling
+- **Inline styles throughout** — no `.css` files, no CSS modules, no Tailwind
+- All colour tokens, spacing constants, and timing values defined in `src/lib/theme.ts`
+- Never hardcode a hex colour inline — always reference a theme constant
+- Font family defined once in `theme.ts`; applied via `fontFamily` in style objects
+
+### Imports
+- Grouped in order: `react` → third-party → `@/` local imports
+- Alphabetical within each group
+- No barrel re-exports that inflate bundle size (see `vercel-react-best-practices: bundle-barrel-imports`)
+
+### Naming
+- `PascalCase` — React components and TypeScript interfaces/types
+- `camelCase` — hooks, utility functions, variables, props
+- `UPPER_SNAKE_CASE` — constants (colour tokens, timing values, config values in `theme.ts`)
+- `kebab-case` — all file names: `concept-node.tsx`, `use-canvas-state.ts`
+- File extensions: `.tsx` for components, `.ts` for utilities, hooks, and types
+
+### Conventions
+- No commented-out code committed
+- Prefer early returns over nested conditionals
+- No magic numbers — name every constant
+- ESLint flat config enforces these rules automatically — fix all lint errors before committing
+- Prettier auto-formats on commit via `lint-staged`
 
 ---
 
@@ -115,7 +306,35 @@ Describes the full testing strategy agents must follow:
   separate from and in addition to the automated Playwright E2E tests run in CI
 -->
 
-_To be completed by the Scaffolder agent._
+### Unit tests — Vitest
+- Location: `tests/unit/` — mirroring `src/` folder structure
+- Runner: `pnpm test` (single run) · `pnpm test:watch` (watch mode)
+- Globals enabled — `describe`, `it`, `expect`, `vi` available without imports
+- Test environment: `jsdom` (configured in `vite.config.ts`)
+- Setup file: `src/test-setup.ts` (imports `@testing-library/jest-dom`)
+- **Naming:** `describe('<ComponentName>')` / `it('should <behaviour>')`
+- **Mocking Claude API:** use `vi.mock('@/lib/claude')` — never make real API calls in unit tests
+- Use `@testing-library/react` for component tests — query by role, label, text (not implementation details)
+
+### E2E tests — Playwright
+- Location: `tests/e2e/` — one spec file per feature area
+- Runner: `pnpm test:e2e` (auto-starts dev server on `localhost:5173`)
+- Browser: Chromium only (configured in `playwright.config.ts`)
+- **Mock Claude at network level** using Playwright's `page.route()` — see `playwright-best-practices` skill: `references/network-advanced.md`
+- Before writing any Playwright tests, activate the `playwright-best-practices` skill (see Section 11)
+
+### Coverage
+- `pnpm test:coverage` produces a V8 coverage report
+- Minimum thresholds to be set after the first feature agent delivers working code
+
+### UI Verification gate
+All frontend feature agents (Canvas, Settings, AI, Persistence) must verify their feature visually in Chrome using the Playwright MCP **before** committing. This is mandatory and separate from the automated Playwright E2E suite — see Section 12 Critical Rules.
+
+### QA Agent responsibility
+The QA Agent writes both Vitest unit tests and Playwright E2E tests **after** each feature agent completes. Feature agents write stubs and basic smoke tests; the QA Agent writes thorough coverage. See `agentspecs/05-qa-agent.md`.
+
+### Gate
+All tests must pass (`pnpm test && pnpm test:e2e`) before any merge to `main`. CI enforces this automatically.
 
 ---
 
@@ -131,7 +350,33 @@ All branching and commit rules agents must follow:
 - PR merge requires CI green — no manual overrides
 -->
 
-_To be completed by the Scaffolder agent._
+### Branch naming
+```
+feature/<req-id>-<short-description>   e.g. feature/C-01-react-flow-canvas
+fix/<short-description>                e.g. fix/node-duplicate-on-expand
+chore/<short-description>              e.g. chore/update-playwright-config
+docs/<short-description>               e.g. docs/add-adr-001
+```
+- One branch per requirement ID — never bundle unrelated requirement changes
+- `main` is always deployable — never commit broken code directly to `main`
+
+### Commit format — Conventional Commits
+```
+<type>(<scope>): <short description>
+
+feat(C-01): add React Flow canvas with pan and zoom
+fix(A-03): handle empty Claude API response gracefully
+chore: update pnpm lockfile
+docs: populate CLAUDE.md with full project configuration
+test(C-02): add Playwright E2E for node selection
+```
+
+Scopes are requirement IDs where applicable: `C-01`, `A-02`, `K-01`, `P-01`.
+
+### Merge rules
+- PRs require CI green — no manual overrides
+- Squash or merge commit — no rebase merges (keep history readable)
+- Delete branch after merge
 
 ---
 
@@ -152,7 +397,21 @@ Each agent reads this file, reads their requirement IDs in requirements/requirem
 Agents do not modify code outside their defined scope without explicit instruction.
 -->
 
-_To be completed by Scaffolder agent after project initialisation._
+| Agent | Scope | Spec | Requirements |
+|---|---|---|---|
+| **Scaffolder** | Project setup, toolchain, CLAUDE.md, shared types, CI/CD — runs first, only once | `agentspecs/00-scaffolder.md` | — |
+| **Canvas Agent** | React Flow canvas, custom nodes, edges, pan, zoom, minimap | `agentspecs/01-canvas-agent.md` | C-01 → C-07 |
+| **Settings Agent** | API key input panel, localStorage management, validation | `agentspecs/02-settings-agent.md` | K-01 → K-04 |
+| **AI Agent** | Claude API client, prompt templates, map generation, node expansion | `agentspecs/03-ai-agent.md` | A-01 → A-09 |
+| **Persistence Agent** | JSON save/load, PNG export | `agentspecs/04-persistence-agent.md` | P-01 → E-02 |
+| **QA Agent** | Vitest unit tests and Playwright E2E tests after each feature agent | `agentspecs/05-qa-agent.md` | All |
+| **Improvement Agent** | Processes feedback, updates CLAUDE.md/agentspecs/tooling, records ADRs — triggered by `/improve` | `agentspecs/06-improvement-agent.md` | — |
+| **Requirements Agent** | Discovers and formalises requirements via Q&A; updates requirements.md/.html and downstream docs — triggered by `/requirements`; runs before any implementation agent | `agentspecs/07-requirements-agent.md` | — |
+
+**Scope rules:**
+- Each agent reads this file, their requirement IDs in `requirements/requirements.md`, and `src/types/index.ts` before writing a single line of code
+- Agents do not modify code outside their defined scope without explicit instruction
+- Frontend feature agents (Canvas, Settings, AI, Persistence) must run the UI Verification gate before committing (Section 12)
 
 ---
 
@@ -174,7 +433,21 @@ Describes the full lifecycle of how a feature moves from requirement to deployed
 Also references the devmethod/devmethod.md for the full delivery sequence and MVP agent ordering.
 -->
 
-_To be completed by the Scaffolder agent._
+1. Human assigns a requirement ID to an agent (e.g. "Canvas Agent — implement C-01")
+2. Agent reads `requirements/requirements.md` for the requirement details
+3. Agent reads `src/types/index.ts` for shared type contracts
+4. Agent reads the relevant agentspec in `agentspecs/`
+5. Agent creates a feature branch: `feature/C-01-react-flow-canvas`
+6. Agent implements the feature, writing tests alongside
+7. Agent runs `pnpm lint && pnpm typecheck && pnpm test` — fixes all failures
+8. Frontend agents run the UI Verification gate (Playwright MCP in Chrome) before committing
+9. Agent commits with a Conventional Commit referencing the requirement ID
+10. CI pipeline runs automatically on push — lint, typecheck, unit tests, E2E
+11. On CI green, merge to `main` triggers auto-deploy to fly.io via `deploy.yml`
+12. Human reviews deployed app at `https://conceptforge.fly.dev`
+13. Human triggers `/improve` or QA Agent to process feedback and write full test coverage
+
+Full delivery sequence and MVP agent ordering: `devmethod/devmethod.md`.
 
 ---
 
@@ -305,8 +578,6 @@ Paired files in this project:
 This rule applies to all agents, including the Improvement Agent.
 -->
 
-_To be completed by the Scaffolder agent._
-
 ---
 
 ## 13. Security
@@ -321,7 +592,28 @@ Frontend-specific security rules for an app that handles user API keys:
 - Input sanitisation: all Claude API responses validated against ClaudeMapResponse type before render
 -->
 
-_To be completed by the Scaffolder agent._
+### API key handling
+- The Claude API key is stored **only** in `localStorage` under a namespaced key (e.g. `conceptforge:apiKey`)
+- The API key is read from `localStorage` and passed **directly** to `fetch('https://api.anthropic.com/...')` in `src/lib/claude.ts` — it never touches any intermediate server or proxy
+- Never log the API key — not even the first N characters, not in error messages, not in console output
+- Never commit the API key — not in `.env` files, not in test fixtures, not anywhere in source control
+- `.env` files are in `.gitignore` — do not remove this entry
+
+### Input validation
+- All Claude API responses are validated against `ClaudeMapResponse` (from `src/types/index.ts`) before being passed to canvas state
+- Malformed or unexpected responses from the API throw an error with a user-visible message — never silently render unvalidated data
+- User-entered topic strings are passed as plain text in the prompt — no HTML rendering, no eval
+
+### No third-party telemetry
+- No analytics scripts, no tracking pixels, no external font CDNs
+- The only external network requests are to `api.anthropic.com` — nothing else leaves the browser
+- nginx config does not load any external resources
+
+### nginx deployment
+- nginx serves static files only — no server-side execution
+- SPA fallback (`try_files $uri /index.html`) is the only dynamic routing behaviour
+- Static assets served with `Cache-Control: public, immutable` (1-year expiry)
+- `index.html` served with `Cache-Control: no-cache` to ensure fresh deploys are picked up
 
 ---
 
@@ -338,7 +630,32 @@ Step-by-step deployment instructions for agents:
 - Agents should not run fly deploy manually unless explicitly instructed
 -->
 
-_To be completed by the Scaffolder agent._
+### Target
+- **App name:** `conceptforge`
+- **Region:** `lhr` (London)
+- **URL:** `https://conceptforge.fly.dev`
+- **Config:** `fly.toml` (project root)
+- **VM:** 256 MB RAM · shared CPU · 1 vCPU · auto-stop/start machines
+
+### Build process
+```
+pnpm build          # TypeScript compile + Vite bundle → dist/
+docker build .      # Multi-stage: Node 20 alpine (build) → nginx:alpine (serve)
+                    # dist/ copied into /usr/share/nginx/html
+                    # nginx listens on port 8080 (mapped to fly.io internal_port)
+```
+
+### CI/CD auto-deploy
+GitHub Actions `deploy.yml` triggers on every push to `main`:
+1. Checkout + pnpm install + `pnpm build` (build verification)
+2. `flyctl deploy --remote-only` using `FLY_API_TOKEN` secret
+
+**Agents must not run `flyctl deploy` manually** unless explicitly instructed by the human. Deployment is always triggered by merging to `main`.
+
+### Manual deploy (emergency only)
+```bash
+flyctl deploy --remote-only   # requires FLY_API_TOKEN set in shell environment
+```
 
 ---
 
@@ -360,7 +677,23 @@ Agents must not implement these unless a requirement ID is assigned:
 This section prevents agents from gold-plating or adding unrequested features.
 -->
 
-_To be completed by the Scaffolder agent._
+The following are **intentionally absent** from the MVP. Agents must not implement these features unless a requirement ID is explicitly assigned by the human:
+
+| Out of scope | Notes |
+|---|---|
+| User authentication or accounts | No login, no sessions, no user data stored server-side |
+| Backend server or database | No Express, no Supabase, no Firebase — pure SPA |
+| Real-time collaboration | Single-user tool for MVP |
+| Mobile or touch support | Desktop browser only for MVP |
+| SVG export | Post-MVP — PNG export only in MVP |
+| Document upload or URL ingestion | Post-MVP |
+| Undo/redo history | Post-MVP |
+| Multi-language UI | English only |
+| Analytics or telemetry | Intentionally excluded — see Section 13 |
+| Map sharing / public URLs | Post-MVP |
+| Keyboard shortcuts | Post-MVP |
+
+This list prevents agents from gold-plating or adding unrequested features. If a user requests a post-MVP feature, log it as a feedback entry and inform the human rather than implementing it.
 
 ---
 
@@ -380,7 +713,22 @@ Agents must read the relevant steering documents before starting work:
 If a document does not yet exist, the Scaffolder agent is responsible for creating it.
 -->
 
-_Paths to be confirmed after project scaffold is complete._
+All agents must read the relevant steering documents before starting work. These documents are maintained across sessions and contain the authoritative project state.
+
+| Document | Path | Purpose |
+|---|---|---|
+| Requirements | `requirements/requirements.md` | Full feature spec with requirement IDs (C-xx, A-xx, K-xx, P-xx, E-xx) |
+| Requirements (rendered) | `requirements/requirements.html` | HTML view — kept in sync with requirements.md |
+| Development Method | `devmethod/devmethod.md` | Agent roles, workflow, delivery sequence, MVP agent ordering |
+| Development Method (rendered) | `devmethod/devmethod.html` | HTML view — kept in sync with devmethod.md |
+| Resources | `resources/resources.md` | Reference projects, learning materials, API docs |
+| Resources (rendered) | `resources/resources.html` | HTML view — kept in sync with resources.md |
+| Type Contracts | `src/types/index.ts` | Shared TypeScript interfaces — **source of truth for all agents** |
+| Agent Specs | `agentspecs/00-scaffolder.md` … `07-requirements-agent.md` | Per-agent task specifications with grouped implementation steps |
+| ADR Index | `decisions/README.md` | Architecture Decision Records — do not contradict `accepted` ADRs |
+| Lessons | `LESSONS.md` | Running log of improvements and patterns from the Improvement Agent |
+
+**Paired document rule (see Section 12):** `requirements.md ↔ requirements.html` · `devmethod.md ↔ devmethod.html` · `resources.md ↔ resources.html` — always updated together in the same commit.
 
 ---
 
@@ -425,4 +773,4 @@ _See feedback/, decisions/, and LESSONS.md for current state._
 
 ---
 
-*CLAUDE.md v0.7 — Section 11: web-design-guidelines and vercel-react-best-practices installed; active rules and Vite SPA caveat defined — March 2026*
+*CLAUDE.md v1.0 — Scaffold complete: all sections populated with real project configuration — March 2026*
