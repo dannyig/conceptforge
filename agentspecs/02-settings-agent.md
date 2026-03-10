@@ -34,6 +34,8 @@ Read these in full before taking any action:
 
 Complete all items below in order. Commit after each group.
 
+> **Skills active for this agent:** When writing React component code, consult `vercel-react-best-practices` (apply rules from CLAUDE.md Section 11 caveat — skip `server-*` and hydration rules). Pay particular attention to `client-localstorage-schema` (localStorage versioning for the API key) and `rerender-*` rules. After completing Group 1, run `/web-design-guidelines src/components/settings/SettingsPanel.tsx` before committing — the settings panel must pass keyboard operability, focus indicator, and form behaviour checks.
+
 ---
 
 ### Group 1 — Settings Panel UI (K-01)
@@ -158,4 +160,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Settings Agent Spec v1.0 — March 2026*
+*Settings Agent Spec v1.1 — March 2026 (wired web-design-guidelines and vercel-react-best-practices skills)*

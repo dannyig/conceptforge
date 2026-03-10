@@ -36,6 +36,8 @@ Complete all items below in order. Commit after each group.
 
 ---
 
+> **Skills active for this agent:** Before writing any React component code, consult the `vercel-react-best-practices` skill (`.claude/skills/vercel-react-best-practices/SKILL.md`) — apply the rules marked applicable in CLAUDE.md Section 11. Pay particular attention to: `rerender-*` rules (React Flow state triggers frequent re-renders), `rendering-animate-svg-wrapper` (edges are SVG), `rendering-svg-precision`, and `rendering-hoist-jsx`.
+
 ### Group 1 — React Flow Canvas Foundation (C-01, C-06, C-07)
 
 - [ ] Create `src/components/canvas/Canvas.tsx` — wraps `<ReactFlow>` with:
@@ -164,7 +166,23 @@ Before committing Group 4, visually confirm all of the following are absent:
 
 ### Group 5 — UI Verification (Playwright MCP)
 
-Before committing Group 4, start the dev server and use Playwright MCP + Chrome to verify:
+Before committing Group 4, run the web design audit and the Playwright visual check:
+
+**Step A — Web Design Audit:**
+Run `/web-design-guidelines` against the canvas components:
+```
+/web-design-guidelines src/components/canvas/Canvas.tsx src/components/canvas/ConceptNode.tsx src/lib/theme.ts
+```
+Fix all reported violations before proceeding to Step B. Common things it will check:
+- Keyboard operability of interactive elements (node handles, delete key, edit mode)
+- Focus indicators on all interactive elements
+- Sufficient colour contrast on node labels (`#e6edf3` text on `#161b22` background)
+- Animation respects `prefers-reduced-motion`
+- No missing ARIA labels on icon-only buttons
+
+**Step B — Playwright MCP visual check:**
+
+Start the dev server and use Playwright MCP + Chrome to verify:
 
 - [ ] Canvas renders with dark background on load
 - [ ] Double-click on canvas background creates a new node
@@ -225,4 +243,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.1 — Added Visual Design Intentionality: theme.ts token system, micro-interactions, canvas atmosphere, anti-slop checklist — March 2026*
+*Canvas Agent Spec v1.2 — March 2026 (wired web-design-guidelines audit into Group 5, vercel-react-best-practices into Deliverables preamble)*

@@ -36,6 +36,8 @@ Read these in full before taking any action:
 
 Complete all items below in order. Commit after each group.
 
+> **Skills active for this agent:** When writing React component code, consult `vercel-react-best-practices` (apply rules from CLAUDE.md Section 11 caveat — skip `server-*` and hydration rules). For `lib/claude.ts`, pay particular attention to `async-parallel` and `async-defer-await` rules. For `PromptPanel.tsx` and `NodeContextMenu.tsx`, apply all `rerender-*` rules and run `/web-design-guidelines src/components/ai/PromptPanel.tsx src/components/canvas/NodeContextMenu.tsx` before committing Group 3 — the prompt form and context menu must pass keyboard operability and form behaviour checks.
+
 ---
 
 ### Group 1 — Claude API Client (lib/claude.ts)
@@ -188,4 +190,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*AI Agent Spec v1.0 — March 2026*
+*AI Agent Spec v1.1 — March 2026 (wired web-design-guidelines and vercel-react-best-practices skills)*

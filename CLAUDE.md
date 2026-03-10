@@ -182,6 +182,10 @@ _To be completed by the Scaffolder agent._
 
 > **Active rule — Playwright Skill:** When writing, debugging, or maintaining Playwright tests, activate the `playwright-best-practices` skill before starting. Use its activity-based reference table to load only the relevant guidance for the current task — do not load all reference files at once.
 
+> **Active rule — Web Design Audit:** After completing any UI component group, run `/web-design-guidelines` pointing at the changed component files before committing. This fetches the latest rules from the Vercel Web Interface Guidelines and audits for accessibility, keyboard support, form behaviour, animation, and performance violations. Fix all findings before committing.
+
+> **Active rule — React Best Practices:** When writing or reviewing React components, data fetching, or bundle-related code, consult the `vercel-react-best-practices` skill. **Caveat — ConceptForge is a Vite SPA with no server-side rendering.** Apply rules selectively — see skip list in Section 11 comment below.
+
 <!--
 Conditional routing table: when a task matches a skill, the agent activates that skill before proceeding.
 
@@ -190,6 +194,10 @@ Conditional routing table: when a task matches a skill, the agent activates that
 | Skill | Trigger | Path |
 |---|---|---|
 | `playwright-best-practices` | Any Playwright test work — writing, debugging, flaky tests, mocking, CI/CD | `.claude/skills/playwright-best-practices/SKILL.md` |
+| `web-design-guidelines` | After completing any UI component — run as a code audit | `.claude/skills/web-design-guidelines/SKILL.md` |
+| `vercel-react-best-practices` | Writing/reviewing React components, data fetching, bundle optimisation | `.claude/skills/vercel-react-best-practices/SKILL.md` |
+
+---
 
 ### Playwright skill — reference routing
 
@@ -209,12 +217,43 @@ Consult the skill's activity table to load the right reference file for the task
 | Handling file download assertions | `references/file-operations.md` |
 | CI/CD Playwright configuration | `references/ci-cd.md` |
 
-### Skills not yet installed
+---
 
-- UI component development → `frontend-design` skill (Anthropic) — principles baked into CLAUDE.md Section 12 and Canvas Agent spec instead
+### vercel-react-best-practices — ConceptForge caveat
+
+ConceptForge is a **Vite SPA** — no Next.js, no SSR, no server components. Apply the skill's 58 rules selectively:
+
+**Skip entirely — not applicable:**
+| Rule(s) | Reason |
+|---|---|
+| All `server-*` rules (8 rules) | No server exists — no RSC, no server actions, no server caching |
+| `rendering-hydration-no-flicker` | No SSR hydration |
+| `rendering-hydration-suppress-warning` | No SSR hydration |
+| `client-swr-dedup` | No SWR dependency in project |
+
+**Apply with adapted interpretation:**
+| Rule | Adaptation |
+|---|---|
+| `bundle-dynamic-imports` | Concept applies — use Vite's `React.lazy()` + `Suspense` instead of `next/dynamic` |
+
+**Apply in full (~45 rules):**
+- All `async-*` — directly relevant to Claude API calls in `src/lib/claude.ts`
+- `bundle-barrel-imports`, `bundle-defer-third-party`, `bundle-conditional`, `bundle-preload`
+- `client-event-listeners`, `client-passive-event-listeners`, `client-localstorage-schema` (API key versioning in localStorage)
+- All `rerender-*` (12 rules) — React Flow canvas state makes re-render discipline critical
+- `rendering-animate-svg-wrapper`, `rendering-svg-precision` — React Flow renders SVG edges
+- `rendering-hoist-jsx`, `rendering-content-visibility`, `rendering-conditional-render`, `rendering-usetransition-loading`
+- All `js-*` (12 rules) — universal JS optimisations
+- All `advanced-*` (3 rules)
+
+---
+
+### Skills not installed
+
+- `frontend-design` (Anthropic) — principles extracted and baked into CLAUDE.md Section 12 and Canvas Agent spec v1.1 instead
 - Claude API integration → AI output contract defined in Section 5 of this file
 
-Agents must check this table before implementing any Playwright work.
+Agents must check this table before implementing any UI or React work.
 -->
 
 ---
@@ -386,4 +425,4 @@ _See feedback/, decisions/, and LESSONS.md for current state._
 
 ---
 
-*CLAUDE.md v0.6 — Section 11 populated: playwright-best-practices skill installed and wired with reference routing table — March 2026*
+*CLAUDE.md v0.7 — Section 11: web-design-guidelines and vercel-react-best-practices installed; active rules and Vite SPA caveat defined — March 2026*
