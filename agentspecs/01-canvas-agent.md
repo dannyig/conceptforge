@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-07 and V-01 → V-04
+**Trigger:** Human assigns requirement IDs C-01 → C-09 and V-01 → V-04
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -164,6 +164,25 @@ Before committing Group 4, visually confirm all of the following are absent:
 
 ---
 
+### Group 4b — Edge Label Captions (C-08, C-09)
+
+- [ ] Create `src/components/canvas/ConceptEdge.tsx` — custom edge component that:
+  - Renders the edge `label` as a text element centred on the edge path, always visible (C-08)
+  - Uses `FONT_FAMILY`, `FONT_SIZE_NODE_LABEL` from `theme.ts` for the label
+  - Label background: a small rect using `COLOR_NODE_BG` to ensure readability against the canvas background
+  - Label text colour: `COLOR_NODE_TEXT`
+- [ ] Register `ConceptEdge` as the default edge type in Canvas — all edges (AI-generated and manually drawn) use it
+- [ ] Double-clicking an edge enters inline caption edit mode (C-09):
+  - Replace the label text with an `<input>` in place, pre-filled with the current label (or empty)
+  - Confirm on Enter or blur — updates `edges` state via `setEdges`
+  - Cancel on Escape — reverts to previous label
+  - `stopPropagation` on input keydown to prevent React Flow delete handler from firing
+- [ ] New manually drawn edges start with an empty label (no caption until user sets one)
+
+**Commit:** `feat(C-08,C-09): edge label captions with inline editing`
+
+---
+
 ### Group 5 — UI Verification (Playwright MCP)
 
 Before committing Group 4, run the web design audit and the Playwright visual check:
@@ -223,7 +242,8 @@ src/
 ├── components/
 │   └── canvas/
 │       ├── Canvas.tsx          ✓ React Flow wrapper, full CRUD
-│       └── ConceptNode.tsx     ✓ custom node with inline edit
+│       ├── ConceptNode.tsx     ✓ custom node with inline edit
+│       └── ConceptEdge.tsx     ✓ custom edge with always-visible label and inline edit
 ├── lib/
 │   └── theme.ts                ✓ colour token constants
 ```
@@ -243,4 +263,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.2 — March 2026 (wired web-design-guidelines audit into Group 5, vercel-react-best-practices into Deliverables preamble)*
+*Canvas Agent Spec v1.3 — March 2026 (added Group 4b: edge label captions C-08, C-09)*

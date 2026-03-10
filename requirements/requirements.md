@@ -38,6 +38,8 @@
 | C-05 | Allow users to draw edges between nodes manually |
 | C-06 | Support pan and zoom on the canvas |
 | C-07 | Display a minimap for navigation on large maps |
+| C-08 | Display edge label captions on the canvas at all times for all edges that have a label (AI-generated and manually drawn) |
+| C-09 | Allow users to set or edit an edge label caption by double-clicking the edge, using the same inline edit interaction as node label editing |
 
 ### 4.2 AI — Map Generation
 
@@ -162,4 +164,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 1.0 — March 2026*
+*Version 1.1 — March 2026 — Added C-08, C-09 (edge label captions)*
