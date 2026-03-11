@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-17 and V-01 → V-04
+**Trigger:** Human assigns requirement IDs C-01 → C-17 and V-01 → V-07
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -232,6 +232,24 @@ interface MapData {
 
 ---
 
+### Group 4d — Visual Refinements (V-05, V-06, V-07)
+
+- [ ] **V-05 — Node label centering:** Ensure the node label text in `ConceptNode.tsx` is horizontally centred within the node. The label container must use `text-align: center` and `width: 100%` so labels of any length are centred regardless of node width.
+- [ ] **V-06 — Edge label border removal and smaller font:**
+  - In `ConceptEdge.tsx`, remove the visible border/stroke from the label background rect — the rect is kept for readability but must have no visible border (set `stroke: none` or omit stroke from the SVG rect / set border to transparent on the HTML element)
+  - Set the edge label font size one step smaller than the node label font size — add `FONT_SIZE_EDGE_LABEL` to `theme.ts` (e.g. `'11px'` if node is `'13px'`) and apply it in `ConceptEdge.tsx`
+  - Keep the `COLOR_NODE_BG` background fill so the label remains readable against the canvas
+- [ ] **V-07 — Empty canvas hint:**
+  - In `Canvas.tsx`, render a centred, low-opacity hint text `"Double click to start"` on the canvas background when `nodes.length === 0`
+  - Hide it (`display: none` or conditional render) as soon as any node is added
+  - Re-show it if all nodes are subsequently deleted
+  - Style: `opacity: 0.25`, `FONT_FAMILY`, `FONT_SIZE_NODE_LABEL`, `COLOR_NODE_TEXT`, `pointer-events: none` so it does not block canvas interactions
+  - Position using `position: absolute`, `top: 50%`, `left: 50%`, `transform: translate(-50%, -50%)` relative to the canvas container
+
+**Commit:** `feat(V-05,V-06,V-07): node label centering, edge label border removal, empty canvas hint`
+
+---
+
 ### Group 5 — UI Verification (Playwright MCP)
 
 Before committing Group 4, run the web design audit and the Playwright visual check:
@@ -313,4 +331,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.4 — March 2026 (added Group 4c: branching edges C-10 → C-17)*
+*Canvas Agent Spec v1.5 — March 2026 (added Group 4d: visual refinements V-05 → V-07)*
