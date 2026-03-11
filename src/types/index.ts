@@ -15,9 +15,19 @@ export interface ConceptEdge {
   label?: string
 }
 
+export interface BranchingEdge {
+  id: string
+  source: string // source node ID
+  label: string // shared relationship label
+  targets: string[] // ordered list of target node IDs
+  labelPosition?: { x: number; y: number } // draggable hub position; C-17
+}
+
 export interface MapData {
   nodes: ConceptNode[]
   edges: ConceptEdge[]
+  branchingEdges?: BranchingEdge[] // C-13: fan-out edges; absent on maps with none
+  focusQuestion?: string // F-05: persisted with the map; undefined when not set
 }
 
 export interface ClaudeMapResponse {
