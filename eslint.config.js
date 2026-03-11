@@ -53,6 +53,8 @@ export default [
         HTMLSelectElement: 'readonly',
         HTMLTextAreaElement: 'readonly',
         StorageEvent: 'readonly',
+        TouchEvent: 'readonly',
+        PointerEvent: 'readonly',
       },
     },
     plugins: {
