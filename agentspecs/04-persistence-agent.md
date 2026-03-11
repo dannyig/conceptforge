@@ -57,7 +57,7 @@ Complete all items below in order. Commit after each group.
   ```
 
 - [ ] `saveMapToJson`:
-  - Serialises `MapData` to JSON (preserves all node positions, labels, types, and edge data) (P-03)
+  - Serialises `MapData` to JSON (preserves all node positions, labels, types, edge data, and `focusQuestion`) (P-03, F-05)
   - Creates a `Blob` and triggers a download via a temporary `<a>` element
   - Default filename: `conceptforge-map-<YYYY-MM-DD>.json`
 
@@ -70,6 +70,7 @@ Complete all items below in order. Commit after each group.
 - [ ] `validateMapData`:
   - Confirms `nodes` is an array of objects each with `id`, `label`, and `position.x/y`
   - Confirms `edges` is an array of objects each with `id`, `source`, and `target`
+  - Accepts optional `focusQuestion` string field — valid whether present or absent (F-06)
   - Throws `Error('Invalid map file')` if validation fails
 
 **Commit:** `feat(P-01,P-02,P-03): JSON save and load with MapData validation`
@@ -106,6 +107,7 @@ Complete all items below in order. Commit after each group.
 
 - [ ] Wire `Toolbar` into `src/App.tsx` alongside Canvas
 - [ ] Canvas must expose its current `MapData` and a `loadMap(data: MapData)` setter — coordinate with Canvas Agent's output to confirm the interface (use props or a shared React context)
+- [ ] On load, pass `focusQuestion` from the loaded `MapData` back to `App.tsx` so it restores in the `FocusQuestionBar` (F-06)
 
 **Commit:** `feat: toolbar with save, load, and export PNG actions`
 

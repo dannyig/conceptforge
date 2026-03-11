@@ -214,6 +214,7 @@ interface ConceptEdge {
 interface MapData {
   nodes: ConceptNode[]
   edges: ConceptEdge[]
+  focusQuestion?: string   // F-05: persisted with the map; undefined when not set
 }
 
 interface ClaudeMapResponse {

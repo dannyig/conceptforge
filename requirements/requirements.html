@@ -208,7 +208,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v1.1 &nbsp;·&nbsp; March 2026</span>
+    <span class="version-badge">v1.2 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -325,6 +325,20 @@
         <tr><td class="req-id">V-04</td><td>Responsive layout — usable on desktop screens (1280px+)</td></tr>
       </tbody>
     </table>
+
+    <h3>4.8 Focus Question <span class="badge badge-core">NEW</span></h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td class="req-id">F-01</td><td>Display a persistent focus question bar at the top of the canvas at all times</td></tr>
+        <tr><td class="req-id">F-02</td><td>When the focus question is empty, display placeholder text: <em>"Enter your focus question or statement…"</em></td></tr>
+        <tr><td class="req-id">F-03</td><td>Allow the user to click the bar and type or edit the focus question at any point during map creation</td></tr>
+        <tr><td class="req-id">F-04</td><td>Style the bar prominently — visually distinct from the toolbar, using accent colour and larger typography consistent with the dark theme</td></tr>
+        <tr><td class="req-id">F-05</td><td>Save the focus question as part of the map's JSON data alongside nodes and edges</td></tr>
+        <tr><td class="req-id">F-06</td><td>Restore the focus question when a saved JSON map is loaded</td></tr>
+        <tr><td class="req-id">F-07</td><td>When a focus question is present, include it as context in the AI prompt for both map generation (A-02) and node expansion (A-07)</td></tr>
+      </tbody>
+    </table>
   </section>
 
   <!-- 5. Nice to Have -->
@@ -405,7 +419,7 @@
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v1.1 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v1.2 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>
