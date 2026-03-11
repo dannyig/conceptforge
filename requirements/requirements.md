@@ -40,6 +40,14 @@
 | C-07 | Display a minimap for navigation on large maps |
 | C-08 | Display edge label captions on the canvas at all times for all edges that have a label (AI-generated and manually drawn) |
 | C-09 | Allow users to set or edit an edge label caption by double-clicking the edge, using the same inline edit interaction as node label editing |
+| C-10 | Allow the user to convert an existing labelled single edge into a branching edge via a right-click context action on the edge label ("Branch") |
+| C-11 | Render a branching edge as a single line from the source node terminating at a shared label hub, with individual directional arrows fanning out from the bottom of the label hub to each target node |
+| C-12 | Allow the user to add an adjacent target to a branching edge by dragging from the label hub to an existing node on the canvas, or to an empty canvas area to create and connect a new node |
+| C-13 | Store branching edges in the JSON map data as a distinct structure: one source node ID, one label string, and an ordered list of target node IDs |
+| C-14 | When all but one target is removed from a branching edge, automatically convert it back to a plain single edge |
+| C-15 | Allow target nodes of a branching edge to be freely positioned anywhere on the canvas; branch arrows must update dynamically to follow the current node positions |
+| C-16 | Deleting the edge segment between the source node and the label hub, or selecting and deleting the label hub itself, removes the entire branching edge (all branch arrows) while leaving all target nodes on the canvas; deleting an individual branch arrow (between the label hub and a target node) removes only that branch |
+| C-17 | Allow the user to reposition a branching edge label hub by dragging it; branch arrows must update dynamically to reflect the new label position |
 
 ### 4.2 AI — Map Generation
 
@@ -176,4 +184,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 1.2 — March 2026 — Added F-01 → F-07 (Focus Question bar, persistence, and AI context)*
+*Version 1.3 — March 2026 — Added C-10 → C-17 (Branching edges: fan-out visual, hub repositioning, distinct JSON structure, partial/full delete behaviour)*
