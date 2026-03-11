@@ -37,7 +37,7 @@ export function SettingsTrigger({ onOpen }: SettingsTriggerProps): React.JSX.Ele
       aria-label="Open settings"
       className="cf-settings-trigger"
       style={{
-        position: 'fixed',
+        position: 'absolute',
         top: 16,
         right: 16,
         zIndex: 30,

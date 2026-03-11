@@ -55,3 +55,7 @@ export const COLOR_TEXT_MUTED = '#8b949e'
 export const SETTINGS_PANEL_WIDTH = '360px'
 export const FONT_SIZE_SMALL = '12px'
 export const FONT_SIZE_BASE = '14px'
+export const FONT_SIZE_FOCUS_QUESTION = '15px'
+
+// Focus question bar
+export const FOCUS_BAR_HEIGHT = 52
