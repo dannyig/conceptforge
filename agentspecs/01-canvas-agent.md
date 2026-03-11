@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-09 and V-01 → V-04
+**Trigger:** Human assigns requirement IDs C-01 → C-17 and V-01 → V-04
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -187,6 +187,51 @@ Before committing Group 4, visually confirm all of the following are absent:
 
 ---
 
+### Group 4c — Branching Edges (C-10 → C-17)
+
+> **Before starting this group:** Add a `BranchingEdge` type to `src/types/index.ts` and extend `MapData` with `branchingEdges?: BranchingEdge[]` before writing any component code. Programme to the type contract, not the implementation.
+
+```typescript
+// src/types/index.ts additions
+interface BranchingEdge {
+  id: string
+  source: string           // source node ID
+  label: string            // shared relationship label
+  targets: string[]        // ordered list of target node IDs
+  labelPosition?: { x: number; y: number }  // draggable hub position
+}
+
+// MapData extended:
+interface MapData {
+  nodes: ConceptNode[]
+  edges: ConceptEdge[]
+  branchingEdges?: BranchingEdge[]
+  focusQuestion?: string
+}
+```
+
+- [ ] Right-click context menu on an edge label → show "Branch" option (C-10)
+  - Only enabled when the edge already has a label
+  - Selecting "Branch" converts the `ConceptEdge` into a `BranchingEdge` in state
+  - The original `ConceptEdge` is removed from `edges`; the new `BranchingEdge` is added to `branchingEdges`
+- [ ] Create `src/components/canvas/BranchingEdge.tsx` — custom component that renders (C-11):
+  - A single line from the source node to the label hub (rendered as a draggable, styled element)
+  - Individual directional arrows fanning out from the bottom of the label hub to each target node
+  - Label hub styled consistently with edge labels in `ConceptEdge` (same font, background, colours)
+- [ ] Label hub double-click → inline label edit (same pattern as C-09 — Enter/blur confirms, Escape cancels) (C-09 parity)
+- [ ] Drag from label hub to an existing node → adds that node to `targets` (C-12)
+- [ ] Drag from label hub to empty canvas area → creates a new node and adds it to `targets` (C-12)
+- [ ] When `targets.length` drops to 1 (via branch deletion), auto-convert back to a `ConceptEdge` (C-14)
+- [ ] Deleting the source→hub segment or the hub itself removes the entire `BranchingEdge` from state; all target nodes remain on canvas (C-16)
+- [ ] Deleting an individual hub→target arrow removes only that target from `targets` (C-16)
+- [ ] Target nodes may be dragged freely; branch arrows update to follow (C-15)
+- [ ] Label hub is draggable — updates `labelPosition` in state; all arrows redraw (C-17)
+- [ ] Register `BranchingEdge` state alongside `edges` in `Canvas.tsx`; expose via `CanvasHandle.getMapData()` and restore via `CanvasHandle.setMapData()`
+
+**Commit:** `feat(C-10–C-17): branching edges with fan-out rendering, hub drag, and partial delete`
+
+---
+
 ### Group 5 — UI Verification (Playwright MCP)
 
 Before committing Group 4, run the web design audit and the Playwright visual check:
@@ -245,11 +290,12 @@ When done, the following must exist:
 src/
 ├── components/
 │   └── canvas/
-│       ├── Canvas.tsx          ✓ React Flow wrapper, full CRUD
-│       ├── ConceptNode.tsx     ✓ custom node with inline edit
-│       └── ConceptEdge.tsx     ✓ custom edge with always-visible label and inline edit
+│       ├── Canvas.tsx            ✓ React Flow wrapper, full CRUD
+│       ├── ConceptNode.tsx       ✓ custom node with inline edit
+│       ├── ConceptEdge.tsx       ✓ custom edge with always-visible label and inline edit
+│       └── BranchingEdge.tsx     ✓ fan-out edge with draggable hub, branch arrows, partial delete
 ├── lib/
-│   └── theme.ts                ✓ colour token constants
+│   └── theme.ts                  ✓ colour token constants
 ```
 
 `App.tsx` mounts `<Canvas />` and the app renders a working dark canvas.
@@ -267,4 +313,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.3 — March 2026 (added Group 4b: edge label captions C-08, C-09)*
+*Canvas Agent Spec v1.4 — March 2026 (added Group 4c: branching edges C-10 → C-17)*
