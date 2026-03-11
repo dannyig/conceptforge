@@ -27,6 +27,6 @@ Add a mandatory `git branch --show-current` verification step to CLAUDE.md Secti
 ## Status
 resolved
 
-Resolved in commit: (see chore/process-improvement-2026-03-11)
+Resolved in commit: 384b6f6
 
 ---

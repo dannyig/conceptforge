@@ -35,6 +35,6 @@ Also add this requirement to each agent spec's "commit and push" step. The rule 
 ## Status
 resolved
 
-Resolved in commit: (see chore/process-improvement-2026-03-11)
+Resolved in commit: 384b6f6
 
 ---
