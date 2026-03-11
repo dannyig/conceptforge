@@ -100,6 +100,9 @@
 | V-02 | Nodes styled with clear label readability |
 | V-03 | Edges rendered with directional arrows |
 | V-04 | Responsive layout — usable on desktop screens (1280px+) |
+| V-05 | Node labels must be horizontally centred within the node |
+| V-06 | Edge label captions must be rendered without a visible border, at a font size one step smaller than the node label font size |
+| V-07 | When the canvas contains no nodes, display a low-opacity "Double click to start" hint centred on the canvas; the hint disappears when a node is present and reappears if all nodes are removed |
 
 ### 4.8 Focus Question
 
@@ -184,4 +187,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 1.3 — March 2026 — Added C-10 → C-17 (Branching edges: fan-out visual, hub repositioning, distinct JSON structure, partial/full delete behaviour)*
+*Version 1.4 — March 2026 — Added V-05 → V-07 (Node label centering, edge label styling, empty-canvas hint)*
