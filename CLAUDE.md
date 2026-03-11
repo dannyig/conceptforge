@@ -360,6 +360,26 @@ docs/<short-description>               e.g. docs/add-adr-001
 - One branch per requirement ID — never bundle unrelated requirement changes
 - `main` is always deployable — never commit broken code directly to `main`
 
+### Branch verification — mandatory before every commit
+
+**Never commit when `git branch --show-current` returns `main`.** This is a hard stop — not a guideline.
+
+Before every commit, run:
+```bash
+git branch --show-current   # must NOT return "main"
+```
+If the output is `main`, stop immediately. Switch to the correct feature branch, re-stage the changes, and then commit. Committing directly to `main` bypasses PR review, triggers auto-deploy without CI, and makes the change untrackable.
+
+### Pre-PR main alignment — mandatory before raising a PR
+
+A branch must be zero commits behind `origin/main` before a PR is raised. Before pushing to origin and opening a PR, run:
+```bash
+git fetch origin main
+git merge origin/main --no-edit
+# Resolve any conflicts, then re-run: pnpm lint && pnpm typecheck && pnpm test
+```
+Never raise a PR from a branch that GitHub reports as "X commits behind main" — the diff will be incomplete and may hide conflicts that break CI after merge.
+
 ### Commit format — Conventional Commits
 ```
 <type>(<scope>): <short description>
@@ -438,9 +458,12 @@ Also references the devmethod/devmethod.md for the full delivery sequence and MV
 3. Agent reads `src/types/index.ts` for shared type contracts
 4. Agent reads the relevant agentspec in `agentspecs/`
 5. Agent creates a feature branch: `feature/C-01-react-flow-canvas`
+   **5a. Verify:** run `git branch --show-current` — output must be the feature branch name. If it returns `main`, stop and switch branches before writing any code.
 6. Agent implements the feature, writing tests alongside
 7. Agent runs `pnpm lint && pnpm typecheck && pnpm test` — fixes all failures
 8. Frontend agents run the UI Verification gate (Playwright MCP in Chrome) before committing
+   **8a. Branch check:** run `git branch --show-current` — output must NOT be `main`. If it is, switch to the feature branch and re-stage before continuing.
+   **8b. Align with main:** run `git fetch origin main && git merge origin/main --no-edit`. Resolve any conflicts. Re-run `pnpm lint && pnpm typecheck && pnpm test`. The branch must be zero commits behind `origin/main` before committing and raising a PR.
 9. Agent commits with a Conventional Commit referencing the requirement ID
 10. CI pipeline runs automatically on push — lint, typecheck, unit tests, E2E
 11. On CI green, merge to `main` triggers auto-deploy to fly.io via `deploy.yml`

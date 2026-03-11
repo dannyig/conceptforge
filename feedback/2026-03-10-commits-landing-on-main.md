@@ -25,6 +25,8 @@ During the Settings Agent session, two feature commits (`feat(K-01,K-02,K-04)` a
 Add a mandatory `git branch --show-current` verification step to CLAUDE.md Section 10 (Spec-Driven Workflow) immediately before committing. If the output is `main`, the agent must stop, switch to the correct feature branch, and re-stage the changes. Also add this check to each agent spec's commit step. The Improvement Agent should add an explicit rule: "Never commit when `git branch --show-current` returns `main`."
 
 ## Status
-open
+resolved
+
+Resolved in commit: 384b6f6
 
 ---

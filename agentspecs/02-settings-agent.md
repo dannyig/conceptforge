@@ -34,6 +34,10 @@ Read these in full before taking any action:
 
 Complete all items below in order. Commit after each group.
 
+> **Git protocol — mandatory before every commit and before raising a PR:**
+> 1. **Branch check:** run `git branch --show-current` — output must NOT be `main`. If it is, stop. Switch to `feature/K-01-api-key-settings` and re-stage changes before committing.
+> 2. **Main alignment:** run `git fetch origin main && git merge origin/main --no-edit` before pushing and raising a PR. Resolve any conflicts, then re-run `pnpm lint && pnpm typecheck && pnpm test`. The branch must be zero commits behind `origin/main`.
+
 > **Skills active for this agent:** When writing React component code, consult `vercel-react-best-practices` (apply rules from CLAUDE.md Section 11 caveat — skip `server-*` and hydration rules). Pay particular attention to `client-localstorage-schema` (localStorage versioning for the API key) and `rerender-*` rules. After completing Group 1, run `/web-design-guidelines src/components/settings/SettingsPanel.tsx` before committing — the settings panel must pass keyboard operability, focus indicator, and form behaviour checks.
 
 ---

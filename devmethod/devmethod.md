@@ -46,10 +46,17 @@ Each agent follows this sequence for every task:
 2.  Read the relevant requirement ID from requirements/requirements.md
 3.  Review shared types in src/types/index.ts
 4.  Create a feature branch:  feature/<req-id>-<short-description>
+4a. Verify branch: run git branch --show-current — must return the feature branch
+    name, never "main". If it returns "main", stop and switch branches.
 5.  Write implementation + tests
 6.  Log any friction, ambiguity, or issues encountered using /feedback
-7.  Run: pnpm lint && pnpm test
+7.  Run: pnpm lint && pnpm typecheck && pnpm test
 8.  Fix all failures before committing
+8a. Branch check: run git branch --show-current — must NOT be "main".
+    If it is, switch to the feature branch and re-stage before continuing.
+8b. Align with main: run git fetch origin main && git merge origin/main --no-edit
+    Resolve any conflicts, re-run lint + typecheck + test.
+    The branch must be zero commits behind origin/main before committing.
 9.  [Frontend agents only: Canvas (01), Settings (02), AI (03), Persistence (04)]
     Start the dev server (pnpm dev) and use Playwright MCP + Chrome to verify
     the feature in the browser — check visual output, interactive behaviour,
