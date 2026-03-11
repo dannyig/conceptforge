@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Canvas, type CanvasHandle } from '@/components/canvas/Canvas'
+import { FocusQuestionBar } from '@/components/ai/FocusQuestionBar'
 import { MissingKeyBanner } from '@/components/settings/MissingKeyBanner'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
 import { SettingsTrigger } from '@/components/toolbar/SettingsTrigger'
@@ -9,6 +10,7 @@ export function App(): React.JSX.Element {
   const canvasRef = useRef<CanvasHandle>(null)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [showMissingKeyBanner, setShowMissingKeyBanner] = useState(false)
+  const [focusQuestion, setFocusQuestion] = useState('')
 
   // Listen for openSettings events dispatched by useApiKey hook
   useEffect((): (() => void) => {
@@ -27,15 +29,26 @@ export function App(): React.JSX.Element {
   }, [])
 
   return (
-    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
-      <Canvas ref={canvasRef} />
-      <SettingsTrigger onOpen={openSettings} />
-      <SettingsPanel isOpen={isSettingsOpen} onClose={closeSettings} />
-      <MissingKeyBanner
-        isVisible={showMissingKeyBanner}
-        onOpenSettings={handleOpenSettingsFromBanner}
-        onDismiss={dismissBanner}
-      />
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
+      }}
+    >
+      <FocusQuestionBar value={focusQuestion} onChange={setFocusQuestion} />
+      <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
+        <Canvas ref={canvasRef} />
+        <SettingsTrigger onOpen={openSettings} />
+        <SettingsPanel isOpen={isSettingsOpen} onClose={closeSettings} />
+        <MissingKeyBanner
+          isVisible={showMissingKeyBanner}
+          onOpenSettings={handleOpenSettingsFromBanner}
+          onDismiss={dismissBanner}
+        />
+      </div>
     </div>
   )
 }

@@ -146,8 +146,8 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
   return (
     <div
       style={{
-        width: '100vw',
-        height: '100vh',
+        width: '100%',
+        height: '100%',
         backgroundColor: COLOR_CANVAS_BG,
         touchAction: 'manipulation',
       }}
