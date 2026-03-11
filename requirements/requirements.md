@@ -93,6 +93,18 @@
 | V-03 | Edges rendered with directional arrows |
 | V-04 | Responsive layout — usable on desktop screens (1280px+) |
 
+### 4.8 Focus Question
+
+| ID | Requirement |
+|---|---|
+| F-01 | Display a persistent focus question bar at the top of the canvas at all times |
+| F-02 | When the focus question is empty, display placeholder text: "Enter your focus question or statement…" |
+| F-03 | Allow the user to click the bar and type or edit the focus question at any point during map creation |
+| F-04 | Style the bar prominently — visually distinct from the toolbar, using accent colour and larger typography consistent with the dark theme |
+| F-05 | Save the focus question as part of the map's JSON data alongside nodes and edges |
+| F-06 | Restore the focus question when a saved JSON map is loaded |
+| F-07 | When a focus question is present, include it as context in the AI prompt for both map generation (A-02) and node expansion (A-07) |
+
 ---
 
 ## 5. Nice to Have (Post-MVP)
@@ -164,4 +176,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 1.1 — March 2026 — Added C-08, C-09 (edge label captions)*
+*Version 1.2 — March 2026 — Added F-01 → F-07 (Focus Question bar, persistence, and AI context)*

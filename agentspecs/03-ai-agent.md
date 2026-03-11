@@ -44,6 +44,21 @@ Complete all items below in order. Commit after each group.
 
 ---
 
+### Group 0 — Focus Question Bar (F-01 → F-04)
+
+- [ ] Create `src/components/ai/FocusQuestionBar.tsx`:
+  - Persistent bar rendered at the top of the app, above the canvas (mounted in `src/App.tsx`)
+  - Single-line editable input — click to edit, blur or Enter to confirm (F-03)
+  - When empty shows placeholder: `"Enter your focus question or statement…"` (F-02)
+  - Styled prominently: larger font size, accent colour (`COLOR_NODE_SELECTED`) for the text, distinct background using `COLOR_PANEL_BG`, full-width (F-04)
+  - Stores value in local React state and exposes it via a prop callback `onFocusQuestionChange`
+- [ ] Mount `<FocusQuestionBar>` in `src/App.tsx`, passing focus question state down
+- [ ] The focus question string must be accessible to the PromptPanel (Group 2) and NodeContextMenu (Group 3)
+
+**Commit:** `feat(F-01,F-02,F-03,F-04): focus question bar — persistent, editable, prominently styled`
+
+---
+
 ### Group 1 — Claude API Client (lib/claude.ts)
 
 Populate the stub at `src/lib/claude.ts`. This file is the single interface to the Claude API — no other file makes direct `fetch` calls to Anthropic.
@@ -93,8 +108,11 @@ Populate the stub at `src/lib/claude.ts`. This file is the single interface to t
   - Position nodes using a basic auto-layout from `src/lib/graph.ts` (implement a simple grid or radial layout if not already present)
 
 - [ ] Before submitting: check `useApiKey().hasKey` — if no key, call `openSettings()` instead (K-03 guard from Settings Agent)
+- [ ] When a focus question is present, prepend it to the AI prompt as context (F-07):
+  - If focus question is set: `"Focus question: <question>\n\nTopic: <user prompt>"`
+  - If not set: send the user prompt as-is (no change to existing behaviour)
 
-**Commit:** `feat(A-01,A-03,A-04,A-05): prompt panel, map generation, loading and error states`
+**Commit:** `feat(A-01,A-03,A-04,A-05,F-07): prompt panel, map generation, loading and error states, focus question context`
 
 ---
 
@@ -108,6 +126,7 @@ Populate the stub at `src/lib/claude.ts`. This file is the single interface to t
 
 - [ ] On "Expand" (A-07):
   - Build an `ExpandNodeRequest` from the clicked node and the current node list
+  - When a focus question is present, include it in the expansion prompt as context (F-07)
   - Call `expandNode()` from `src/lib/claude.ts`
   - On success: append new nodes and edges to the canvas (A-08)
   - On error: show an error message in the context menu area
@@ -161,7 +180,8 @@ The system prompt sent to Claude must specify this schema explicitly and instruc
 |---|---|
 | `src/lib/claude.ts` — all Claude API calls | Canvas CRUD (add/edit/delete nodes) — already done by Canvas Agent |
 | `src/components/ai/PromptPanel.tsx` | API key storage — already done by Settings Agent |
-| `src/components/canvas/NodeContextMenu.tsx` | JSON save/load, PNG export — that is the Persistence Agent |
+| `src/components/ai/FocusQuestionBar.tsx` — F-01 → F-04 | JSON save/load, PNG export — that is the Persistence Agent |
+| `src/components/canvas/NodeContextMenu.tsx` | Focus question persistence (F-05, F-06) — that is the Persistence Agent |
 | `src/lib/graph.ts` layout helpers (auto-position only) | Suggest connections (N-01) — post-MVP |
 
 ---
@@ -174,9 +194,10 @@ When done, the following must exist:
 src/
 ├── components/
 │   ├── ai/
-│   │   └── PromptPanel.tsx         ✓ prompt input, loading, error states
+│   │   ├── FocusQuestionBar.tsx    ✓ persistent bar, editable, prominent styling
+│   │   └── PromptPanel.tsx         ✓ prompt input, loading, error states, F-07 context
 │   └── canvas/
-│       └── NodeContextMenu.tsx     ✓ right-click expand menu
+│       └── NodeContextMenu.tsx     ✓ right-click expand menu, F-07 context
 ├── lib/
 │   ├── claude.ts                   ✓ generateMap, expandNode, parseClaudeResponse
 │   └── graph.ts                    ✓ auto-layout helpers for node positioning
@@ -194,4 +215,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*AI Agent Spec v1.1 — March 2026 (wired web-design-guidelines and vercel-react-best-practices skills)*
+*AI Agent Spec v1.2 — March 2026 (added Group 0: FocusQuestionBar F-01→F-04; F-07 AI context wired into Groups 2 and 3)*
