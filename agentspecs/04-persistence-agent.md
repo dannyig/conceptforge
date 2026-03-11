@@ -35,6 +35,10 @@ Read these in full before taking any action:
 
 Complete all items below in order. Commit after each group.
 
+> **Git protocol — mandatory before every commit and before raising a PR:**
+> 1. **Branch check:** run `git branch --show-current` — output must NOT be `main`. If it is, stop. Switch to `feature/P-01-save-load-export` and re-stage changes before committing.
+> 2. **Main alignment:** run `git fetch origin main && git merge origin/main --no-edit` before pushing and raising a PR. Resolve any conflicts, then re-run `pnpm lint && pnpm typecheck && pnpm test`. The branch must be zero commits behind `origin/main`.
+
 ---
 
 ### Group 1 — JSON Save and Load (P-01, P-02, P-03)

@@ -34,6 +34,10 @@ Read these in full before taking any action:
 
 Complete all items below in order. Commit after each group.
 
+> **Git protocol — mandatory before every commit and before raising a PR:**
+> 1. **Branch check:** run `git branch --show-current` — output must NOT be `main`. If it is, stop. Switch to `feature/C-01-react-flow-canvas` and re-stage changes before committing.
+> 2. **Main alignment:** run `git fetch origin main && git merge origin/main --no-edit` before pushing and raising a PR. Resolve any conflicts, then re-run `pnpm lint && pnpm typecheck && pnpm test`. The branch must be zero commits behind `origin/main`.
+
 ---
 
 > **Skills active for this agent:** Before writing any React component code, consult the `vercel-react-best-practices` skill (`.claude/skills/vercel-react-best-practices/SKILL.md`) — apply the rules marked applicable in CLAUDE.md Section 11. Pay particular attention to: `rerender-*` rules (React Flow state triggers frequent re-renders), `rendering-animate-svg-wrapper` (edges are SVG), `rendering-svg-precision`, and `rendering-hoist-jsx`.

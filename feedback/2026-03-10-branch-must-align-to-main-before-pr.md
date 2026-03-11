@@ -33,6 +33,8 @@ git merge origin/main --no-edit
 Also add this requirement to each agent spec's "commit and push" step. The rule should be stated explicitly: **a branch must have zero commits behind `origin/main` before a PR is raised**.
 
 ## Status
-open
+resolved
+
+Resolved in commit: (see chore/process-improvement-2026-03-11)
 
 ---

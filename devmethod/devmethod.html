@@ -68,8 +68,8 @@
   <header>
     <div class="logo">ConceptForge</div>
     <h1>Development Method</h1>
-    <p class="subtitle">Agent-Driven Development Strategy — v1.6</p>
-    <span class="version-badge">v1.6 &nbsp;·&nbsp; March 2026</span>
+    <p class="subtitle">Agent-Driven Development Strategy — v1.7</p>
+    <span class="version-badge">v1.7 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -129,10 +129,12 @@
       <li>Read the relevant requirement ID from requirements/requirements.md</li>
       <li>Review shared types in src/types/index.ts</li>
       <li>Create a feature branch: <code class="branch-name">feature/&lt;req-id&gt;-&lt;short-description&gt;</code></li>
+      <li style="background:#1a1208; border-radius:4px; padding-left:8px;"><span class="updated-badge">UPDATED</span> <strong>Verify branch:</strong> run <code>git branch --show-current</code> — output must be the feature branch name, never <code>main</code>. If it returns <code>main</code>, stop and switch branches before writing any code.</li>
       <li>Write implementation + tests</li>
       <li style="background:#1a1208; border-radius:4px; padding-left:8px;">Log any friction, ambiguity, or issues encountered using <code>/feedback</code></li>
-      <li>Run: <code>pnpm lint &amp;&amp; pnpm test</code></li>
+      <li>Run: <code>pnpm lint &amp;&amp; pnpm typecheck &amp;&amp; pnpm test</code></li>
       <li>Fix all failures before committing</li>
+      <li style="background:#1a1208; border-radius:4px; padding-left:8px;"><span class="updated-badge">UPDATED</span> <strong>Branch check:</strong> run <code>git branch --show-current</code> — output must NOT be <code>main</code>. If it is, switch to the feature branch and re-stage before continuing.<br><strong>Align with main:</strong> run <code>git fetch origin main &amp;&amp; git merge origin/main --no-edit</code>. Resolve conflicts. Re-run lint + typecheck + test. Branch must be zero commits behind <code>origin/main</code> before committing.</li>
       <li style="background:#0d1f2d; border-radius:4px; padding-left:8px;"><span class="new-badge">NEW</span> <strong style="color:#60a5fa;">[Frontend agents only: Canvas (01), Settings (02), AI (03), Persistence (04)]</strong> Start the dev server (<code>pnpm dev</code>) and use <strong>Playwright MCP + Chrome</strong> to verify the feature in the browser — check visual output, interactive behaviour, and browser console errors before committing</li>
       <li>Commit with message referencing the requirement ID</li>
       <li>Push branch → CI runs automatically</li>
@@ -471,7 +473,7 @@ export interface ExpandNodeRequest {
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Development Method v1.6 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Development Method v1.7 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>
