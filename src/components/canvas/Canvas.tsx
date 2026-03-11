@@ -12,8 +12,8 @@ import {
   useReactFlow,
   MarkerType,
   type Connection,
-  type Edge,
 } from '@xyflow/react'
+import { ConceptEdge, type ConceptFlowEdge } from './ConceptEdge'
 import { ConceptNode, type ConceptFlowNode } from './ConceptNode'
 import type { MapData } from '@/types'
 import {
@@ -34,11 +34,9 @@ import {
   TRANSITION_FAST,
 } from '@/lib/theme'
 
-type EdgeData = { label?: string }
-type ConceptFlowEdge = Edge<EdgeData>
-
-// Stable reference — must not be defined inside component to avoid React Flow re-renders
+// Stable references — must not be defined inside component to avoid React Flow re-renders
 const NODE_TYPES = { concept: ConceptNode }
+const EDGE_TYPES = { default: ConceptEdge }
 
 const DEFAULT_EDGE_OPTIONS = {
   markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
@@ -109,6 +107,7 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
           {
             ...params,
             id: crypto.randomUUID(),
+            data: { label: '' },
             markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
             style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
           },
@@ -203,6 +202,7 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
         onConnect={onConnect}
         onPaneClick={onPaneClick}
         nodeTypes={NODE_TYPES}
+        edgeTypes={EDGE_TYPES}
         defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
         fitView
         deleteKeyCode={['Backspace', 'Delete']}
