@@ -29,7 +29,7 @@ export function MissingKeyBanner({
         position: 'fixed',
         bottom: 24,
         left: '50%',
-        transform: isVisible ? 'translate(-50%, 0)' : 'translate(-50%, 120%)',
+        transform: isVisible ? 'translate(-50%, 0)' : 'translate(-50%, calc(100% + 48px))',
         transition: `transform ${TRANSITION_PANEL}`,
         zIndex: 60,
         display: 'flex',
