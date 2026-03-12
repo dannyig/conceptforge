@@ -103,7 +103,7 @@ interface CanvasFlowProps {
 
 // Inner component — must be inside ReactFlowProvider to use useReactFlow
 function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
-  const { screenToFlowPosition } = useReactFlow()
+  const { screenToFlowPosition, zoomOut } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasFlowNode>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasFlowEdge>([])
 
@@ -116,6 +116,15 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
   useEffect((): void => {
     edgesRef.current = edges
   }, [edges])
+
+  // V-08: after fitView settles, zoom out two steps for comfortable scale
+  useEffect((): (() => void) => {
+    const t = setTimeout((): void => {
+      zoomOut({ duration: 0 })
+      zoomOut({ duration: 0 })
+    }, 100)
+    return (): void => clearTimeout(t)
+  }, []) // mount only
 
   const [contextMenu, setContextMenu] = useState<{
     edgeId: string
@@ -551,7 +560,6 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
         edgeTypes={EDGE_TYPES}
         defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
         fitView
-        fitViewOptions={{ padding: 0.4 }}
         deleteKeyCode={['Backspace', 'Delete']}
         style={{ backgroundColor: COLOR_CANVAS_BG }}
         aria-label="Concept map canvas"

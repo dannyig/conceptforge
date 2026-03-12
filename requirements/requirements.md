@@ -105,7 +105,7 @@
 | V-05 | Node labels must be horizontally centred within the node |
 | V-06 | Edge label captions and branching edge hub labels must be rendered without a visible border, at a font size of `9px` |
 | V-07 | When the canvas contains no nodes, display a low-opacity "Double click to start" hint centred on the canvas; the hint disappears when a node is present and reappears if all nodes are removed |
-| V-08 | The canvas `fitView` on initial load must apply sufficient padding so the map renders noticeably smaller than the viewport — nodes should not fill the screen; the effect should feel like the user has naturally panned back one step |
+| V-08 | After `fitView` completes on initial load, zoom out by two additional steps (equivalent to two clicks of the zoom-out control) so the map renders at a comfortable reduced scale with ample surrounding space |
 
 ### 4.8 Focus Question
 
