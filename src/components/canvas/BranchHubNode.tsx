@@ -8,7 +8,7 @@ import {
   COLOR_NODE_BG,
   COLOR_NODE_TEXT,
   FONT_FAMILY,
-  FONT_SIZE_NODE_LABEL,
+  FONT_SIZE_EDGE_LABEL,
   FONT_WEIGHT_NODE_LABEL,
   TRANSITION_FAST,
 } from '@/lib/theme'
@@ -71,8 +71,12 @@ export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React
 
   return (
     <>
-      {/* Stem connects here */}
-      <Handle type="target" position={Position.Top} style={HANDLE_STYLE} />
+      {/* Stem connects here — hidden per C-11 */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        style={{ ...HANDLE_STYLE, opacity: 0, pointerEvents: 'none' }}
+      />
 
       <div
         onDoubleClick={startEdit}
@@ -82,7 +86,7 @@ export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React
           borderRadius: 4,
           padding: '4px 12px',
           fontFamily: FONT_FAMILY,
-          fontSize: FONT_SIZE_NODE_LABEL,
+          fontSize: FONT_SIZE_EDGE_LABEL,
           fontWeight: FONT_WEIGHT_NODE_LABEL,
           color: selected ? COLOR_EDGE_SELECTED : COLOR_NODE_TEXT,
           cursor: 'grab',
@@ -109,7 +113,7 @@ export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React
               border: 'none',
               outline: 'none',
               fontFamily: FONT_FAMILY,
-              fontSize: FONT_SIZE_NODE_LABEL,
+              fontSize: FONT_SIZE_EDGE_LABEL,
               fontWeight: FONT_WEIGHT_NODE_LABEL,
               color: COLOR_NODE_TEXT,
               width: Math.max(48, draft.length * 8),
@@ -121,15 +125,11 @@ export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React
         )}
       </div>
 
-      {/* Branch arrows connect from here */}
+      {/* Branch arrows connect from here — grey at rest, highlights on hover */}
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{
-          ...HANDLE_STYLE,
-          background: COLOR_HANDLE_HOVER,
-          border: `1px solid ${COLOR_HANDLE_HOVER}`,
-        }}
+        style={HANDLE_STYLE}
         aria-label="Drag to add a branch target"
       />
       <style>{`
