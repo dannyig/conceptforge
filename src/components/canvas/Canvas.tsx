@@ -551,7 +551,7 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
         edgeTypes={EDGE_TYPES}
         defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
         fitView
-        fitViewOptions={{ padding: 0.5, maxZoom: 0.75 }}
+        fitViewOptions={{ padding: 0.5, maxZoom: 0.85 }}
         deleteKeyCode={['Backspace', 'Delete']}
         style={{ backgroundColor: COLOR_CANVAS_BG }}
         aria-label="Concept map canvas"
