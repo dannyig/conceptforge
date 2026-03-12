@@ -32,6 +32,27 @@ What future agents should be alert to as a result of this lesson.
 
 ---
 
+## 2026-03-12 — Requirements Agent gate: requirements changes must not be bundled with implementation
+
+**Feedback processed:** 1 entry
+**Categories:** process
+
+### What changed
+- `CLAUDE.md` Section 12: added "Requirements Agent Gate" Critical Rule — any agent detecting a new or changed requirement must invoke `/requirements` before writing any code; requirements docs are owned exclusively by the Requirements Agent
+- `agentspecs/01-canvas-agent.md` through `agentspecs/05-qa-agent.md`: added "Requirements gate" warning block to each spec's Deliverables section, immediately before the existing Git protocol block
+- `devmethod/devmethod.md` Section 4: added step 0 (Requirements gate) to the agent workflow sequence
+- `devmethod/devmethod.html`: mirrored step 0 addition; bumped to v1.8
+
+### Pattern identified
+The same agent was handling both requirements updates and implementation in a single conversation. The `/requirements` skill was never invoked; no `chore/requirements-*` branch was created; no human approval gate separated "what to build" from "build it". This is a systemic gap — the workflow docs described step sequencing and branch strategy but did not explicitly block implementation agents from modifying requirements documents.
+
+### Watch for
+- Any agent that touches `requirements/requirements.md` or `requirements/requirements.html` outside a `chore/requirements-*` branch is violating this rule
+- The correct signal that the gate was bypassed: requirements files appear in the diff of a `feature/*` or `fix/*` branch
+- When a human says "update X and implement it" — that is two separate tasks: Requirements Agent first, then implementation agent after the requirements branch merges
+
+---
+
 ## 2026-03-11 — Mandatory branch verification and main alignment before PR
 
 **Feedback processed:** 2 entries

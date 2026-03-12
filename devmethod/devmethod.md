@@ -42,6 +42,10 @@ Each agent is self-contained. Agents coordinate through shared TypeScript types 
 Each agent follows this sequence for every task:
 
 ```
+0.  Requirements gate: if the human's request involves a new or changed
+    requirement, stop and invoke the Requirements Agent (/requirements)
+    before writing any code. Only proceed once the requirements branch
+    is merged to main.
 1.  Read CLAUDE.md — conventions, stack, constraints
 2.  Read the relevant requirement ID from requirements/requirements.md
 3.  Review shared types in src/types/index.ts
@@ -373,4 +377,4 @@ Where a `.md` file has a corresponding `.html` file, both must be updated in the
 
 ---
 
-*Version 1.6 — March 2026 (consistency pass: Canvas Agent V-IDs, step 9 agent names, ExpandNodeRequest added to type contracts)*
+*Version 1.8 — March 2026 — Added Requirements gate as step 0 of agent workflow; requirements docs owned exclusively by Requirements Agent*

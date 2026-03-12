@@ -68,8 +68,8 @@
   <header>
     <div class="logo">ConceptForge</div>
     <h1>Development Method</h1>
-    <p class="subtitle">Agent-Driven Development Strategy — v1.7</p>
-    <span class="version-badge">v1.7 &nbsp;·&nbsp; March 2026</span>
+    <p class="subtitle">Agent-Driven Development Strategy — v1.8</p>
+    <span class="version-badge">v1.8 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -125,6 +125,7 @@
     <h2>4. Agent Workflow <span class="updated-badge">UPDATED</span></h2>
     <p>Each agent follows this sequence for every task:</p>
     <ol class="workflow-steps">
+      <li style="background:#1a1208; border-radius:4px; padding-left:8px;"><span class="updated-badge">UPDATED</span> <strong>Requirements gate:</strong> if the human's request involves a new or changed requirement, stop and invoke the Requirements Agent (<code>/requirements</code>) before writing any code. Only proceed once the requirements branch is merged to <code>main</code>. Requirements docs are owned exclusively by the Requirements Agent.</li>
       <li>Read CLAUDE.md — conventions, stack, constraints</li>
       <li>Read the relevant requirement ID from requirements/requirements.md</li>
       <li>Review shared types in src/types/index.ts</li>
@@ -473,7 +474,7 @@ export interface ExpandNodeRequest {
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Development Method v1.7 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Development Method v1.8 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>

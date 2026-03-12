@@ -24,6 +24,8 @@ Any agent that detects a request containing a new requirement or a change to an 
 Add this as a Critical Rule in CLAUDE.md so all agents are bound by it.
 
 ## Status
-open
+resolved
+
+Resolved in: chore/process-improvement-2026-03-12
 
 ---
