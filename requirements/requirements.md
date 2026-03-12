@@ -48,6 +48,8 @@
 | C-15 | Allow target nodes of a branching edge to be freely positioned anywhere on the canvas; branch arrows must update dynamically to follow the current node positions |
 | C-16 | Deleting the edge segment between the source node and the label hub, or selecting and deleting the label hub itself, removes the entire branching edge (all branch arrows) while leaving all target nodes on the canvas; deleting an individual branch arrow (between the label hub and a target node) removes only that branch |
 | C-17 | Allow the user to reposition a branching edge label hub by dragging it; branch arrows must update dynamically to reflect the new label position |
+| C-18 | Only expose a connection handle at the bottom of each node; remove handles from the top, left, and right sides so edges can only originate from the bottom of a node |
+| C-19 | When the user drags an edge from a node's bottom handle and releases it on an empty area of the canvas, automatically create a new node at the drop position, connect it to the source node, and immediately place the new node in inline edit mode with a blank label — identical behaviour to double-clicking empty canvas to create a node |
 
 ### 4.2 AI — Map Generation
 
@@ -101,7 +103,7 @@
 | V-03 | Edges rendered with directional arrows |
 | V-04 | Responsive layout — usable on desktop screens (1280px+) |
 | V-05 | Node labels must be horizontally centred within the node |
-| V-06 | Edge label captions must be rendered without a visible border, at a font size one step smaller than the node label font size |
+| V-06 | Edge label captions must be rendered without a visible border, at a font size of `9px` |
 | V-07 | When the canvas contains no nodes, display a low-opacity "Double click to start" hint centred on the canvas; the hint disappears when a node is present and reappears if all nodes are removed |
 
 ### 4.8 Focus Question
@@ -187,4 +189,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 1.4 — March 2026 — Added V-05 → V-07 (Node label centering, edge label styling, empty-canvas hint)*
+*Version 1.5 — March 2026 — Added C-18, C-19 (bottom-only handles, edge-drop node creation); updated V-06 (edge label font size fixed at 9px)*

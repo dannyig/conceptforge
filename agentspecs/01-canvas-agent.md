@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-17 and V-01 → V-07
+**Trigger:** Human assigns requirement IDs C-01 → C-19 and V-01 → V-07
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -235,9 +235,9 @@ interface MapData {
 ### Group 4d — Visual Refinements (V-05, V-06, V-07)
 
 - [ ] **V-05 — Node label centering:** Ensure the node label text in `ConceptNode.tsx` is horizontally centred within the node. The label container must use `text-align: center` and `width: 100%` so labels of any length are centred regardless of node width.
-- [ ] **V-06 — Edge label border removal and smaller font:**
+- [ ] **V-06 — Edge label border removal and fixed font size:**
   - In `ConceptEdge.tsx`, remove the visible border/stroke from the label background rect — the rect is kept for readability but must have no visible border (set `stroke: none` or omit stroke from the SVG rect / set border to transparent on the HTML element)
-  - Set the edge label font size one step smaller than the node label font size — add `FONT_SIZE_EDGE_LABEL` to `theme.ts` (e.g. `'11px'` if node is `'13px'`) and apply it in `ConceptEdge.tsx`
+  - Edge label font size must be `9px` — add or update `FONT_SIZE_EDGE_LABEL = '9px'` in `theme.ts` and apply it in `ConceptEdge.tsx`
   - Keep the `COLOR_NODE_BG` background fill so the label remains readable against the canvas
 - [ ] **V-07 — Empty canvas hint:**
   - In `Canvas.tsx`, render a centred, low-opacity hint text `"Double click to start"` on the canvas background when `nodes.length === 0`
@@ -247,6 +247,21 @@ interface MapData {
   - Position using `position: absolute`, `top: 50%`, `left: 50%`, `transform: translate(-50%, -50%)` relative to the canvas container
 
 **Commit:** `feat(V-05,V-06,V-07): node label centering, edge label border removal, empty canvas hint`
+
+---
+
+### Group 4e — Handle Restriction and Edge-Drop Node Creation (C-18, C-19)
+
+- [ ] **C-18 — Bottom handle only:**
+  - In `ConceptNode.tsx`, remove the `<Handle>` elements for `Position.Top`, `Position.Left`, and `Position.Right`
+  - Keep only the `Position.Bottom` handle for outgoing edge connections
+  - Ensure the bottom handle still uses `COLOR_HANDLE` / `COLOR_HANDLE_HOVER` styling from `theme.ts`
+- [ ] **C-19 — Edge-drop creates a new node:**
+  - In `Canvas.tsx`, implement an `onConnectEnd` handler on `<ReactFlow>`
+  - When the connection is dropped on the canvas pane (not on an existing node), read the drop coordinates from the event, create a new node at that position with a blank label, connect the source node to the new node with a new edge, and immediately place the new node into inline edit mode (same state as double-clicking empty canvas — C-02/C-03)
+  - If the connection is dropped on an existing node, let React Flow's normal `onConnect` handle it — do not interfere
+
+**Commit:** `feat(C-18,C-19): bottom-only handles and edge-drop node creation`
 
 ---
 
@@ -331,4 +346,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.5 — March 2026 (added Group 4d: visual refinements V-05 → V-07)*
+*Canvas Agent Spec v1.6 — March 2026 (added Group 4e: C-18 bottom-only handles, C-19 edge-drop node creation; updated V-06 edge label font to 9px)*
