@@ -43,6 +43,7 @@ import {
   FONT_FAMILY,
   FONT_SIZE_NODE_LABEL,
   TRANSITION_FAST,
+  FONT_WEIGHT_NODE_LABEL,
 } from '@/lib/theme'
 
 // Canvas-internal node data — superset of concept-node data and branch-hub data
@@ -538,6 +539,28 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
           aria-label="Minimap"
         />
       </ReactFlow>
+
+      {nodes.length === 0 && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: 'none',
+            opacity: 0.25,
+            color: COLOR_NODE_TEXT,
+            fontFamily: FONT_FAMILY,
+            fontSize: FONT_SIZE_NODE_LABEL,
+            fontWeight: FONT_WEIGHT_NODE_LABEL,
+            userSelect: 'none',
+            zIndex: 1,
+          }}
+        >
+          Double click to start
+        </div>
+      )}
 
       {contextMenu && (
         <div
