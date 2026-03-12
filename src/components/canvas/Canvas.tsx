@@ -103,7 +103,7 @@ interface CanvasFlowProps {
 
 // Inner component — must be inside ReactFlowProvider to use useReactFlow
 function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
-  const { screenToFlowPosition } = useReactFlow()
+  const { screenToFlowPosition, fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasFlowNode>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasFlowEdge>([])
 
@@ -222,9 +222,13 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
         }
         setNodes(newNodes)
         setEdges(newEdges)
+        // V-08: fit once after map load; setTimeout lets React flush the new nodes first
+        setTimeout((): void => {
+          fitView({ padding: 0.5, maxZoom: 0.85, duration: 0 })
+        }, 50)
       },
     }),
-    [setNodes, setEdges]
+    [setNodes, setEdges, fitView]
   )
 
   // ---------- C-10: convert labelled edge → branching edge ----------
@@ -550,8 +554,7 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
         defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
-        fitView
-        fitViewOptions={{ padding: 0.5, maxZoom: 0.85 }}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.85 }}
         deleteKeyCode={['Backspace', 'Delete']}
         style={{ backgroundColor: COLOR_CANVAS_BG }}
         aria-label="Concept map canvas"
