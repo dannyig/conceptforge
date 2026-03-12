@@ -105,7 +105,7 @@
 | V-05 | Node labels must be horizontally centred within the node |
 | V-06 | Edge label captions and branching edge hub labels must be rendered without a visible border, at a font size of `9px` |
 | V-07 | When the canvas contains no nodes, display a low-opacity "Double click to start" hint centred on the canvas; the hint disappears when a node is present and reappears if all nodes are removed |
-| V-08 | When the canvas loads or a saved map is applied, fit the content into view with a maximum zoom level of `0.75` and padding of `0.5` — nodes must never be zoomed in beyond 75% scale so the map renders at a comfortable reduced scale with ample surrounding canvas space |
+| V-08 | When the canvas loads or a saved map is applied, fit the content into view with a maximum zoom level of `0.85` and padding of `0.5` — nodes must never be zoomed in beyond 85% scale on automatic load. The fitView button in the canvas Controls retains its default behaviour and is not subject to the 0.85 cap |
 
 ### 4.8 Focus Question
 
@@ -190,4 +190,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 1.7 — March 2026 — Updated V-08 (fitView maxZoom 0.75 + padding 0.5 replaces post-fitView zoomOut approach)*
+*Version 1.8 — March 2026 — Updated V-08 (maxZoom raised to 0.85; clarified Controls fitView button is uncapped)*
