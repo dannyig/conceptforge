@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Handle, Position, useReactFlow, type Node, type NodeProps } from '@xyflow/react'
 import {
   COLOR_HANDLE,
@@ -18,6 +18,7 @@ import {
 export type NodeData = {
   label: string
   conceptType?: 'concept' | 'question' | 'source' | 'insight'
+  autoEdit?: boolean
 }
 
 export type ConceptFlowNode = Node<NodeData>
@@ -66,6 +67,17 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
     [confirmEdit, cancelEdit]
   )
 
+  // C-19: if the node was created by edge-drop, enter blank edit mode on mount
+  useEffect((): void => {
+    if (data.autoEdit) {
+      setDraft('')
+      setEditing(true)
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 0)
+    }
+  }, [])
+
   const borderColor = selected
     ? COLOR_NODE_SELECTED
     : hovered
@@ -111,27 +123,17 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
     >
       <Handle
         type="target"
-        position={Position.Top}
+        position={Position.Bottom}
+        id="target"
         style={HANDLE_BASE_STYLE}
-        aria-label="Connect from above"
+        aria-label="Connect to node"
       />
       <Handle
         type="source"
         position={Position.Bottom}
+        id="source"
         style={HANDLE_BASE_STYLE}
-        aria-label="Connect below"
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        style={HANDLE_BASE_STYLE}
-        aria-label="Connect from left"
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        style={HANDLE_BASE_STYLE}
-        aria-label="Connect right"
+        aria-label="Connect from node"
       />
 
       {editing ? (
