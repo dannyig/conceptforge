@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState } from 'react'
 import {
   BaseEdge,
   EdgeLabelRenderer,
-  getBezierPath,
+  getStraightPath,
   useReactFlow,
   type Edge,
   type EdgeProps,
@@ -27,8 +27,6 @@ export function ConceptEdge({
   sourceY,
   targetX,
   targetY,
-  sourcePosition,
-  targetPosition,
   data,
   markerEnd,
   style,
@@ -39,14 +37,7 @@ export function ConceptEdge({
   const [draft, setDraft] = useState(data?.label ?? '')
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const [edgePath, labelX, labelY] = getBezierPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-  })
+  const [edgePath, labelX, labelY] = getStraightPath({ sourceX, sourceY, targetX, targetY })
 
   const startEdit = useCallback((): void => {
     setDraft(data?.label ?? '')
