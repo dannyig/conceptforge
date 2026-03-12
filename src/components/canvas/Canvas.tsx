@@ -51,6 +51,7 @@ type CanvasNodeData = {
   label: string
   conceptType?: 'concept' | 'question' | 'source' | 'insight'
   branchingEdgeId?: string
+  autoEdit?: boolean
 }
 type CanvasFlowNode = Node<CanvasNodeData>
 
@@ -328,35 +329,65 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
       const fromNodeId = state.fromHandle?.nodeId
       if (!fromNodeId) return
       const fromNode = nodesRef.current.find(n => n.id === fromNodeId)
-      if (fromNode?.type !== 'branchHub' || !fromNode.data.branchingEdgeId) return
-      const beId = fromNode.data.branchingEdgeId
       const clientX =
         'clientX' in event ? event.clientX : ((event as TouchEvent).touches[0]?.clientX ?? 0)
       const clientY =
         'clientY' in event ? event.clientY : ((event as TouchEvent).touches[0]?.clientY ?? 0)
       const position = screenToFlowPosition({ x: clientX, y: clientY })
-      const newNodeId = crypto.randomUUID()
-      setNodes(nds => [
-        ...nds,
-        {
-          id: newNodeId,
-          type: 'concept' as const,
-          position,
-          data: { label: 'New concept', conceptType: 'concept' as const },
-        },
-      ])
-      setEdges(eds => [
-        ...eds,
-        {
-          id: branchEdgeId(beId, newNodeId),
-          source: fromNodeId,
-          target: newNodeId,
-          type: 'branchArrow',
-          data: { branchingEdgeId: beId, isBranch: true },
-          markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
-          style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
-        },
-      ])
+
+      if (fromNode?.type === 'branchHub' && fromNode.data.branchingEdgeId) {
+        // C-12: hub drag → empty canvas creates new branch target
+        const beId = fromNode.data.branchingEdgeId
+        const newNodeId = crypto.randomUUID()
+        setNodes(nds => [
+          ...nds,
+          {
+            id: newNodeId,
+            type: 'concept' as const,
+            position,
+            data: { label: 'New concept', conceptType: 'concept' as const },
+          },
+        ])
+        setEdges(eds => [
+          ...eds,
+          {
+            id: branchEdgeId(beId, newNodeId),
+            source: fromNodeId,
+            target: newNodeId,
+            type: 'branchArrow',
+            data: { branchingEdgeId: beId, isBranch: true },
+            markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
+            style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+          },
+        ])
+        return
+      }
+
+      if (fromNode?.type === 'concept') {
+        // C-19: concept node drag → empty canvas creates new connected node in edit mode
+        const newNodeId = crypto.randomUUID()
+        setNodes(nds => [
+          ...nds,
+          {
+            id: newNodeId,
+            type: 'concept' as const,
+            position,
+            data: { label: '', conceptType: 'concept' as const, autoEdit: true },
+          },
+        ])
+        setEdges(eds => [
+          ...eds,
+          {
+            id: crypto.randomUUID(),
+            source: fromNodeId,
+            target: newNodeId,
+            type: 'default',
+            data: { label: '' },
+            markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
+            style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+          },
+        ])
+      }
     },
     [screenToFlowPosition, setNodes, setEdges]
   )
