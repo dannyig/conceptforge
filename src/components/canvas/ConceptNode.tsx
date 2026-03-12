@@ -121,17 +121,29 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
       }}
       aria-label={editing ? `Editing node: ${data.label}` : `Node: ${data.label}`}
     >
+      {/* Invisible target handles — functional for snapping incoming edges, hidden visually */}
       <Handle
         type="target"
-        position={Position.Bottom}
-        id="target"
+        position={Position.Top}
         style={HANDLE_BASE_STYLE}
         aria-label="Connect to node"
       />
       <Handle
+        type="target"
+        position={Position.Left}
+        style={HANDLE_BASE_STYLE}
+        aria-label="Connect to node"
+      />
+      <Handle
+        type="target"
+        position={Position.Right}
+        style={HANDLE_BASE_STYLE}
+        aria-label="Connect to node"
+      />
+      {/* Visible source handle — edges originate here only, never land here */}
+      <Handle
         type="source"
         position={Position.Bottom}
-        id="source"
         style={HANDLE_BASE_STYLE}
         aria-label="Connect from node"
       />
@@ -164,7 +176,10 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
 
       {/* Handle hover + input focus-visible styles — pseudo-class styles not possible with inline styles */}
       <style>{`
-        .react-flow__handle:hover { background-color: ${COLOR_HANDLE_HOVER} !important; }
+        .react-flow__node-concept .react-flow__handle-top,
+        .react-flow__node-concept .react-flow__handle-left,
+        .react-flow__node-concept .react-flow__handle-right { opacity: 0 !important; pointer-events: none; }
+        .react-flow__node-concept .react-flow__handle-bottom:hover { background-color: ${COLOR_HANDLE_HOVER} !important; }
         .react-flow__node input:focus-visible { outline: 1px solid ${COLOR_NODE_SELECTED}; outline-offset: 2px; border-radius: 2px; }
         @media (prefers-reduced-motion: reduce) {
           .react-flow__handle { transition: none !important; }
