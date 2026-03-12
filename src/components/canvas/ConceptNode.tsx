@@ -105,6 +105,7 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
         cursor: 'default',
         userSelect: 'none',
         position: 'relative',
+        textAlign: 'center',
       }}
       aria-label={editing ? `Editing node: ${data.label}` : `Node: ${data.label}`}
     >
@@ -152,6 +153,7 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
             width: '100%',
             padding: 0,
             cursor: 'text',
+            textAlign: 'center',
           }}
         />
       ) : (
