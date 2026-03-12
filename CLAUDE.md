@@ -566,6 +566,8 @@ Agents must check this table before implementing any UI or React work.
 
 ## 12. Critical Rules
 
+> **Active rule — Requirements Agent Gate:** Any agent that receives a request containing a new requirement or a change to an existing requirement **must stop and invoke the Requirements Agent (`/requirements`) before writing any implementation code.** The Requirements Agent runs the full Q&A and approval flow on a `chore/requirements-*` branch. Only after that branch is merged to `main` does the implementing agent proceed on its own `feature/*` or `fix/*` branch. No agent may update `requirements/requirements.md` or `requirements/requirements.html` as a side-effect of an implementation task — requirements documents are owned exclusively by the Requirements Agent.
+
 > **Active rule — Paired Document Sync:** Where a `.md` file has a paired `.html` file, both must be updated in the same commit. Pairs: `devmethod/devmethod.md ↔ devmethod/devmethod.html` · `requirements/requirements.md ↔ requirements/requirements.html` · `resources/resources.md ↔ resources/resources.html`. This applies to every agent including the Improvement Agent.
 
 > **Active rule — UI Verification Gate:** All frontend feature agents (Canvas, Settings, AI, Persistence) must verify their work in Chrome using the Playwright MCP before committing. Start the dev server (`pnpm dev`), then use Playwright MCP to navigate and interact with the feature — confirm visual correctness, interactive behaviour, and a clean browser console. This is a mandatory step between "fix all failures" and "commit".
