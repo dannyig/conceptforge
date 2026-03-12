@@ -100,7 +100,7 @@
 |---|---|
 | V-01 | Dark theme throughout — consistent with ConceptForge brand |
 | V-02 | Nodes styled with clear label readability |
-| V-03 | Edges rendered with directional arrows |
+| V-03 | All edges — regular edges, branching edge stems, and branching edge arrows — must render as straight lines with directional arrowheads. Curved or bezier paths are not permitted |
 | V-04 | Responsive layout — usable on desktop screens (1280px+) |
 | V-05 | Node labels must be horizontally centred within the node |
 | V-06 | Edge label captions and branching edge hub labels must be rendered without a visible border, at a font size of `9px` |
@@ -190,4 +190,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 1.9 — March 2026 — Updated V-08 (disable auto-fitView on node changes; defaultViewport zoom 0.85; programmatic fitView on map load only)*
+*Version 2.0 — March 2026 — Updated V-03 (all edges must be straight lines; curved/bezier paths not permitted)*
