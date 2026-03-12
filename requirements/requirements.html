@@ -208,7 +208,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v1.4 &nbsp;·&nbsp; March 2026</span>
+    <span class="version-badge">v1.5 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -267,6 +267,8 @@
         <tr><td class="req-id">C-15</td><td>Allow target nodes of a branching edge to be freely positioned anywhere on the canvas; branch arrows must update dynamically to follow the current node positions &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">C-16</td><td>Deleting the edge segment between the source node and the label hub, or selecting and deleting the label hub itself, removes the entire branching edge (all branch arrows) while leaving all target nodes on the canvas; deleting an individual branch arrow (between the label hub and a target node) removes only that branch &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">C-17</td><td>Allow the user to reposition a branching edge label hub by dragging it; branch arrows must update dynamically to reflect the new label position &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">C-18</td><td>Only expose a connection handle at the bottom of each node; remove handles from the top, left, and right sides so edges can only originate from the bottom of a node &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">C-19</td><td>When the user drags an edge from a node's bottom handle and releases it on an empty area of the canvas, automatically create a new node at the drop position, connect it to the source node, and immediately place the new node in inline edit mode with a blank label — identical behaviour to double-clicking empty canvas to create a node &nbsp;<span class="badge badge-core">NEW</span></td></tr>
       </tbody>
     </table>
 
@@ -332,7 +334,7 @@
         <tr><td class="req-id">V-03</td><td>Edges rendered with directional arrows</td></tr>
         <tr><td class="req-id">V-04</td><td>Responsive layout — usable on desktop screens (1280px+)</td></tr>
         <tr><td class="req-id">V-05</td><td>Node labels must be horizontally centred within the node &nbsp;<span class="badge badge-core">NEW</span></td></tr>
-        <tr><td class="req-id">V-06</td><td>Edge label captions must be rendered without a visible border, at a font size one step smaller than the node label font size &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">V-06</td><td>Edge label captions must be rendered without a visible border, at a font size of <code>9px</code> &nbsp;<span class="badge badge-core">UPDATED</span></td></tr>
         <tr><td class="req-id">V-07</td><td>When the canvas contains no nodes, display a low-opacity "Double click to start" hint centred on the canvas; the hint disappears when a node is present and reappears if all nodes are removed &nbsp;<span class="badge badge-core">NEW</span></td></tr>
       </tbody>
     </table>
@@ -430,7 +432,7 @@
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v1.4 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v1.5 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>
