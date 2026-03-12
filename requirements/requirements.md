@@ -41,7 +41,7 @@
 | C-08 | Display edge label captions on the canvas at all times for all edges that have a label (AI-generated and manually drawn) |
 | C-09 | Allow users to set or edit an edge label caption by double-clicking the edge, using the same inline edit interaction as node label editing |
 | C-10 | Allow the user to convert an existing labelled single edge into a branching edge via a right-click context action on the edge label ("Branch") |
-| C-11 | Render a branching edge as a single line from the source node terminating at a shared label hub, with individual directional arrows fanning out from the bottom of the label hub to each target node |
+| C-11 | Render a branching edge as a single line from the source node terminating at a shared label hub, with individual directional arrows fanning out from the bottom of the label hub to each target node; the hub's top handle (receiving the stem) must be visually hidden; the hub's bottom handle (outgoing to targets) must render in the default grey handle colour at rest and only highlight on hover — it must not remain orange after a connection is made |
 | C-12 | Allow the user to add an adjacent target to a branching edge by dragging from the label hub to an existing node on the canvas, or to an empty canvas area to create and connect a new node |
 | C-13 | Store branching edges in the JSON map data as a distinct structure: one source node ID, one label string, and an ordered list of target node IDs |
 | C-14 | When all but one target is removed from a branching edge, automatically convert it back to a plain single edge |
@@ -103,8 +103,9 @@
 | V-03 | Edges rendered with directional arrows |
 | V-04 | Responsive layout — usable on desktop screens (1280px+) |
 | V-05 | Node labels must be horizontally centred within the node |
-| V-06 | Edge label captions must be rendered without a visible border, at a font size of `9px` |
+| V-06 | Edge label captions and branching edge hub labels must be rendered without a visible border, at a font size of `9px` |
 | V-07 | When the canvas contains no nodes, display a low-opacity "Double click to start" hint centred on the canvas; the hint disappears when a node is present and reappears if all nodes are removed |
+| V-08 | The canvas `fitView` on initial load must apply sufficient padding so the map renders noticeably smaller than the viewport — nodes should not fill the screen; the effect should feel like the user has naturally panned back one step |
 
 ### 4.8 Focus Question
 
@@ -189,4 +190,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 1.5 — March 2026 — Added C-18, C-19 (bottom-only handles, edge-drop node creation); updated V-06 (edge label font size fixed at 9px)*
+*Version 1.6 — March 2026 — Updated C-11 (hub handle styling), V-06 (hub labels at 9px); added V-08 (fitView padding/zoom)*

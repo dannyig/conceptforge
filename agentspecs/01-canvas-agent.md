@@ -217,7 +217,9 @@ interface MapData {
 - [ ] Create `src/components/canvas/BranchingEdge.tsx` — custom component that renders (C-11):
   - A single line from the source node to the label hub (rendered as a draggable, styled element)
   - Individual directional arrows fanning out from the bottom of the label hub to each target node
-  - Label hub styled consistently with edge labels in `ConceptEdge` (same font, background, colours)
+  - Label hub styled consistently with edge labels in `ConceptEdge` (same font `FONT_SIZE_EDGE_LABEL`, background, colours)
+  - Hub top handle (receiving the stem) must be visually hidden
+  - Hub bottom handle (outgoing to targets) must use `COLOR_HANDLE` at rest — must not remain orange after a connection is made
 - [ ] Label hub double-click → inline label edit (same pattern as C-09 — Enter/blur confirms, Escape cancels) (C-09 parity)
 - [ ] Drag from label hub to an existing node → adds that node to `targets` (C-12)
 - [ ] Drag from label hub to empty canvas area → creates a new node and adds it to `targets` (C-12)
@@ -232,30 +234,31 @@ interface MapData {
 
 ---
 
-### Group 4d — Visual Refinements (V-05, V-06, V-07)
+### Group 4d — Visual Refinements (V-05, V-06, V-07, V-08)
 
 - [ ] **V-05 — Node label centering:** Ensure the node label text in `ConceptNode.tsx` is horizontally centred within the node. The label container must use `text-align: center` and `width: 100%` so labels of any length are centred regardless of node width.
 - [ ] **V-06 — Edge label border removal and fixed font size:**
-  - In `ConceptEdge.tsx`, remove the visible border/stroke from the label background rect — the rect is kept for readability but must have no visible border (set `stroke: none` or omit stroke from the SVG rect / set border to transparent on the HTML element)
-  - Edge label font size must be `9px` — add or update `FONT_SIZE_EDGE_LABEL = '9px'` in `theme.ts` and apply it in `ConceptEdge.tsx`
-  - Keep the `COLOR_NODE_BG` background fill so the label remains readable against the canvas
+  - In `ConceptEdge.tsx` and `BranchHubNode.tsx`, remove the visible border/stroke from label elements — kept for readability but must have no visible border
+  - Edge label and hub label font size must be `9px` — use `FONT_SIZE_EDGE_LABEL = '9px'` from `theme.ts` in both components
+  - Keep the `COLOR_NODE_BG` background fill so labels remain readable against the canvas
 - [ ] **V-07 — Empty canvas hint:**
   - In `Canvas.tsx`, render a centred, low-opacity hint text `"Double click to start"` on the canvas background when `nodes.length === 0`
-  - Hide it (`display: none` or conditional render) as soon as any node is added
-  - Re-show it if all nodes are subsequently deleted
-  - Style: `opacity: 0.25`, `FONT_FAMILY`, `FONT_SIZE_NODE_LABEL`, `COLOR_NODE_TEXT`, `pointer-events: none` so it does not block canvas interactions
-  - Position using `position: absolute`, `top: 50%`, `left: 50%`, `transform: translate(-50%, -50%)` relative to the canvas container
+  - Hide it as soon as any node is added; re-show if all nodes are deleted
+  - Style: `opacity: 0.25`, `FONT_FAMILY`, `FONT_SIZE_NODE_LABEL`, `COLOR_NODE_TEXT`, `pointer-events: none`
+  - Position: `position: absolute`, `top: 50%`, `left: 50%`, `transform: translate(-50%, -50%)`
+- [ ] **V-08 — fitView padding:**
+  - In `Canvas.tsx`, add `fitViewOptions={{ padding: 0.4 }}` (or similar value that gives one natural step back) to the `<ReactFlow>` component so nodes render noticeably smaller than the viewport on load
 
-**Commit:** `feat(V-05,V-06,V-07): node label centering, edge label border removal, empty canvas hint`
+**Commit:** `feat(V-05,V-06,V-07,V-08): node label centering, edge label styles, empty canvas hint, fitView padding`
 
 ---
 
 ### Group 4e — Handle Restriction and Edge-Drop Node Creation (C-18, C-19)
 
-- [ ] **C-18 — Bottom handle only:**
-  - In `ConceptNode.tsx`, remove the `<Handle>` elements for `Position.Top`, `Position.Left`, and `Position.Right`
-  - Keep only the `Position.Bottom` handle for outgoing edge connections
-  - Ensure the bottom handle still uses `COLOR_HANDLE` / `COLOR_HANDLE_HOVER` styling from `theme.ts`
+- [ ] **C-18 — Visible source handle at bottom, invisible target handles elsewhere:**
+  - In `ConceptNode.tsx`, keep `Position.Top`, `Position.Left`, and `Position.Right` as `type="target"` handles but hide them via CSS (`opacity: 0; pointer-events: none`) scoped to `.react-flow__node-concept`
+  - Keep only `Position.Bottom` as `type="source"` — the single visible handle dot
+  - Ensure the bottom handle uses `COLOR_HANDLE` / `COLOR_HANDLE_HOVER` from `theme.ts`
 - [ ] **C-19 — Edge-drop creates a new node:**
   - In `Canvas.tsx`, implement an `onConnectEnd` handler on `<ReactFlow>`
   - When the connection is dropped on the canvas pane (not on an existing node), read the drop coordinates from the event, create a new node at that position with a blank label, connect the source node to the new node with a new edge, and immediately place the new node into inline edit mode (same state as double-clicking empty canvas — C-02/C-03)
@@ -346,4 +349,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.6 — March 2026 (added Group 4e: C-18 bottom-only handles, C-19 edge-drop node creation; updated V-06 edge label font to 9px)*
+*Canvas Agent Spec v1.7 — March 2026 (updated C-11 hub handle styling, V-06 hub labels at 9px, V-08 fitView padding; corrected C-18 invisible target handles)*
