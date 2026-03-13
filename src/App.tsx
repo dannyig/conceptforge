@@ -4,6 +4,7 @@ import { FocusQuestionBar } from '@/components/ai/FocusQuestionBar'
 import { MissingKeyBanner } from '@/components/settings/MissingKeyBanner'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
 import { SettingsTrigger } from '@/components/toolbar/SettingsTrigger'
+import { Toolbar } from '@/components/toolbar/Toolbar'
 import { OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
 
 export function App(): React.JSX.Element {
@@ -11,6 +12,7 @@ export function App(): React.JSX.Element {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [showMissingKeyBanner, setShowMissingKeyBanner] = useState(false)
   const [focusQuestion, setFocusQuestion] = useState('')
+  const [nodeCount, setNodeCount] = useState(0)
 
   // Listen for openSettings events dispatched by useApiKey hook
   useEffect((): (() => void) => {
@@ -40,7 +42,12 @@ export function App(): React.JSX.Element {
     >
       <FocusQuestionBar value={focusQuestion} onChange={setFocusQuestion} />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
-        <Canvas ref={canvasRef} />
+        <Canvas ref={canvasRef} onNodeCountChange={setNodeCount} />
+        <Toolbar
+          canvasRef={canvasRef}
+          hasNodes={nodeCount > 0}
+          onFocusQuestionLoad={setFocusQuestion}
+        />
         <SettingsTrigger onOpen={openSettings} />
         <SettingsPanel isOpen={isSettingsOpen} onClose={closeSettings} />
         <MissingKeyBanner
