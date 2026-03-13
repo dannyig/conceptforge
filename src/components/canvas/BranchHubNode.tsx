@@ -71,11 +71,14 @@ export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React
 
   return (
     <>
-      {/* Stem connects here — hidden per C-11; top:0 aligns connection point with box border */}
+      {/* Stem connects here — hidden per C-11.
+          React Flow Position.Top uses handleBCR.top (not center) as the edge endpoint.
+          With transform:translate(-50%,-50%) the handle visual-top = CSS top − height/2.
+          Setting top=5 makes visual-top=0 → handle.y=0 → edge terminates at box border. */}
       <Handle
         type="target"
         position={Position.Top}
-        style={{ ...HANDLE_STYLE, opacity: 0, pointerEvents: 'none', top: 0 }}
+        style={{ ...HANDLE_STYLE, opacity: 0, pointerEvents: 'none', top: 5 }}
       />
 
       <div
