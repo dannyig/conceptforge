@@ -208,6 +208,8 @@ interface ConceptEdge {
   id: string
   source: string
   target: string
+  sourceHandle?: string | null  // which side handle the edge originates from; absent = unspecified
+  targetHandle?: string | null  // which side handle the edge terminates at; absent = unspecified
   label?: string
   labelPosition?: { x: number; y: number }  // C-22: custom waypoint position; absent when at default midpoint
 }

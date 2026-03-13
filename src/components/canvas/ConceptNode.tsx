@@ -23,18 +23,22 @@ export type NodeData = {
 
 export type ConceptFlowNode = Node<NodeData>
 
-// All four sides — used to render source + target handle pairs
+// All four sides — used to render source + target handle pairs.
+// flushStyle offsets each handle inward by half its size so React Flow's
+// outer-edge endpoint computation places edge start/end flush with the node border.
+const HANDLE_SIZE = 8
+const FLUSH = HANDLE_SIZE / 2
 const SIDES = [
-  { position: Position.Top, id: 'top' },
-  { position: Position.Right, id: 'right' },
-  { position: Position.Bottom, id: 'bottom' },
-  { position: Position.Left, id: 'left' },
+  { position: Position.Top, id: 'top', flushStyle: { top: FLUSH } },
+  { position: Position.Right, id: 'right', flushStyle: { right: FLUSH } },
+  { position: Position.Bottom, id: 'bottom', flushStyle: { bottom: FLUSH } },
+  { position: Position.Left, id: 'left', flushStyle: { left: FLUSH } },
 ] as const
 
 // Handles are always invisible per C-18
-const HANDLE_STYLE: React.CSSProperties = {
-  width: 8,
-  height: 8,
+const HANDLE_STYLE_BASE: React.CSSProperties = {
+  width: HANDLE_SIZE,
+  height: HANDLE_SIZE,
   opacity: 0,
 }
 
@@ -137,13 +141,13 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
        * in the DOM — React Flow's connection state machine handles priority
        * correctly (source active when idle, target active when dragging).
        */}
-      {SIDES.map(({ position, id: side }) => (
+      {SIDES.map(({ position, id: side, flushStyle }) => (
         <React.Fragment key={side}>
           <Handle
             id={`${side}-t`}
             type="target"
             position={position}
-            style={HANDLE_STYLE}
+            style={{ ...HANDLE_STYLE_BASE, ...flushStyle }}
             aria-label={`Connect to node (${side})`}
           />
           <Handle
@@ -151,7 +155,7 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
             type="source"
             position={position}
             isConnectable={!data.occupiedSides?.includes(side)}
-            style={HANDLE_STYLE}
+            style={{ ...HANDLE_STYLE_BASE, ...flushStyle }}
             aria-label={`Connect from node (${side})`}
           />
         </React.Fragment>
