@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -52,6 +59,8 @@ type CanvasNodeData = {
   conceptType?: 'concept' | 'question' | 'source' | 'insight'
   branchingEdgeId?: string
   autoEdit?: boolean
+  // C-18: sides with ≥1 incoming edge — injected by enrichedNodes memo; not persisted
+  occupiedSides?: string[]
 }
 type CanvasFlowNode = Node<CanvasNodeData>
 
@@ -117,6 +126,30 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
   useEffect((): void => {
     edgesRef.current = edges
   }, [edges])
+
+  // C-18: derive which sides of each concept node have incoming edges so source
+  // handles on those sides can be disabled. Target handle IDs follow the
+  // "{side}-t" convention set in ConceptNode.tsx.
+  const VALID_SIDES = new Set(['top', 'right', 'bottom', 'left'])
+  const enrichedNodes = useMemo((): CanvasFlowNode[] => {
+    const occupiedMap = new Map<string, Set<string>>()
+    for (const edge of edges) {
+      if (!edge.target || !edge.targetHandle) continue
+      const side = edge.targetHandle.replace(/-t$/, '')
+      if (!VALID_SIDES.has(side)) continue
+      if (!occupiedMap.has(edge.target)) occupiedMap.set(edge.target, new Set())
+      occupiedMap.get(edge.target)!.add(side)
+    }
+    return nodes.map(node => {
+      const occupied = [...(occupiedMap.get(node.id) ?? [])]
+      const current = node.data.occupiedSides ?? []
+      // Skip update if set is identical — avoids unnecessary re-renders
+      if (current.length === occupied.length && occupied.every(s => current.includes(s))) {
+        return node
+      }
+      return { ...node, data: { ...node.data, occupiedSides: occupied } }
+    })
+  }, [nodes, edges])
 
   const [contextMenu, setContextMenu] = useState<{
     edgeId: string
@@ -545,7 +578,7 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
         @media (prefers-reduced-motion: reduce) { .react-flow__edge-path, .react-flow__controls-button { transition: none; } }
       `}</style>
       <ReactFlow
-        nodes={nodes}
+        nodes={enrichedNodes}
         edges={edges}
         onNodesChange={handleNodesChange}
         onEdgesChange={handleEdgesChange}
