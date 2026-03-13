@@ -58,6 +58,7 @@ type CanvasFlowNode = Node<CanvasNodeData>
 // Canvas-internal edge data
 type CanvasEdgeData = {
   label?: string
+  labelPosition?: { x: number; y: number }
   branchingEdgeId?: string
   isStem?: boolean
   isBranch?: boolean
@@ -171,6 +172,7 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
               source: e.source,
               target: e.target,
               label: e.data?.label,
+              labelPosition: e.data?.labelPosition,
             })),
           branchingEdges: beMap.size > 0 ? [...beMap.values()] : undefined,
         }
@@ -187,7 +189,7 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
           id: e.id,
           source: e.source,
           target: e.target,
-          data: { label: e.label },
+          data: { label: e.label, labelPosition: e.labelPosition },
           markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
           style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
         }))

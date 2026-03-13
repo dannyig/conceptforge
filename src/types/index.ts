@@ -13,6 +13,7 @@ export interface ConceptEdge {
   source: string
   target: string
   label?: string
+  labelPosition?: { x: number; y: number } // C-22: custom waypoint position; absent when at default midpoint
 }
 
 export interface BranchingEdge {
