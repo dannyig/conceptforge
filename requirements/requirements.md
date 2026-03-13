@@ -50,6 +50,9 @@
 | C-17 | Allow the user to reposition a branching edge label hub by dragging it; branch arrows must update dynamically to reflect the new label position |
 | C-18 | Display a single visible source handle at the bottom of each node; top, left, and right target handles must remain functional for receiving incoming edges but be visually hidden (opacity 0); edges must not connect to the bottom of a target node — the bottom handle is source-only |
 | C-19 | When the user drags an edge from a node's bottom handle and releases it on an empty area of the canvas, automatically create a new node at the drop position, connect it to the source node, and immediately place the new node in inline edit mode with a blank label — identical behaviour to double-clicking empty canvas to create a node |
+| C-20 | When a single (non-branching) edge has a label, render the label as a draggable waypoint; the user may drag it freely to any position on the canvas to reposition it |
+| C-21 | When a single edge label has been repositioned from its default midpoint, render the edge as two straight directed segments — source node → label (no arrowhead) and label → target node (with arrowhead) — both segments updating dynamically as the source node, target node, or label waypoint position changes |
+| C-22 | Save a repositioned single edge label's canvas coordinates as part of the edge's JSON data; restore the custom position and two-segment routing when the map is loaded |
 
 ### 4.2 AI — Map Generation
 
@@ -190,4 +193,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 2.0 — March 2026 — Updated V-03 (all edges must be straight lines; curved/bezier paths not permitted)*
+*Version 2.1 — March 2026 — Added C-20, C-21, C-22 (repositionable single edge label waypoint)*

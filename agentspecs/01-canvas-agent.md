@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-19 and V-01 → V-07
+**Trigger:** Human assigns requirement IDs C-01 → C-22 and V-01 → V-07
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -271,6 +271,32 @@ interface MapData {
 
 ---
 
+### Group 4f — Repositionable Single Edge Label Waypoint (C-20, C-21, C-22)
+
+> **Before starting this group:** Extend `ConceptEdge` in `src/types/index.ts` with `labelPosition?: { x: number; y: number }` before writing any component code.
+
+- [ ] **C-20 — Draggable label waypoint:**
+  - In `ConceptEdge.tsx`, when `label` is non-empty, make the label element draggable (use `useDraggable`-style pointer events or a React Flow node approach)
+  - While dragging, update a `labelPosition` state value stored on the edge's `data`
+  - Cursor must be `grab` at rest and `grabbing` during drag
+  - Label styling remains unchanged: borderless, `FONT_SIZE_EDGE_LABEL` (9px), `COLOR_NODE_TEXT` (V-06)
+  - Dragging is only available when the edge has a label — unlabelled edges have no draggable target
+- [ ] **C-21 — Two-segment routing when repositioned:**
+  - When `data.labelPosition` is set (label has been moved from default), render the edge as two separate SVG paths:
+    - Segment 1: source node → label position, straight line, no arrowhead
+    - Segment 2: label position → target node, straight line, with `MarkerType.ArrowClosed`
+  - When `data.labelPosition` is unset (default midpoint), render as a single straight segment (existing behaviour)
+  - Both segments must follow V-03 (straight lines, no bezier paths)
+  - Both segments update in real time as source node, target node, or label waypoint is moved
+- [ ] **C-22 — Persistence:**
+  - `labelPosition` is included in `ConceptEdge` data saved by `getMapData()` and restored by `setMapData()`
+  - P-03 is satisfied: the edge's custom label position survives a JSON save/load round-trip
+  - When a map is loaded with a repositioned label, the two-segment routing is restored immediately
+
+**Commit:** `feat(C-20,C-21,C-22): repositionable single edge label waypoint with two-segment routing`
+
+---
+
 ### Group 5 — UI Verification (Playwright MCP)
 
 Before committing Group 4, run the web design audit and the Playwright visual check:
@@ -352,4 +378,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.7 — March 2026 (updated C-11 hub handle styling, V-06 hub labels at 9px, V-08 fitView padding; corrected C-18 invisible target handles)*
+*Canvas Agent Spec v1.8 — March 2026 (added Group 4f: C-20, C-21, C-22 repositionable single edge label waypoint)*
