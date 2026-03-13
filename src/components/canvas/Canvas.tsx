@@ -123,10 +123,11 @@ export interface CanvasHandle {
 
 interface CanvasFlowProps {
   ref?: React.Ref<CanvasHandle>
+  onNodeCountChange?: (count: number) => void
 }
 
 // Inner component — must be inside ReactFlowProvider to use useReactFlow
-function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
+function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Element {
   const { screenToFlowPosition, fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasFlowNode>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasFlowEdge>([])
@@ -140,6 +141,9 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
   useEffect((): void => {
     edgesRef.current = edges
   }, [edges])
+  useEffect((): void => {
+    onNodeCountChange?.(nodes.filter(n => n.type !== 'branchHub').length)
+  }, [nodes, onNodeCountChange])
 
   // C-18: derive which sides of each concept node have incoming edges so source
   // handles on those sides can be disabled. Target handle IDs follow the
@@ -703,12 +707,13 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
 
 interface CanvasProps {
   ref?: React.Ref<CanvasHandle>
+  onNodeCountChange?: (count: number) => void
 }
 
-export function Canvas({ ref }: CanvasProps): React.JSX.Element {
+export function Canvas({ ref, onNodeCountChange }: CanvasProps): React.JSX.Element {
   return (
     <ReactFlowProvider>
-      <CanvasFlow ref={ref} />
+      <CanvasFlow ref={ref} onNodeCountChange={onNodeCountChange} />
     </ReactFlowProvider>
   )
 }
