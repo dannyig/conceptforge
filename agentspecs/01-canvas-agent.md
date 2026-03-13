@@ -266,7 +266,7 @@ interface MapData {
   - No handle is ever visible — do not render hover effects or coloured dots on any handle
 - [ ] **C-19 — Edge-drop creates a new node:**
   - In `Canvas.tsx`, implement an `onConnectEnd` handler on `<ReactFlow>`
-  - When the connection is dropped on the canvas pane (not on an existing node), read the drop coordinates from the event, create a new node at that position with a blank label, connect the source node to the new node with a new edge, and immediately place the new node into inline edit mode (same state as double-clicking empty canvas — C-02/C-03)
+  - When a drag from any handle is dropped on the canvas pane (not on an existing node), read the drop coordinates from the event, create a new node at that position with a blank label, connect the source node to the new node with a new edge, and immediately place the new node into inline edit mode (same state as double-clicking empty canvas — C-02/C-03)
   - If the connection is dropped on an existing node, let React Flow's normal `onConnect` handle it — do not interfere
 
 **Commit:** `feat(C-18,C-19): flexible four-sided handles and edge-drop node creation`
@@ -380,4 +380,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.9 — March 2026 (updated Group 4e: C-18 flexible four-sided handles)*
+*Canvas Agent Spec v1.10 — March 2026 (updated Group 4e: C-18 flexible four-sided handles; C-19 edge-drop from any handle)*
