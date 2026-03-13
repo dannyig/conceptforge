@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Handle, Position, useReactFlow, type Node, type NodeProps } from '@xyflow/react'
 import {
-  COLOR_HANDLE,
-  COLOR_HANDLE_HOVER,
   COLOR_NODE_BG,
   COLOR_NODE_BORDER,
   COLOR_NODE_GLOW,
@@ -11,7 +9,6 @@ import {
   FONT_FAMILY,
   FONT_SIZE_NODE_LABEL,
   FONT_WEIGHT_NODE_LABEL,
-  TRANSITION_FAST,
   TRANSITION_NORMAL,
 } from '@/lib/theme'
 
@@ -19,16 +16,26 @@ export type NodeData = {
   label: string
   conceptType?: 'concept' | 'question' | 'source' | 'insight'
   autoEdit?: boolean
+  // C-18: sides that currently have at least one incoming edge — source-disabled
+  // Computed in CanvasFlow from edge targetHandle fields; absent = no occupied sides
+  occupiedSides?: string[]
 }
 
 export type ConceptFlowNode = Node<NodeData>
 
-const HANDLE_BASE_STYLE: React.CSSProperties = {
+// All four sides — used to render source + target handle pairs
+const SIDES = [
+  { position: Position.Top, id: 'top' },
+  { position: Position.Right, id: 'right' },
+  { position: Position.Bottom, id: 'bottom' },
+  { position: Position.Left, id: 'left' },
+] as const
+
+// Handles are always invisible per C-18
+const HANDLE_STYLE: React.CSSProperties = {
   width: 8,
   height: 8,
-  backgroundColor: COLOR_HANDLE,
-  border: `1px solid ${COLOR_HANDLE}`,
-  transition: `background-color ${TRANSITION_FAST}`,
+  opacity: 0,
 }
 
 export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>): React.JSX.Element {
@@ -121,32 +128,34 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
       }}
       aria-label={editing ? `Editing node: ${data.label}` : `Node: ${data.label}`}
     >
-      {/* Invisible target handles — functional for snapping incoming edges, hidden visually */}
-      <Handle
-        type="target"
-        position={Position.Top}
-        style={HANDLE_BASE_STYLE}
-        aria-label="Connect to node"
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        style={HANDLE_BASE_STYLE}
-        aria-label="Connect to node"
-      />
-      <Handle
-        type="target"
-        position={Position.Right}
-        style={HANDLE_BASE_STYLE}
-        aria-label="Connect to node"
-      />
-      {/* Visible source handle — edges originate here only, never land here */}
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        style={HANDLE_BASE_STYLE}
-        aria-label="Connect from node"
-      />
+      {/*
+       * C-18: four handle pairs (source + target per side), all visually hidden.
+       * Target handles always accept incoming edges.
+       * Source handles are disabled (isConnectable=false) when the same side
+       * already has at least one incoming edge attached.
+       * Source handles are rendered after target handles so they sit on top
+       * in the DOM — React Flow's connection state machine handles priority
+       * correctly (source active when idle, target active when dragging).
+       */}
+      {SIDES.map(({ position, id: side }) => (
+        <React.Fragment key={side}>
+          <Handle
+            id={`${side}-t`}
+            type="target"
+            position={position}
+            style={HANDLE_STYLE}
+            aria-label={`Connect to node (${side})`}
+          />
+          <Handle
+            id={side}
+            type="source"
+            position={position}
+            isConnectable={!data.occupiedSides?.includes(side)}
+            style={HANDLE_STYLE}
+            aria-label={`Connect from node (${side})`}
+          />
+        </React.Fragment>
+      ))}
 
       {editing ? (
         <input
@@ -174,12 +183,9 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
         <span>{data.label}</span>
       )}
 
-      {/* Handle hover + input focus-visible styles — pseudo-class styles not possible with inline styles */}
+      {/* All handles hidden — pseudo-class input focus styles */}
       <style>{`
-        .react-flow__node-concept .react-flow__handle-top,
-        .react-flow__node-concept .react-flow__handle-left,
-        .react-flow__node-concept .react-flow__handle-right { opacity: 0 !important; pointer-events: none; }
-        .react-flow__node-concept .react-flow__handle-bottom:hover { background-color: ${COLOR_HANDLE_HOVER} !important; }
+        .react-flow__node-concept .react-flow__handle { opacity: 0 !important; }
         .react-flow__node input:focus-visible { outline: 1px solid ${COLOR_NODE_SELECTED}; outline-offset: 2px; border-radius: 2px; }
         @media (prefers-reduced-motion: reduce) {
           .react-flow__handle { transition: none !important; }
