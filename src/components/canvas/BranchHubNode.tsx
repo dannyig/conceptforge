@@ -71,11 +71,11 @@ export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React
 
   return (
     <>
-      {/* Stem connects here — hidden per C-11 */}
+      {/* Stem connects here — hidden per C-11; top:0 aligns connection point with box border */}
       <Handle
         type="target"
         position={Position.Top}
-        style={{ ...HANDLE_STYLE, opacity: 0, pointerEvents: 'none' }}
+        style={{ ...HANDLE_STYLE, opacity: 0, pointerEvents: 'none', top: 0 }}
       />
 
       <div
