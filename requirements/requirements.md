@@ -48,7 +48,7 @@
 | C-15 | Allow target nodes of a branching edge to be freely positioned anywhere on the canvas; branch arrows must update dynamically to follow the current node positions |
 | C-16 | Deleting the edge segment between the source node and the label hub, or selecting and deleting the label hub itself, removes the entire branching edge (all branch arrows) while leaving all target nodes on the canvas; deleting an individual branch arrow (between the label hub and a target node) removes only that branch |
 | C-17 | Allow the user to reposition a branching edge label hub by dragging it; branch arrows must update dynamically to reflect the new label position |
-| C-18 | Display a single visible source handle at the bottom of each node; top, left, and right target handles must remain functional for receiving incoming edges but be visually hidden (opacity 0); edges must not connect to the bottom of a target node — the bottom handle is source-only |
+| C-18 | Each node exposes four handles — one per side (top, right, bottom, left) — all visually hidden (opacity 0) at all times. Any handle with no incoming edge may be used to start an outgoing edge. Any handle may receive one or more incoming edges. A handle that has at least one incoming edge attached to it is not available as a source. |
 | C-19 | When the user drags an edge from a node's bottom handle and releases it on an empty area of the canvas, automatically create a new node at the drop position, connect it to the source node, and immediately place the new node in inline edit mode with a blank label — identical behaviour to double-clicking empty canvas to create a node |
 | C-20 | When a single (non-branching) edge has a label, render the label as a draggable waypoint; the user may drag it freely to any position on the canvas to reposition it |
 | C-21 | When a single edge label has been repositioned from its default midpoint, render the edge as two straight directed segments — source node → label (no arrowhead) and label → target node (with arrowhead) — both segments updating dynamically as the source node, target node, or label waypoint position changes |
@@ -193,4 +193,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 2.1 — March 2026 — Added C-20, C-21, C-22 (repositionable single edge label waypoint)*
+*Version 2.2 — March 2026 — Updated C-18 (flexible four-sided handles: any side can source or receive edges, occupied sides cannot source)*
