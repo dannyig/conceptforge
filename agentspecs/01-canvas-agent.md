@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-22 and V-01 → V-07
+**Trigger:** Human assigns requirement IDs C-01 → C-22 and V-01 → V-08
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -256,18 +256,20 @@ interface MapData {
 
 ---
 
-### Group 4e — Handle Restriction and Edge-Drop Node Creation (C-18, C-19)
+### Group 4e — Flexible Handles and Edge-Drop Node Creation (C-18, C-19)
 
-- [ ] **C-18 — Visible source handle at bottom, invisible target handles elsewhere:**
-  - In `ConceptNode.tsx`, keep `Position.Top`, `Position.Left`, and `Position.Right` as `type="target"` handles but hide them via CSS (`opacity: 0; pointer-events: none`) scoped to `.react-flow__node-concept`
-  - Keep only `Position.Bottom` as `type="source"` — the single visible handle dot
-  - Ensure the bottom handle uses `COLOR_HANDLE` / `COLOR_HANDLE_HOVER` from `theme.ts`
+- [ ] **C-18 — Four-sided handles, all invisible, occupation-gated sourcing:**
+  - In `ConceptNode.tsx`, render four `<Handle>` elements — one per side (top, right, bottom, left) — each with `opacity: 0` at all times
+  - All four handles support `type="target"` (receive incoming edges) with no limit on how many edges per side
+  - A handle may also act as a source (`type="source"`) only when it has no incoming edges currently connected to it
+  - Implement a `isValidConnection` or `onConnectStart`/`onConnectEnd` guard (or use React Flow's `isValidConnection` prop on `<Handle>`) to prevent a handle from being used as a source when it already has an incoming edge
+  - No handle is ever visible — do not render hover effects or coloured dots on any handle
 - [ ] **C-19 — Edge-drop creates a new node:**
   - In `Canvas.tsx`, implement an `onConnectEnd` handler on `<ReactFlow>`
   - When the connection is dropped on the canvas pane (not on an existing node), read the drop coordinates from the event, create a new node at that position with a blank label, connect the source node to the new node with a new edge, and immediately place the new node into inline edit mode (same state as double-clicking empty canvas — C-02/C-03)
   - If the connection is dropped on an existing node, let React Flow's normal `onConnect` handle it — do not interfere
 
-**Commit:** `feat(C-18,C-19): bottom-only handles and edge-drop node creation`
+**Commit:** `feat(C-18,C-19): flexible four-sided handles and edge-drop node creation`
 
 ---
 
@@ -378,4 +380,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.8 — March 2026 (added Group 4f: C-20, C-21, C-22 repositionable single edge label waypoint)*
+*Canvas Agent Spec v1.9 — March 2026 (updated Group 4e: C-18 flexible four-sided handles)*
