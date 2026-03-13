@@ -74,6 +74,20 @@ type CanvasEdgeData = {
 }
 type CanvasFlowEdge = Edge<CanvasEdgeData>
 
+// Returns the best target handle ID for an edge arriving at `target` from `source`.
+// Picks the face that most directly faces the source node.
+function pickTargetHandle(
+  source: { x: number; y: number },
+  target: { x: number; y: number }
+): string {
+  const dx = target.x - source.x
+  const dy = target.y - source.y
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    return dx >= 0 ? 'left-t' : 'right-t'
+  }
+  return dy >= 0 ? 'top-t' : 'bottom-t'
+}
+
 // ID helpers — pure functions at module scope
 function hubNodeId(beId: string): string {
   return `hub-${beId}`
@@ -204,6 +218,8 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
               id: e.id,
               source: e.source,
               target: e.target,
+              sourceHandle: e.sourceHandle ?? null,
+              targetHandle: e.targetHandle ?? null,
               label: e.data?.label,
               labelPosition: e.data?.labelPosition,
             })),
@@ -222,6 +238,8 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
           id: e.id,
           source: e.source,
           target: e.target,
+          sourceHandle: e.sourceHandle ?? null,
+          targetHandle: e.targetHandle ?? null,
           data: { label: e.label, labelPosition: e.labelPosition },
           markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
           style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
@@ -294,6 +312,7 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
         {
           id: stemEdgeId(beId),
           source: edge.source,
+          sourceHandle: edge.sourceHandle ?? null,
           target: hub,
           type: 'branchStem',
           data: { branchingEdgeId: beId, isStem: true },
@@ -302,6 +321,7 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
           id: branchEdgeId(beId, edge.target),
           source: hub,
           target: edge.target,
+          targetHandle: edge.targetHandle ?? null,
           type: 'branchArrow',
           data: { branchingEdgeId: beId, isBranch: true },
           markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
@@ -364,8 +384,11 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
     (event: MouseEvent | TouchEvent, connectionState: FinalConnectionState): void => {
       if (connectionState.isValid) return
       // FinalConnectionState shape uses fromHandle (not startHandle) in @xyflow/react v12
-      const state = connectionState as unknown as { fromHandle?: { nodeId?: string } | null }
+      const state = connectionState as unknown as {
+        fromHandle?: { nodeId?: string; id?: string } | null
+      }
       const fromNodeId = state.fromHandle?.nodeId
+      const fromHandleId = state.fromHandle?.id ?? null
       if (!fromNodeId) return
       const fromNode = nodesRef.current.find(n => n.id === fromNodeId)
       const clientX =
@@ -419,7 +442,9 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
           {
             id: crypto.randomUUID(),
             source: fromNodeId,
+            sourceHandle: fromHandleId,
             target: newNodeId,
+            targetHandle: pickTargetHandle(fromNode.position, position),
             type: 'default',
             data: { label: '' },
             markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
@@ -496,7 +521,9 @@ function CanvasFlow({ ref }: CanvasFlowProps): React.JSX.Element {
                 {
                   id: crypto.randomUUID(),
                   source: stem.source,
+                  sourceHandle: stem.sourceHandle ?? null,
                   target: lastBranch.target,
+                  targetHandle: lastBranch.targetHandle ?? null,
                   type: 'default',
                   data: { label: hubNode.data.label },
                   markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
