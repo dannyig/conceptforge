@@ -88,7 +88,7 @@
 |---|---|
 | P-01 | Allow the user to save the current map as a JSON file |
 | P-02 | Allow the user to load a previously saved JSON map file |
-| P-03 | JSON format must preserve all node positions, labels, and edge data |
+| P-03 | JSON format must preserve all node positions, labels, edge data, and notes |
 
 ### 4.6 Export
 
@@ -121,6 +121,21 @@
 | F-05 | Save the focus question as part of the map's JSON data alongside nodes and edges |
 | F-06 | Restore the focus question when a saved JSON map is loaded |
 | F-07 | When a focus question is present, include it as context in the AI prompt for both map generation (A-02) and node expansion (A-07) |
+
+### 4.9 Notes & Groups
+
+| ID | Requirement |
+|---|---|
+| G-01 | Display a context menu when the user right-clicks on an empty area of the canvas pane, offering two actions: "Add Node" (creates a concept node at the cursor position, equivalent to double-clicking the canvas) and "Add Note" (creates a note at the cursor position with a default background colour). Double-click to create a node remains unchanged. |
+| G-02 | Render notes as canvas elements that always appear behind all nodes and edges. |
+| G-03 | Allow the user to resize a note freely by dragging its corner and edge handles. |
+| G-04 | Allow the user to reposition a note by dragging its body. |
+| G-05 | Allow the user to change a note's background colour via a right-click context menu on the note, selecting from a predefined palette of 10 colours; notes are created with a default colour from this palette. |
+| G-06 | Allow the user to change the text size of a note's label via a right-click context menu on the note, selecting from a predefined set of sizes. |
+| G-07 | Allow the user to add or edit a note's text by double-clicking the note; display the text anchored to the top-left of the note interior. |
+| G-08 | Automatically derive the note's text colour from its background colour to ensure readable contrast at all times — the user does not set text colour directly. |
+| G-09 | Allow the user to delete a note by selecting it and pressing Delete or Backspace. |
+| G-10 | Include notes in the map's saved JSON data, preserving position, dimensions, background colour, text content, and text size; restore notes fully when a saved map is loaded. |
 
 ---
 
@@ -193,4 +208,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 2.3 — March 2026 — Updated C-18 (flexible four-sided handles: any side can source or receive edges, occupied sides cannot source); updated C-19 (edge-drop from any handle, not bottom-only)*
+*Version 2.4 — March 2026 — Added section 4.9 Notes & Groups (G-01→G-10): canvas notes/groups with resizable background, colour palette, contrasting text, and JSON persistence; updated P-03 to include notes*
