@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-22, V-01 → V-08, and/or G-01 → G-12
+**Trigger:** Human assigns requirement IDs C-01 → C-22, V-01 → V-08, G-01 → G-12, and/or B-01 → B-02
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -383,6 +383,30 @@ interface MapData {
 
 ---
 
+### Group 4h — App Version Display (B-01, B-02)
+
+> **B-03 and B-04** (deploy workflow version logging and Docker image label) are CI/CD concerns — they are implemented directly in `.github/workflows/deploy.yml` and `Dockerfile`, not in this agent spec. Implement them on the same branch as a chore step after B-01/B-02.
+
+- [ ] **B-01 — Expose version at build time:**
+  - In `vite.config.ts`, add a `define` entry: `__APP_VERSION__: JSON.stringify(process.env.npm_package_version)`
+  - In `src/vite-env.d.ts`, declare `const __APP_VERSION__: string` so TypeScript resolves it
+  - The value is sourced from `package.json` `version` field at build time — never hardcode the string in any source file
+  - Set `package.json` `version` to `0.9.1` if not already set
+
+- [ ] **B-02 — Version badge in focus question bar:**
+  - In the focus question bar component, render the version string (`v${__APP_VERSION__}`) as a small, always-visible text element
+  - Position: bottom-right aligned within the bar (absolute or flex end, bottom)
+  - Style: low opacity (`0.35`), small font (`10px`), `COLOR_NODE_TEXT`, `FONT_FAMILY`, `pointer-events: none` so it never intercepts clicks on the input
+  - Must not affect the focus question input's layout or behaviour
+
+- [ ] **B-03/B-04 — CI/CD version tagging (chore):**
+  - In `.github/workflows/deploy.yml`, add a step before `flyctl deploy` that runs `echo "Deploying ConceptForge v$(node -p "require('./package.json').version")"` with `name: Print app version`
+  - In `Dockerfile`, add a build arg `ARG APP_VERSION` and an image label `LABEL org.opencontainers.image.version=$APP_VERSION`; pass `--build-arg APP_VERSION=$(node -p "require('./package.json').version")` in the deploy step (or use `flyctl deploy --build-arg` syntax)
+
+**Commit:** `feat(B-01,B-02): app version from package.json, displayed in focus question bar` + `chore(B-03,B-04): log and tag version in deploy workflow and Dockerfile`
+
+---
+
 ### Group 5 — UI Verification (Playwright MCP)
 
 Before committing Group 4, run the web design audit and the Playwright visual check:
@@ -465,4 +489,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.12 — March 2026 (refined Group 4g: G-01→G-12 — note right-click context menu with Add/Edit/Delete, hover-triggered resize handles, double-click routing, non-selectable notes, z-index invariant during editing)*
+*Canvas Agent Spec v1.13 — March 2026 (added Group 4h: B-01→B-04 — app version from package.json, displayed in focus question bar, logged and tagged in deploy workflow)*

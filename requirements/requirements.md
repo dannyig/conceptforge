@@ -139,6 +139,15 @@
 | G-11 | When the user right-clicks a note, display a context menu with four actions: "Add Node" (creates a concept node at the cursor position), "Add Note" (creates a new note at the cursor position), "Edit Note" (opens the background colour and text-size controls), and "Delete Note" (removes the note from the canvas). |
 | G-12 | A single left-click on a note performs no action — notes are not selectable via single click and no selection state is applied to a note. |
 
+### 4.10 App Version
+
+| ID | Requirement |
+|---|---|
+| B-01 | Set the app version in `package.json` (initial value: `0.9.1`) and expose it to the browser bundle at build time via Vite's `define` configuration — the version string must not be hardcoded in any source file |
+| B-02 | Display the version string (format: `v{semver}`) bottom-right aligned within the focus question bar at all times, at low opacity so it does not compete with the focus question input |
+| B-03 | The GitHub Actions deploy workflow must print the app version (read from `package.json`) as an explicit, named step before `flyctl deploy` runs |
+| B-04 | The fly.io deployment must be tagged with the app version as a Docker image label (e.g. `org.opencontainers.image.version`) |
+
 ---
 
 ## 5. Nice to Have (Post-MVP)
@@ -210,4 +219,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 2.5 — March 2026 — Refined section 4.9 Notes & Groups: updated G-02 (z-index invariant during editing), G-03 (hover-triggered resize handles, no selection required), G-05/G-06 (colour and text-size now via "Edit Note" submenu), G-07 (double-click body → new node; double-click text → edit mode), G-09 (delete via right-click menu); added G-11 (note right-click context menu with Add Node / Add Note / Edit Note / Delete Note) and G-12 (single left-click on note does nothing)*
+*Version 2.6 — March 2026 — Added section 4.10 App Version: B-01 (version in package.json, exposed via Vite define), B-02 (version displayed bottom-right in focus question bar), B-03 (deploy workflow logs version), B-04 (fly.io deployment tagged with version)*
