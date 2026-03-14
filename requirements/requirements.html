@@ -208,7 +208,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v2.4 &nbsp;·&nbsp; March 2026</span>
+    <span class="version-badge">v2.6 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -356,7 +356,7 @@
         <tr><td class="req-id">F-07</td><td>When a focus question is present, include it as context in the AI prompt for both map generation (A-02) and node expansion (A-07)</td></tr>
       </tbody>
     </table>
-    <h3>4.9 Notes &amp; Groups <span class="badge badge-core">NEW</span></h3>
+    <h3>4.9 Notes &amp; Groups</h3>
     <table>
       <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
       <tbody>
@@ -372,6 +372,17 @@
         <tr><td class="req-id">G-10</td><td>Include notes in the map's saved JSON data, preserving position, dimensions, background colour, text content, and text size; restore notes fully when a saved map is loaded.</td></tr>
         <tr><td class="req-id">G-11</td><td>When the user right-clicks a note, display a context menu with four actions: "Add Node" (creates a concept node at the cursor position), "Add Note" (creates a new note at the cursor position), "Edit Note" (opens the background colour and text-size controls), and "Delete Note" (removes the note from the canvas). &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">G-12</td><td>A single left-click on a note performs no action — notes are not selectable via single click and no selection state is applied to a note. &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.10 App Version <span class="badge badge-core">NEW</span></h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td class="req-id">B-01</td><td>Set the app version in <code>package.json</code> (initial value: <code>0.9.1</code>) and expose it to the browser bundle at build time via Vite's <code>define</code> configuration — the version string must not be hardcoded in any source file &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">B-02</td><td>Display the version string (format: <code>v{semver}</code>) bottom-right aligned within the focus question bar at all times, at low opacity so it does not compete with the focus question input &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">B-03</td><td>The GitHub Actions deploy workflow must print the app version (read from <code>package.json</code>) as an explicit, named step before <code>flyctl deploy</code> runs &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">B-04</td><td>The fly.io deployment must be tagged with the app version as a Docker image label (e.g. <code>org.opencontainers.image.version</code>) &nbsp;<span class="badge badge-core">NEW</span></td></tr>
       </tbody>
     </table>
   </section>
@@ -454,7 +465,7 @@
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v2.5 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v2.6 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>
