@@ -208,7 +208,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v2.3 &nbsp;·&nbsp; March 2026</span>
+    <span class="version-badge">v2.4 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -315,7 +315,7 @@
       <tbody>
         <tr><td class="req-id">P-01</td><td>Allow the user to save the current map as a JSON file</td></tr>
         <tr><td class="req-id">P-02</td><td>Allow the user to load a previously saved JSON map file</td></tr>
-        <tr><td class="req-id">P-03</td><td>JSON format must preserve all node positions, labels, and edge data</td></tr>
+        <tr><td class="req-id">P-03</td><td>JSON format must preserve all node positions, labels, edge data, and notes &nbsp;<span class="badge badge-core">UPDATED</span></td></tr>
       </tbody>
     </table>
 
@@ -354,6 +354,22 @@
         <tr><td class="req-id">F-05</td><td>Save the focus question as part of the map's JSON data alongside nodes and edges</td></tr>
         <tr><td class="req-id">F-06</td><td>Restore the focus question when a saved JSON map is loaded</td></tr>
         <tr><td class="req-id">F-07</td><td>When a focus question is present, include it as context in the AI prompt for both map generation (A-02) and node expansion (A-07)</td></tr>
+      </tbody>
+    </table>
+    <h3>4.9 Notes &amp; Groups <span class="badge badge-core">NEW</span></h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td class="req-id">G-01</td><td>Display a context menu when the user right-clicks on an empty area of the canvas pane, offering two actions: "Add Node" (creates a concept node at the cursor position, equivalent to double-clicking the canvas) and "Add Note" (creates a note at the cursor position with a default background colour). Double-click to create a node remains unchanged.</td></tr>
+        <tr><td class="req-id">G-02</td><td>Render notes as canvas elements that always appear behind all nodes and edges.</td></tr>
+        <tr><td class="req-id">G-03</td><td>Allow the user to resize a note freely by dragging its corner and edge handles.</td></tr>
+        <tr><td class="req-id">G-04</td><td>Allow the user to reposition a note by dragging its body.</td></tr>
+        <tr><td class="req-id">G-05</td><td>Allow the user to change a note's background colour via a right-click context menu on the note, selecting from a predefined palette of 10 colours; notes are created with a default colour from this palette.</td></tr>
+        <tr><td class="req-id">G-06</td><td>Allow the user to change the text size of a note's label via a right-click context menu on the note, selecting from a predefined set of sizes.</td></tr>
+        <tr><td class="req-id">G-07</td><td>Allow the user to add or edit a note's text by double-clicking the note; display the text anchored to the top-left of the note interior.</td></tr>
+        <tr><td class="req-id">G-08</td><td>Automatically derive the note's text colour from its background colour to ensure readable contrast at all times — the user does not set text colour directly.</td></tr>
+        <tr><td class="req-id">G-09</td><td>Allow the user to delete a note by selecting it and pressing Delete or Backspace.</td></tr>
+        <tr><td class="req-id">G-10</td><td>Include notes in the map's saved JSON data, preserving position, dimensions, background colour, text content, and text size; restore notes fully when a saved map is loaded.</td></tr>
       </tbody>
     </table>
   </section>
@@ -436,7 +452,7 @@
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v2.3 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v2.4 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>
