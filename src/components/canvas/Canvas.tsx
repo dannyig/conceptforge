@@ -208,6 +208,9 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
     mode: 'main' | 'edit'
   } | null>(null)
 
+  // C-23: selection mode toggle — when active, drag draws a rubber-band selection rectangle
+  const [selectionMode, setSelectionMode] = useState(false)
+
   const closeAllMenus = useCallback((): void => {
     setContextMenu(null)
     setPaneMenu(null)
@@ -775,14 +778,17 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
   )
 
   useEffect((): (() => void) => {
-    const anyOpen = contextMenu || paneMenu || noteMenu
+    const anyOpen = contextMenu || paneMenu || noteMenu || selectionMode
     if (!anyOpen) return (): void => {}
     const handler = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') closeAllMenus()
+      if (e.key === 'Escape') {
+        closeAllMenus()
+        setSelectionMode(false)
+      }
     }
     window.addEventListener('keydown', handler)
     return (): void => window.removeEventListener('keydown', handler)
-  }, [contextMenu, paneMenu, noteMenu, closeAllMenus])
+  }, [contextMenu, paneMenu, noteMenu, selectionMode, closeAllMenus])
 
   // Use nodes (render-cycle state) so colour/size highlights update live while menu is open
   const noteMenuNode = noteMenu ? nodes.find(n => n.id === noteMenu.nodeId) : null
@@ -812,6 +818,7 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
         .react-flow__minimap { border: 1px solid ${COLOR_MINIMAP_BORDER}; border-radius: 6px; overflow: hidden; }
         .react-flow__node-note { z-index: -1 !important; }
         .react-flow__node-note.react-flow__node-dragging { z-index: -1 !important; }
+        .react-flow__selection { border: 1px solid rgba(249,115,22,0.5) !important; background: rgba(249,115,22,0.05) !important; box-shadow: none !important; }
         @media (prefers-reduced-motion: reduce) { .react-flow__edge-path, .react-flow__controls-button { transition: none; } }
       `}</style>
       <ReactFlow
@@ -832,6 +839,8 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
         defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
         defaultViewport={{ x: 0, y: 0, zoom: 0.85 }}
         deleteKeyCode={['Backspace', 'Delete']}
+        selectionOnDrag={selectionMode}
+        panActivationKeyCode={selectionMode ? 'Space' : undefined}
         style={{ backgroundColor: COLOR_CANVAS_BG }}
         aria-label="Concept map canvas"
       >
@@ -981,6 +990,53 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
                 {item.label}
               </button>
             ))}
+            {/* C-23: Select mode toggle — active state shown with orange accent */}
+            <div style={{ borderTop: `1px solid ${COLOR_NODE_BORDER}`, margin: '2px 0' }} />
+            <button
+              role="menuitem"
+              onClick={(): void => {
+                setSelectionMode(prev => !prev)
+                setPaneMenu(null)
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                width: '100%',
+                padding: '8px 16px',
+                background: 'none',
+                border: 'none',
+                color: selectionMode ? COLOR_NODE_SELECTED : COLOR_NODE_TEXT,
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_NODE_LABEL,
+                textAlign: 'left',
+                cursor: 'pointer',
+                transition: `background ${TRANSITION_FAST}, color ${TRANSITION_FAST}`,
+              }}
+              onMouseEnter={(e): void => {
+                ;(e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+              }}
+              onMouseLeave={(e): void => {
+                ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
+              }}
+              aria-label={selectionMode ? 'Exit selection mode' : 'Enter selection mode'}
+              aria-pressed={selectionMode}
+            >
+              <span
+                style={{
+                  width: 10,
+                  display: 'inline-block',
+                  textAlign: 'center',
+                  opacity: selectionMode ? 1 : 0,
+                  color: COLOR_NODE_SELECTED,
+                  transition: `opacity ${TRANSITION_FAST}`,
+                }}
+                aria-hidden="true"
+              >
+                ✓
+              </span>
+              Select
+            </button>
           </div>
         </>
       )}
