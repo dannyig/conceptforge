@@ -417,6 +417,20 @@ test(C-02): add Playwright E2E for node selection
 
 Scopes are requirement IDs where applicable: `C-01`, `A-02`, `K-01`, `P-01`.
 
+### Version bumping — mandatory before every PR merge
+
+The app version is sourced from `package.json` and displayed in the UI (B-02) and in every CI/CD run (B-03). **Bump the version as part of the PR that delivers the work** — never merge to `main` without bumping.
+
+Use `--no-git-tag-version` to update `package.json` only, without creating an extra commit or tag:
+
+```bash
+pnpm version patch   --no-git-tag-version  # bug fixes, small changes (0.9.1 → 0.9.2)
+pnpm version minor   --no-git-tag-version  # new features             (0.9.x → 0.10.0)
+pnpm version major   --no-git-tag-version  # breaking / major release (0.x.y → 1.0.0)
+```
+
+Include the `package.json` change in your final commit on the feature branch. The CI and deploy pipelines will display the updated version in the GitHub Actions job summary automatically.
+
 ### Merge rules
 - PRs require CI green — no manual overrides
 - Squash or merge commit — no rebase merges (keep history readable)

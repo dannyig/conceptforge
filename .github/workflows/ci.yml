@@ -25,6 +25,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Print app version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "ConceptForge v${VERSION}"
+          echo "## ConceptForge v${VERSION}" >> $GITHUB_STEP_SUMMARY
+
       - name: Lint
         run: pnpm lint
 

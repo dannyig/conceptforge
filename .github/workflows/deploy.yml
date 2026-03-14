@@ -24,14 +24,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Print app version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Deploying ConceptForge v${VERSION}"
+          echo "## Deploying ConceptForge v${VERSION}" >> $GITHUB_STEP_SUMMARY
+
       - name: Build
         run: pnpm build
 
       - name: Deploy to fly.io
         uses: superfly/flyctl-actions/setup-flyctl@master
-
-      - name: Print app version
-        run: echo "Deploying ConceptForge v$(node -p "require('./package.json').version")"
 
       - name: Fly deploy
         run: flyctl deploy --remote-only --build-arg APP_VERSION=$(node -p "require('./package.json').version")
