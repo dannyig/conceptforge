@@ -210,6 +210,8 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
 
   // C-23: selection mode toggle — when active, drag draws a rubber-band selection rectangle
   const [selectionMode, setSelectionMode] = useState(false)
+  // C-25: track whether Space is held so drag can temporarily pan while in select mode
+  const [spacePanning, setSpacePanning] = useState(false)
 
   const closeAllMenus = useCallback((): void => {
     setContextMenu(null)
@@ -790,6 +792,24 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
     return (): void => window.removeEventListener('keydown', handler)
   }, [contextMenu, paneMenu, noteMenu, selectionMode, closeAllMenus])
 
+  // C-25: while in selection mode, Space held → temporarily switch to pan mode
+  useEffect((): (() => void) => {
+    if (!selectionMode) return (): void => {}
+    const onDown = (e: KeyboardEvent): void => {
+      if (e.code === 'Space' && !e.repeat) setSpacePanning(true)
+    }
+    const onUp = (e: KeyboardEvent): void => {
+      if (e.code === 'Space') setSpacePanning(false)
+    }
+    window.addEventListener('keydown', onDown)
+    window.addEventListener('keyup', onUp)
+    return (): void => {
+      window.removeEventListener('keydown', onDown)
+      window.removeEventListener('keyup', onUp)
+      setSpacePanning(false)
+    }
+  }, [selectionMode])
+
   // Use nodes (render-cycle state) so colour/size highlights update live while menu is open
   const noteMenuNode = noteMenu ? nodes.find(n => n.id === noteMenu.nodeId) : null
   const noteMenuCurrentColor = noteMenuNode?.data.backgroundColor ?? NOTE_DEFAULT_COLOR
@@ -839,8 +859,8 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
         defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
         defaultViewport={{ x: 0, y: 0, zoom: 0.85 }}
         deleteKeyCode={['Backspace', 'Delete']}
-        selectionOnDrag={selectionMode}
-        panActivationKeyCode={selectionMode ? 'Space' : undefined}
+        selectionOnDrag={selectionMode && !spacePanning}
+        panOnDrag={!selectionMode || spacePanning}
         style={{ backgroundColor: COLOR_CANVAS_BG }}
         aria-label="Concept map canvas"
       >
