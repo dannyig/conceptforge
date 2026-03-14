@@ -127,15 +127,17 @@
 | ID | Requirement |
 |---|---|
 | G-01 | Display a context menu when the user right-clicks on an empty area of the canvas pane, offering two actions: "Add Node" (creates a concept node at the cursor position, equivalent to double-clicking the canvas) and "Add Note" (creates a note at the cursor position with a default background colour). Double-click to create a node remains unchanged. |
-| G-02 | Render notes as canvas elements that always appear behind all nodes and edges. |
-| G-03 | Allow the user to resize a note freely by dragging its corner and edge handles. |
+| G-02 | Render notes as canvas elements that always appear behind all nodes and edges. This z-index must remain unchanged during all interactions, including while the note's text is being edited. |
+| G-03 | Allow the user to resize a note freely by clicking and dragging its edge and corner handles. Resize handles become visible when the cursor hovers over the note border and are available at all times — the note does not need to be selected first. |
 | G-04 | Allow the user to reposition a note by dragging its body. |
-| G-05 | Allow the user to change a note's background colour via a right-click context menu on the note, selecting from a predefined palette of 10 colours; notes are created with a default colour from this palette. |
-| G-06 | Allow the user to change the text size of a note's label via a right-click context menu on the note, selecting from a predefined set of sizes. |
-| G-07 | Allow the user to add or edit a note's text by double-clicking the note; display the text anchored to the top-left of the note interior. |
+| G-05 | Allow the user to change a note's background colour via the "Edit Note" action in the note's right-click context menu, selecting from a predefined palette of 10 colours; notes are created with a default colour from this palette. |
+| G-06 | Allow the user to change the text size of a note's label via the "Edit Note" action in the note's right-click context menu, selecting from a predefined set of sizes. |
+| G-07 | Double-clicking on a note's background (not the text content) creates a new concept node at the cursor position, identical to double-clicking empty canvas. Double-clicking on a note's existing text content enters inline text-edit mode for that text; display the text anchored to the top-left of the note interior. |
 | G-08 | Automatically derive the note's text colour from its background colour to ensure readable contrast at all times — the user does not set text colour directly. |
-| G-09 | Allow the user to delete a note by selecting it and pressing Delete or Backspace. |
+| G-09 | Allow the user to delete a note via the "Delete Note" action in the note's right-click context menu. |
 | G-10 | Include notes in the map's saved JSON data, preserving position, dimensions, background colour, text content, and text size; restore notes fully when a saved map is loaded. |
+| G-11 | When the user right-clicks a note, display a context menu with four actions: "Add Node" (creates a concept node at the cursor position), "Add Note" (creates a new note at the cursor position), "Edit Note" (opens the background colour and text-size controls), and "Delete Note" (removes the note from the canvas). |
+| G-12 | A single left-click on a note performs no action — notes are not selectable via single click and no selection state is applied to a note. |
 
 ---
 
@@ -208,4 +210,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 2.4 — March 2026 — Added section 4.9 Notes & Groups (G-01→G-10): canvas notes/groups with resizable background, colour palette, contrasting text, and JSON persistence; updated P-03 to include notes*
+*Version 2.5 — March 2026 — Refined section 4.9 Notes & Groups: updated G-02 (z-index invariant during editing), G-03 (hover-triggered resize handles, no selection required), G-05/G-06 (colour and text-size now via "Edit Note" submenu), G-07 (double-click body → new node; double-click text → edit mode), G-09 (delete via right-click menu); added G-11 (note right-click context menu with Add Node / Add Note / Edit Note / Delete Note) and G-12 (single left-click on note does nothing)*
