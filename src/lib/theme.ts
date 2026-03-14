@@ -60,3 +60,26 @@ export const FONT_SIZE_FOCUS_QUESTION = '15px'
 
 // Focus question bar
 export const FOCUS_BAR_HEIGHT = 52
+
+// Notes & Groups (G-01→G-10)
+// 10 dark colours that all yield near-white contrast text via the luminance formula
+export const NOTE_COLORS: readonly string[] = [
+  '#1e3a5f', // dark blue (default)
+  '#166534', // dark green
+  '#854d0e', // dark amber
+  '#4a1942', // dark purple
+  '#7f1d1d', // dark red
+  '#134e4a', // dark teal
+  '#3b2f00', // dark yellow-brown
+  '#1c1c3a', // dark indigo
+  '#2d1b00', // dark orange-brown
+  '#1a2e1a', // dark forest
+]
+export const NOTE_DEFAULT_COLOR = '#1e3a5f'
+export const NOTE_DEFAULT_WIDTH = 200
+export const NOTE_DEFAULT_HEIGHT = 120
+export const NOTE_TEXT_SIZES: Record<'small' | 'medium' | 'large', string> = {
+  small: '11px',
+  medium: '14px',
+  large: '18px',
+}

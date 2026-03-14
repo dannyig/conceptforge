@@ -26,10 +26,21 @@ export interface BranchingEdge {
   labelPosition?: { x: number; y: number } // draggable hub position; C-17
 }
 
+export interface NoteData {
+  id: string
+  position: { x: number; y: number }
+  width: number
+  height: number
+  backgroundColor: string // one of the 10 predefined palette values (G-05)
+  text?: string // absent when note has no text
+  textSize?: 'small' | 'medium' | 'large' // G-06; absent = medium default
+}
+
 export interface MapData {
   nodes: ConceptNode[]
   edges: ConceptEdge[]
   branchingEdges?: BranchingEdge[] // C-13: fan-out edges; absent on maps with none
+  notes?: NoteData[] // G-10: canvas notes/groups; absent when map has none
   focusQuestion?: string // F-05: persisted with the map; undefined when not set
 }
 
