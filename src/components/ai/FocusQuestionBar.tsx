@@ -3,6 +3,7 @@ import {
   COLOR_INPUT_FOCUS_BORDER,
   COLOR_NODE_BORDER,
   COLOR_NODE_SELECTED,
+  COLOR_NODE_TEXT,
   COLOR_PANEL_BG,
   COLOR_TEXT_MUTED,
   FOCUS_BAR_HEIGHT,
@@ -71,6 +72,7 @@ export function FocusQuestionBar({ value, onChange }: FocusQuestionBarProps): Re
         paddingRight: 24,
         boxSizing: 'border-box',
         transition: `border-color ${TRANSITION_FAST}`,
+        position: 'relative',
       }}
     >
       <style>{`
@@ -99,6 +101,22 @@ export function FocusQuestionBar({ value, onChange }: FocusQuestionBarProps): Re
           padding: 0,
         }}
       />
+      <span
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          bottom: 5,
+          right: 24,
+          fontFamily: FONT_FAMILY,
+          fontSize: '10px',
+          color: COLOR_NODE_TEXT,
+          opacity: 0.35,
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+      >
+        {`v${__APP_VERSION__}`}
+      </span>
     </div>
   )
 }

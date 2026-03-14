@@ -13,6 +13,9 @@ RUN pnpm build
 # Stage 2 — serve
 FROM nginx:alpine
 
+ARG APP_VERSION=dev
+LABEL org.opencontainers.image.version=$APP_VERSION
+
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
 
