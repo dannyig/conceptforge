@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-22, V-01 → V-08, and/or G-01 → G-10
+**Trigger:** Human assigns requirement IDs C-01 → C-22, V-01 → V-08, and/or G-01 → G-12
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -299,7 +299,7 @@ interface MapData {
 
 ---
 
-### Group 4g — Notes & Groups (G-01 → G-10)
+### Group 4g — Notes & Groups (G-01 → G-12)
 
 > **Before starting this group:** Add `NoteData` to `src/types/index.ts` and extend `MapData` with `notes?: NoteData[]` before writing any component code.
 
@@ -328,45 +328,58 @@ interface MapData {
 - [ ] **G-01 — Pane right-click context menu:**
   - In `Canvas.tsx`, add an `onPaneContextMenu` handler to `<ReactFlow>` that shows a small menu at the cursor position with two items: "Add Node" and "Add Note"
   - "Add Node" creates a concept node at the cursor position (same as double-click — C-02); dismiss the menu
-  - "Add Note" creates a note at the cursor position with a default background colour (pick a muted warm amber from the palette); dismiss the menu
+  - "Add Note" creates a note at the cursor position with a default background colour; dismiss the menu
   - Menu is dismissed on any click outside it or on Escape
   - Double-click to create a node (C-02) is unchanged
 - [ ] **G-02 — Notes render behind nodes and edges:**
-  - Implement notes as a React Flow node type (`type: 'note'`) with `zIndex` set lower than concept nodes so they always render behind the node/edge layer
+  - Implement notes as a React Flow node type (`type: 'note'`) with `zIndex: -1` so they always render behind all nodes and edges
   - Create `src/components/canvas/NoteNode.tsx` as the custom node component
-- [ ] **G-03 — Free resize:**
+  - The `zIndex: -1` must never be changed — not during text editing, not during any other interaction (G-02 z-index invariant)
+- [ ] **G-03 — Hover-triggered resize handles:**
   - The note element must be resizable by dragging any of its four corners or four edge midpoints
-  - Use React Flow's node resizing support (`NodeResizer` from `@xyflow/react`) or an equivalent pointer-event approach
+  - Use React Flow's `NodeResizer` from `@xyflow/react`
+  - Resize handles are **always** shown when the cursor is over the note — no selection step required; `isVisible` should be controlled by hover state, not `selected`
   - Minimum dimensions: 80×60px
 - [ ] **G-04 — Reposition by dragging body:**
   - React Flow handles drag-to-reposition natively for node types; ensure the note body is draggable (no `nodrag` class on the body area)
-- [ ] **G-05 — Background colour picker (right-click on note):**
-  - Right-clicking a note shows a context menu with a 10-colour palette swatch grid and the current colour highlighted
+- [ ] **G-05 — Background colour picker (via Edit Note):**
+  - The 10-colour palette swatch grid is shown inside the "Edit Note" panel triggered from the note's right-click context menu (G-11), not as a direct right-click top-level menu
   - Selecting a colour updates the note's `backgroundColor` in state immediately
-  - Predefined palette (10 colours, chosen to work on a dark canvas and provide good text contrast options):
-    `#854d0e` (dark amber), `#166534` (dark green), `#1e3a5f` (dark blue), `#4a1942` (dark purple), `#7f1d1d` (dark red), `#134e4a` (dark teal), `#3b2f00` (dark yellow), `#1c1c3a` (dark indigo), `#2d1b00` (dark orange-brown), `#1a2e1a` (dark forest)
-  - Default colour on creation: `#1e3a5f` (dark blue)
-- [ ] **G-06 — Text size picker (right-click on note):**
-  - The same right-click context menu on a note includes a text size selector with three options: Small (11px), Medium (14px), Large (18px)
+  - Predefined palette: `#854d0e`, `#166534`, `#1e3a5f`, `#4a1942`, `#7f1d1d`, `#134e4a`, `#3b2f00`, `#1c1c3a`, `#2d1b00`, `#1a2e1a`
+  - Default colour on creation: `#1e3a5f` (dark blue); current colour highlighted in the palette
+- [ ] **G-06 — Text size picker (via Edit Note):**
+  - The text size selector (Small 11px / Medium 14px / Large 18px) is shown inside the "Edit Note" panel triggered from the note's right-click context menu (G-11), not as a direct right-click top-level menu
   - Selecting a size updates the note's `textSize` in state immediately
   - Default text size on creation: Medium (14px)
-- [ ] **G-07 — Double-click to edit text:**
-  - Double-clicking the note body enters text edit mode using a `<textarea>` (not `<input>`) to support multi-line text
+- [ ] **G-07 — Double-click behaviour:**
+  - Double-clicking on the note's **background** (not the text span) creates a new concept node at the cursor position — identical to double-clicking empty canvas (C-02)
+  - Double-clicking on the note's **existing text content** enters inline text-edit mode using a `<textarea>` for multi-line text
   - Text is anchored to the top-left of the note interior with padding
   - Confirm on blur; cancel on Escape (reverts to previous text)
   - If the note has no text, display a low-opacity placeholder: `"Double-click to add text…"`
 - [ ] **G-08 — Auto-contrasting text colour:**
-  - Compute text colour programmatically from the note's `backgroundColor` using perceived luminance (standard formula: `0.299R + 0.587G + 0.114B`)
-  - Use `#f0f6fc` (near-white) for dark backgrounds and `#0d1117` (near-black) for light backgrounds
+  - Compute text colour programmatically from the note's `backgroundColor` using perceived luminance (`0.299R + 0.587G + 0.114B`)
+  - Use `#f0f6fc` for dark backgrounds and `#0d1117` for light backgrounds
   - Apply this colour to both the note text and any placeholder text
-- [ ] **G-09 — Delete note:**
-  - React Flow's `deleteKeyCode` prop already handles Delete/Backspace for selected nodes; ensure note nodes participate in this (no special handling needed if the note is a proper RF node type)
+- [ ] **G-09 — Delete note via context menu:**
+  - "Delete Note" in the note's right-click context menu (G-11) removes the note from canvas state
+  - Notes do **not** respond to Delete/Backspace keyboard events (selection is disabled per G-12)
 - [ ] **G-10 — Persistence:**
   - In `Canvas.tsx`, extend `getMapData()` to include notes in the returned `MapData`
-  - Extend `setMapData()` to restore notes from `MapData.notes`, recreating their RF node representation
-  - Note: the `NoteData` fields map directly to the RF node's `position`, `data.width`/`data.height`, `data.backgroundColor`, `data.text`, `data.textSize`
+  - Extend `setMapData()` to restore notes from `MapData.notes`, recreating their RF node representation with `zIndex: -1`
+- [ ] **G-11 — Note right-click context menu:**
+  - In `Canvas.tsx`, add an `onNodeContextMenu` handler that fires when a note node is right-clicked
+  - Show a menu at the cursor position with four items: "Add Node", "Add Note", "Edit Note", "Delete Note"
+  - "Add Node" and "Add Note" behave identically to the pane menu (G-01) — create at cursor position
+  - "Edit Note" opens the colour palette + text size controls inline in the same menu panel (matching the layout from G-05/G-06)
+  - "Delete Note" removes the note immediately; dismiss the menu
+  - Menu dismissed on outside click or Escape
+- [ ] **G-12 — Notes not selectable via single click:**
+  - Set `selectable: false` on note RF nodes so single left-click does not apply any selection state
+  - Notes must not receive a selection border or any visual selection indicator on click
+  - Drag-to-reposition (G-04) and resize (G-03) must still work normally
 
-**Commit:** `feat(G-01–G-10): notes and groups with resize, colour palette, contrasting text, and persistence`
+**Commit:** `feat(G-01–G-12): notes and groups — refined interaction model with note context menu, hover resize, double-click routing, and non-selectable notes`
 
 ---
 
@@ -452,4 +465,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.11 — March 2026 (added Group 4g: G-01→G-10 Notes & Groups — resizable canvas notes, colour palette, contrasting text, pane right-click menu)*
+*Canvas Agent Spec v1.12 — March 2026 (refined Group 4g: G-01→G-12 — note right-click context menu with Add/Edit/Delete, hover-triggered resize handles, double-click routing, non-selectable notes, z-index invariant during editing)*
