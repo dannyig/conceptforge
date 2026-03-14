@@ -55,6 +55,7 @@ export default [
         StorageEvent: 'readonly',
         TouchEvent: 'readonly',
         PointerEvent: 'readonly',
+        __APP_VERSION__: 'readonly',
       },
     },
     plugins: {
