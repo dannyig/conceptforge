@@ -198,11 +198,14 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
     flowY: number
   } | null>(null)
 
-  // G-05, G-06: note right-click menu state
+  // G-11: note right-click menu state — main (4 actions) or edit (colour + text size)
   const [noteMenu, setNoteMenu] = useState<{
     nodeId: string
     x: number
     y: number
+    flowX: number
+    flowY: number
+    mode: 'main' | 'edit'
   } | null>(null)
 
   const closeAllMenus = useCallback((): void => {
@@ -326,7 +329,7 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
             }
           }
         }
-        // G-10: restore notes
+        // G-10: restore notes — G-12: selectable:false; G-02: zIndex:-1 invariant
         if (data.notes) {
           for (const note of data.notes) {
             newNodes.push({
@@ -335,6 +338,7 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
               position: note.position,
               style: { width: note.width, height: note.height },
               zIndex: -1,
+              selectable: false,
               data: {
                 label: '',
                 backgroundColor: note.backgroundColor,
@@ -638,7 +642,7 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
 
   const addNodeAtPosition = useCallback(
     (flowX: number, flowY: number): void => {
-      setPaneMenu(null)
+      closeAllMenus()
       setNodes(nds => [
         ...nds,
         {
@@ -649,12 +653,12 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
         },
       ])
     },
-    [setNodes]
+    [setNodes, closeAllMenus]
   )
 
   const addNoteAtPosition = useCallback(
     (flowX: number, flowY: number): void => {
-      setPaneMenu(null)
+      closeAllMenus()
       setNodes(nds => [
         ...nds,
         {
@@ -663,28 +667,63 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
           position: { x: flowX, y: flowY },
           style: { width: NOTE_DEFAULT_WIDTH, height: NOTE_DEFAULT_HEIGHT },
           zIndex: -1,
+          selectable: false,
           data: { label: '', backgroundColor: NOTE_DEFAULT_COLOR },
         },
       ])
     },
-    [setNodes]
+    [setNodes, closeAllMenus]
   )
 
-  // ---------- G-05, G-06: right-click on note → colour + text size menu ----------
+  // G-07: double-click on note background creates a new concept node at cursor
+  const onNodeDoubleClick = useCallback(
+    (event: React.MouseEvent, node: CanvasFlowNode): void => {
+      if (node.type !== 'note') return
+      const position = screenToFlowPosition({ x: event.clientX, y: event.clientY })
+      setNodes(nds => [
+        ...nds,
+        {
+          id: crypto.randomUUID(),
+          type: 'concept' as const,
+          position,
+          data: { label: 'New concept', conceptType: 'concept' as const },
+        },
+      ])
+    },
+    [screenToFlowPosition, setNodes]
+  )
+
+  // ---------- G-11: right-click on note → context menu ----------
 
   const onNodeContextMenu = useCallback(
     (event: React.MouseEvent, node: CanvasFlowNode): void => {
       if (node.type !== 'note') return
       event.preventDefault()
       closeAllMenus()
-      setNoteMenu({ nodeId: node.id, x: event.clientX, y: event.clientY })
+      const flowPos = screenToFlowPosition({ x: event.clientX, y: event.clientY })
+      setNoteMenu({
+        nodeId: node.id,
+        x: event.clientX,
+        y: event.clientY,
+        flowX: flowPos.x,
+        flowY: flowPos.y,
+        mode: 'main',
+      })
     },
-    [closeAllMenus]
+    [closeAllMenus, screenToFlowPosition]
   )
 
+  const deleteNote = useCallback(
+    (nodeId: string): void => {
+      setNoteMenu(null)
+      setNodes(nds => nds.filter(n => n.id !== nodeId))
+    },
+    [setNodes]
+  )
+
+  // G-05: colour update — keep menu open so user can also adjust text size
   const setNoteColor = useCallback(
     (nodeId: string, color: string): void => {
-      setNoteMenu(null)
       setNodes(nds =>
         nds.map(n => (n.id === nodeId ? { ...n, data: { ...n.data, backgroundColor: color } } : n))
       )
@@ -692,9 +731,9 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
     [setNodes]
   )
 
+  // G-06: text size update — keep menu open so user can also adjust colour
   const setNoteTextSize = useCallback(
     (nodeId: string, size: 'small' | 'medium' | 'large'): void => {
-      setNoteMenu(null)
       setNodes(nds =>
         nds.map(n => (n.id === nodeId ? { ...n, data: { ...n.data, textSize: size } } : n))
       )
@@ -738,7 +777,8 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
     return (): void => window.removeEventListener('keydown', handler)
   }, [contextMenu, paneMenu, noteMenu, closeAllMenus])
 
-  const noteMenuNode = noteMenu ? nodesRef.current.find(n => n.id === noteMenu.nodeId) : null
+  // Use nodes (render-cycle state) so colour/size highlights update live while menu is open
+  const noteMenuNode = noteMenu ? nodes.find(n => n.id === noteMenu.nodeId) : null
   const noteMenuCurrentColor = noteMenuNode?.data.backgroundColor ?? NOTE_DEFAULT_COLOR
   const noteMenuCurrentSize = (noteMenuNode?.data.textSize ?? 'medium') as
     | 'small'
@@ -763,6 +803,8 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
         .react-flow__controls-button:hover { background-color: ${COLOR_CONTROLS_HOVER_BG}; }
         .react-flow__controls-button svg { fill: ${COLOR_CONTROLS_TEXT}; }
         .react-flow__minimap { border: 1px solid ${COLOR_MINIMAP_BORDER}; border-radius: 6px; overflow: hidden; }
+        .react-flow__node-note { z-index: -1 !important; }
+        .react-flow__node-note.react-flow__node-dragging { z-index: -1 !important; }
         @media (prefers-reduced-motion: reduce) { .react-flow__edge-path, .react-flow__controls-button { transition: none; } }
       `}</style>
       <ReactFlow
@@ -775,6 +817,7 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
         onPaneClick={onPaneClick}
         onPaneContextMenu={onPaneContextMenu}
         onNodeContextMenu={onNodeContextMenu}
+        onNodeDoubleClick={onNodeDoubleClick}
         onEdgeContextMenu={onEdgeContextMenu}
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
@@ -934,7 +977,7 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
         </>
       )}
 
-      {/* G-05, G-06: note right-click menu — colour palette + text size */}
+      {/* G-11: note right-click menu — main actions or edit sub-panel */}
       {noteMenu && (
         <>
           <div
@@ -956,89 +999,172 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
               background: COLOR_NODE_BG,
               border: `1px solid ${COLOR_NODE_BORDER}`,
               borderRadius: 6,
-              padding: '10px 12px',
               boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
-              minWidth: 168,
+              minWidth: noteMenu.mode === 'edit' ? 168 : 130,
+              overflow: 'hidden',
             }}
           >
-            <div
-              style={{
-                marginBottom: 8,
-                fontSize: '10px',
-                letterSpacing: '1px',
-                textTransform: 'uppercase',
-                color: COLOR_TEXT_MUTED,
-                fontFamily: FONT_FAMILY,
-              }}
-            >
-              Color
-            </div>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(5, 1fr)',
-                gap: 4,
-                marginBottom: 12,
-              }}
-            >
-              {NOTE_COLORS.map(color => (
+            {noteMenu.mode === 'main' ? (
+              // Main mode: four actions
+              (
+                [
+                  {
+                    label: 'Add Node',
+                    action: (): void => addNodeAtPosition(noteMenu.flowX, noteMenu.flowY),
+                    ariaLabel: 'Add concept node',
+                  },
+                  {
+                    label: 'Add Note',
+                    action: (): void => addNoteAtPosition(noteMenu.flowX, noteMenu.flowY),
+                    ariaLabel: 'Add note',
+                  },
+                  {
+                    label: 'Edit Note',
+                    action: (): void =>
+                      setNoteMenu(prev => (prev ? { ...prev, mode: 'edit' } : null)),
+                    ariaLabel: 'Edit note colour and text size',
+                  },
+                  {
+                    label: 'Delete Note',
+                    action: (): void => deleteNote(noteMenu.nodeId),
+                    ariaLabel: 'Delete note',
+                    danger: true,
+                  },
+                ] as const
+              ).map(item => (
                 <button
-                  key={color}
+                  key={item.label}
                   role="menuitem"
-                  onClick={(): void => setNoteColor(noteMenu.nodeId, color)}
-                  aria-label={`Set note color ${color}`}
+                  onClick={item.action}
                   style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 3,
-                    backgroundColor: color,
-                    border:
-                      color === noteMenuCurrentColor
-                        ? `2px solid ${COLOR_NODE_SELECTED}`
-                        : `1px solid ${COLOR_NODE_BORDER}`,
+                    display: 'block',
+                    width: '100%',
+                    padding: '8px 16px',
+                    background: 'none',
+                    border: 'none',
+                    color: 'danger' in item && item.danger ? '#f85149' : COLOR_NODE_TEXT,
+                    fontFamily: FONT_FAMILY,
+                    fontSize: FONT_SIZE_NODE_LABEL,
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    transition: `background ${TRANSITION_FAST}`,
+                  }}
+                  onMouseEnter={(e): void => {
+                    ;(e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+                  }}
+                  onMouseLeave={(e): void => {
+                    ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
+                  }}
+                  aria-label={item.ariaLabel}
+                >
+                  {item.label}
+                </button>
+              ))
+            ) : (
+              // Edit mode: colour palette + text size
+              <div style={{ padding: '10px 12px' }}>
+                <button
+                  role="menuitem"
+                  onClick={(): void =>
+                    setNoteMenu(prev => (prev ? { ...prev, mode: 'main' } : null))
+                  }
+                  aria-label="Back to note options"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    marginBottom: 10,
+                    background: 'none',
+                    border: 'none',
+                    color: COLOR_TEXT_MUTED,
+                    fontFamily: FONT_FAMILY,
+                    fontSize: '11px',
                     cursor: 'pointer',
                     padding: 0,
-                    transition: `border-color ${TRANSITION_FAST}`,
                   }}
-                />
-              ))}
-            </div>
-            <div
-              style={{
-                marginBottom: 8,
-                fontSize: '10px',
-                letterSpacing: '1px',
-                textTransform: 'uppercase',
-                color: COLOR_TEXT_MUTED,
-                fontFamily: FONT_FAMILY,
-              }}
-            >
-              Text size
-            </div>
-            <div style={{ display: 'flex', gap: 4 }}>
-              {(['small', 'medium', 'large'] as const).map(size => (
-                <button
-                  key={size}
-                  role="menuitem"
-                  onClick={(): void => setNoteTextSize(noteMenu.nodeId, size)}
-                  style={{
-                    flex: 1,
-                    padding: '4px 0',
-                    background: noteMenuCurrentSize === size ? COLOR_NODE_SELECTED : '#21262d',
-                    border: 'none',
-                    borderRadius: 3,
-                    color: noteMenuCurrentSize === size ? '#0d1117' : COLOR_NODE_TEXT,
-                    fontFamily: FONT_FAMILY,
-                    fontSize: NOTE_TEXT_SIZES[size],
-                    cursor: 'pointer',
-                    transition: `background ${TRANSITION_FAST}, color ${TRANSITION_FAST}`,
-                  }}
-                  aria-label={`Set text size ${size}`}
                 >
-                  {size[0].toUpperCase() + size.slice(1)}
+                  ← Back
                 </button>
-              ))}
-            </div>
+                <div
+                  style={{
+                    marginBottom: 8,
+                    fontSize: '10px',
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase',
+                    color: COLOR_TEXT_MUTED,
+                    fontFamily: FONT_FAMILY,
+                  }}
+                >
+                  Color
+                </div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(5, 1fr)',
+                    gap: 4,
+                    marginBottom: 12,
+                  }}
+                >
+                  {NOTE_COLORS.map(color => (
+                    <button
+                      key={color}
+                      role="menuitem"
+                      onClick={(): void => setNoteColor(noteMenu.nodeId, color)}
+                      aria-label={`Set note color ${color}`}
+                      style={{
+                        width: 22,
+                        height: 22,
+                        borderRadius: 3,
+                        backgroundColor: color,
+                        border:
+                          color === noteMenuCurrentColor
+                            ? `2px solid ${COLOR_NODE_SELECTED}`
+                            : `1px solid ${COLOR_NODE_BORDER}`,
+                        cursor: 'pointer',
+                        padding: 0,
+                        transition: `border-color ${TRANSITION_FAST}`,
+                      }}
+                    />
+                  ))}
+                </div>
+                <div
+                  style={{
+                    marginBottom: 8,
+                    fontSize: '10px',
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase',
+                    color: COLOR_TEXT_MUTED,
+                    fontFamily: FONT_FAMILY,
+                  }}
+                >
+                  Text size
+                </div>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {(['small', 'medium', 'large'] as const).map(size => (
+                    <button
+                      key={size}
+                      role="menuitem"
+                      onClick={(): void => setNoteTextSize(noteMenu.nodeId, size)}
+                      style={{
+                        flex: 1,
+                        padding: '4px 0',
+                        background: noteMenuCurrentSize === size ? COLOR_NODE_SELECTED : '#21262d',
+                        border: 'none',
+                        borderRadius: 3,
+                        color: noteMenuCurrentSize === size ? '#0d1117' : COLOR_NODE_TEXT,
+                        fontFamily: FONT_FAMILY,
+                        fontSize: NOTE_TEXT_SIZES[size],
+                        cursor: 'pointer',
+                        transition: `background ${TRANSITION_FAST}, color ${TRANSITION_FAST}`,
+                      }}
+                      aria-label={`Set text size ${size}`}
+                    >
+                      {size[0].toUpperCase() + size.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}

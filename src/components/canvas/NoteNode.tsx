@@ -29,6 +29,8 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
   const { setNodes } = useReactFlow()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(data.text ?? '')
+  // G-03: resize handles shown on hover, not on selection
+  const [hovered, setHovered] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const textColor = getContrastText(data.backgroundColor)
@@ -71,11 +73,11 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
 
   return (
     <>
-      {/* G-03: resize handles — visible only when selected */}
+      {/* G-03: resize handles — visible on hover, no selection required */}
       <NodeResizer
         minWidth={80}
         minHeight={60}
-        isVisible={selected}
+        isVisible={hovered || selected}
         lineStyle={{
           borderColor: COLOR_NODE_SELECTED,
           borderWidth: 1,
@@ -90,8 +92,10 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
       />
 
       {/* G-02, G-04: note body — draggable, behind other nodes via zIndex on the RF node */}
+      {/* G-07: double-click on background bubbles to RF onNodeDoubleClick (creates node) */}
       <div
-        onDoubleClick={startEdit}
+        onMouseEnter={(): void => setHovered(true)}
+        onMouseLeave={(): void => setHovered(false)}
         style={{
           width: '100%',
           height: '100%',
@@ -135,7 +139,12 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
             }}
           />
         ) : data.text ? (
+          // G-07: double-click on existing text enters edit mode
           <span
+            onDoubleClick={(e): void => {
+              e.stopPropagation()
+              startEdit()
+            }}
             style={{
               color: textColor,
               fontFamily: FONT_FAMILY,
@@ -145,14 +154,19 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
               wordBreak: 'break-word',
               userSelect: 'none',
               display: 'block',
+              cursor: 'text',
               transition: `color ${TRANSITION_FAST}, font-size ${TRANSITION_FAST}`,
             }}
           >
             {data.text}
           </span>
         ) : (
-          // G-07: placeholder when no text
+          // G-07: placeholder — double-click enters text edit mode (only way to add initial text)
           <span
+            onDoubleClick={(e): void => {
+              e.stopPropagation()
+              startEdit()
+            }}
             aria-hidden="true"
             style={{
               color: textColor,
@@ -160,7 +174,7 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
               fontSize,
               opacity: 0.35,
               userSelect: 'none',
-              pointerEvents: 'none',
+              cursor: 'text',
             }}
           >
             Double-click to add text…
