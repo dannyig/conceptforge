@@ -53,6 +53,11 @@
 | C-20 | When a single (non-branching) edge has a label, render the label as a draggable waypoint; the user may drag it freely to any position on the canvas to reposition it |
 | C-21 | When a single edge label has been repositioned from its default midpoint, render the edge as two straight directed segments — source node → label (no arrowhead) and label → target node (with arrowhead) — both segments updating dynamically as the source node, target node, or label waypoint position changes |
 | C-22 | Save a repositioned single edge label's canvas coordinates as part of the edge's JSON data; restore the custom position and two-segment routing when the map is loaded |
+| C-23 | Add a "Select" toggle item to the canvas pane right-click context menu (the same menu defined by G-01); when selection mode is active the menu item is visually marked as active (e.g. checkmark or highlighted label); clicking it again exits selection mode; pressing Escape also exits selection mode |
+| C-24 | In selection mode, dragging on an empty area of the canvas draws a rubber-band selection rectangle; all nodes, edges, and notes that fall within the rectangle are selected when the drag is released |
+| C-25 | In selection mode, holding Space while dragging pans the canvas instead of drawing a selection rectangle |
+| C-26 | When two or more items are selected, dragging any selected node or note moves the entire selection together; edges follow their connected nodes automatically and do not disconnect from their source node or label hub |
+| C-27 | Pressing the Delete key while one or more items are selected removes all selected nodes, notes, and any edges directly attached to a deleted node |
 
 ### 4.2 AI — Map Generation
 
@@ -109,6 +114,8 @@
 | V-06 | Edge label captions and branching edge hub labels must be rendered without a visible border, at a font size of `9px` |
 | V-07 | When the canvas contains no nodes, display a low-opacity "Double click to start" hint centred on the canvas; the hint disappears when a node is present and reappears if all nodes are removed |
 | V-08 | The canvas must never auto-fit the viewport in response to node additions or changes. On initial load with no nodes, the canvas starts at a default zoom of `0.85`. When a saved map is loaded, the viewport is fitted to content once (padding `0.5`, maximum zoom `0.85`). The fitView button in the canvas Controls remains available at all times and is not subject to the `0.85` cap |
+| V-09 | The rubber-band selection rectangle must render as a subtle frame: a thin single-pixel border in the orange accent colour (`#f97316`) at low opacity, with a near-transparent fill of the same colour; no solid background, no drop shadow |
+| V-10 | Each selected item (node or note) in a multi-selection must display the same orange border highlight used for single-item selection; when multiple items are selected, all selected items show this highlight simultaneously |
 
 ### 4.8 Focus Question
 
@@ -219,4 +226,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 2.6 — March 2026 — Added section 4.10 App Version: B-01 (version in package.json, exposed via Vite define), B-02 (version displayed bottom-right in focus question bar), B-03 (deploy workflow logs version), B-04 (fly.io deployment tagged with version)*
+*Version 2.7 — March 2026 — Added marquee selection: C-23 (Select toggle in pane context menu), C-24 (rubber-band drag to select), C-25 (Space+drag to pan in select mode), C-26 (multi-item drag moves whole selection), C-27 (Delete removes all selected items); added V-09 (selection rectangle visual style), V-10 (selected item highlight in multi-select)*

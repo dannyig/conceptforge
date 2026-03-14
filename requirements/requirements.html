@@ -208,7 +208,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v2.6 &nbsp;·&nbsp; March 2026</span>
+    <span class="version-badge">v2.7 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -272,6 +272,11 @@
         <tr><td class="req-id">C-20</td><td>When a single (non-branching) edge has a label, render the label as a draggable waypoint; the user may drag it freely to any position on the canvas to reposition it &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">C-21</td><td>When a single edge label has been repositioned from its default midpoint, render the edge as two straight directed segments — source node → label (no arrowhead) and label → target node (with arrowhead) — both segments updating dynamically as the source node, target node, or label waypoint position changes &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">C-22</td><td>Save a repositioned single edge label's canvas coordinates as part of the edge's JSON data; restore the custom position and two-segment routing when the map is loaded &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">C-23</td><td>Add a "Select" toggle item to the canvas pane right-click context menu (the same menu defined by G-01); when selection mode is active the menu item is visually marked as active (e.g. checkmark or highlighted label); clicking it again exits selection mode; pressing Escape also exits selection mode &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">C-24</td><td>In selection mode, dragging on an empty area of the canvas draws a rubber-band selection rectangle; all nodes, edges, and notes that fall within the rectangle are selected when the drag is released &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">C-25</td><td>In selection mode, holding Space while dragging pans the canvas instead of drawing a selection rectangle &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">C-26</td><td>When two or more items are selected, dragging any selected node or note moves the entire selection together; edges follow their connected nodes automatically and do not disconnect from their source node or label hub &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">C-27</td><td>Pressing the Delete key while one or more items are selected removes all selected nodes, notes, and any edges directly attached to a deleted node &nbsp;<span class="badge badge-core">NEW</span></td></tr>
       </tbody>
     </table>
 
@@ -340,6 +345,8 @@
         <tr><td class="req-id">V-06</td><td>Edge label captions and branching edge hub labels must be rendered without a visible border, at a font size of <code>9px</code> &nbsp;<span class="badge badge-core">UPDATED</span></td></tr>
         <tr><td class="req-id">V-07</td><td>When the canvas contains no nodes, display a low-opacity "Double click to start" hint centred on the canvas; the hint disappears when a node is present and reappears if all nodes are removed &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">V-08</td><td>The canvas must never auto-fit the viewport in response to node additions or changes. On initial load with no nodes, the canvas starts at a default zoom of <code>0.85</code>. When a saved map is loaded, the viewport is fitted to content once (padding <code>0.5</code>, maximum zoom <code>0.85</code>). The fitView button in the canvas Controls remains available at all times and is not subject to the <code>0.85</code> cap &nbsp;<span class="badge badge-core">UPDATED</span></td></tr>
+        <tr><td class="req-id">V-09</td><td>The rubber-band selection rectangle must render as a subtle frame: a thin single-pixel border in the orange accent colour (<code>#f97316</code>) at low opacity, with a near-transparent fill of the same colour; no solid background, no drop shadow &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">V-10</td><td>Each selected item (node or note) in a multi-selection must display the same orange border highlight used for single-item selection; when multiple items are selected, all selected items show this highlight simultaneously &nbsp;<span class="badge badge-core">NEW</span></td></tr>
       </tbody>
     </table>
 
@@ -465,7 +472,7 @@
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v2.6 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v2.7 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>
