@@ -29,6 +29,7 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "Deploying ConceptForge v${VERSION}"
           echo "## Deploying ConceptForge v${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "::notice title=ConceptForge Version::Deploying v${VERSION}"
 
       - name: Build
         run: pnpm build
