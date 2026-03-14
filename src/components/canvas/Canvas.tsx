@@ -329,7 +329,7 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
             }
           }
         }
-        // G-10: restore notes — G-12: selectable:false; G-02: zIndex:-1 invariant
+        // G-10: restore notes — G-02: zIndex:-1 invariant
         if (data.notes) {
           for (const note of data.notes) {
             newNodes.push({
@@ -338,7 +338,6 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
               position: note.position,
               style: { width: note.width, height: note.height },
               zIndex: -1,
-              selectable: false,
               data: {
                 label: '',
                 backgroundColor: note.backgroundColor,
@@ -667,12 +666,20 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
           position: { x: flowX, y: flowY },
           style: { width: NOTE_DEFAULT_WIDTH, height: NOTE_DEFAULT_HEIGHT },
           zIndex: -1,
-          selectable: false,
           data: { label: '', backgroundColor: NOTE_DEFAULT_COLOR },
         },
       ])
     },
     [setNodes, closeAllMenus]
+  )
+
+  // G-12: single left-click on note does nothing — deselect immediately after RF selects it
+  const onNodeClick = useCallback(
+    (_event: React.MouseEvent, node: CanvasFlowNode): void => {
+      if (node.type !== 'note') return
+      setNodes(nds => nds.map(n => (n.id === node.id ? { ...n, selected: false } : n)))
+    },
+    [setNodes]
   )
 
   // G-07: double-click on note background creates a new concept node at cursor
@@ -816,6 +823,7 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
         onConnectEnd={onConnectEnd}
         onPaneClick={onPaneClick}
         onPaneContextMenu={onPaneContextMenu}
+        onNodeClick={onNodeClick}
         onNodeContextMenu={onNodeContextMenu}
         onNodeDoubleClick={onNodeDoubleClick}
         onEdgeContextMenu={onEdgeContextMenu}

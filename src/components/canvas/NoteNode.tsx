@@ -29,7 +29,8 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
   const { setNodes } = useReactFlow()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(data.text ?? '')
-  // G-03: resize handles shown on hover, not on selection
+  // G-03: resize handles shown on hover — tracked on the outer wrapper so that
+  // moving the cursor onto a NodeResizer handle does not clear the hover state.
   const [hovered, setHovered] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -72,7 +73,14 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
   }, [data.text, editing])
 
   return (
-    <>
+    // Outer wrapper: covers the full RF node area including NodeResizer handles,
+    // so onMouseLeave only fires when the cursor actually leaves the note boundary.
+    // G-03: hover here (not on the inner content div) keeps handles visible during resize drag.
+    <div
+      onMouseEnter={(): void => setHovered(true)}
+      onMouseLeave={(): void => setHovered(false)}
+      style={{ width: '100%', height: '100%' }}
+    >
       {/* G-03: resize handles — visible on hover, no selection required */}
       <NodeResizer
         minWidth={80}
@@ -94,8 +102,6 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
       {/* G-02, G-04: note body — draggable, behind other nodes via zIndex on the RF node */}
       {/* G-07: double-click on background bubbles to RF onNodeDoubleClick (creates node) */}
       <div
-        onMouseEnter={(): void => setHovered(true)}
-        onMouseLeave={(): void => setHovered(false)}
         style={{
           width: '100%',
           height: '100%',
@@ -181,6 +187,6 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
           </span>
         )}
       </div>
-    </>
+    </div>
   )
 }
