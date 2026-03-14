@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-22, V-01 → V-08, G-01 → G-12, and/or B-01 → B-02
+**Trigger:** Human assigns requirement IDs C-01 → C-27, V-01 → V-10, G-01 → G-12, and/or B-01 → B-02
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -407,6 +407,43 @@ interface MapData {
 
 ---
 
+### Group 4i — Marquee Selection (C-23 → C-27, V-09, V-10)
+
+- [ ] **C-23 — Select toggle in pane context menu:**
+  - In `Canvas.tsx`, add a "Select" item to the `onPaneContextMenu` menu (alongside "Add Node" and "Add Note" from G-01)
+  - Maintain a `selectionMode` boolean in canvas state
+  - When `selectionMode` is `true`, mark the menu item visually active (e.g. a checkmark prefix or highlighted text using `COLOR_NODE_SELECTED`)
+  - Clicking "Select" toggles `selectionMode`; pressing Escape exits selection mode and sets `selectionMode` to `false`
+- [ ] **C-24 — Rubber-band drag to select:**
+  - When `selectionMode` is active, set React Flow's `selectionOnDrag` prop to `true` and `panOnDrag` to `false`
+  - When `selectionMode` is inactive, restore `selectionOnDrag` to `false` and `panOnDrag` to `true`
+  - React Flow's built-in selection rectangle behaviour handles the marquee; configure it via props only — no custom SVG rectangle needed
+- [ ] **V-09 — Selection rectangle style:**
+  - Override React Flow's default selection rectangle CSS with inline or injected styles:
+    - Border: `1px solid rgba(249, 115, 22, 0.5)` (orange accent at 50% opacity)
+    - Background fill: `rgba(249, 115, 22, 0.05)` (near-transparent orange)
+    - No box-shadow
+  - Apply via React Flow's `selectionBoxStyle` prop on `<ReactFlow>`
+- [ ] **C-25 — Space+drag pans in selection mode:**
+  - Set React Flow's `panOnScroll` to `false` and `panOnDrag` to `[1, 2]` (middle and right mouse) when in selection mode, OR use React Flow's `selectionKeyCode` / `panActivationKeyCode` to bind Space as the pan activation key while selection mode is active
+  - The simplest correct approach: set `panActivationKeyCode="Space"` on `<ReactFlow>` at all times — Space+drag always pans regardless of mode
+- [ ] **C-26 — Drag selected group moves all items:**
+  - React Flow handles multi-node drag natively when `multiSelectionActive` — no custom logic needed
+  - Verify that dragging any selected node moves all selected nodes together
+  - Edges connected to moved nodes update automatically via React Flow's edge routing — confirm no disconnection occurs
+- [ ] **C-27 — Delete key removes all selected items:**
+  - React Flow's `deleteKeyCode` handles deletion of selected nodes and edges natively
+  - Extend the existing `onNodesDelete` / `onEdgesDelete` handlers to also remove selected notes from canvas state
+  - Confirm: deleting a selected node also removes its attached edges (React Flow default behaviour)
+- [ ] **V-10 — Selected item highlight consistent across single and multi-select:**
+  - The `ConceptNode.tsx` selected style (orange border + glow) must apply to every selected node in a multi-selection, not just a single selected node
+  - React Flow passes `selected` prop to custom node components — verify `ConceptNode.tsx` already uses this prop and that it works for multi-select (no additional changes expected, but verify)
+  - Notes (`NoteNode.tsx`) are non-selectable per G-12 — they are included in rubber-band selection drag (C-26) but do not receive a selection highlight; confirm this is the correct interpretation and implement accordingly
+
+**Commit:** `feat(C-23–C-27,V-09,V-10): marquee selection mode with rubber-band rect, group drag, and delete`
+
+---
+
 ### Group 5 — UI Verification (Playwright MCP)
 
 Before committing Group 4, run the web design audit and the Playwright visual check:
@@ -489,4 +526,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.13 — March 2026 (added Group 4h: B-01→B-04 — app version from package.json, displayed in focus question bar, logged and tagged in deploy workflow)*
+*Canvas Agent Spec v1.14 — March 2026 (added Group 4i: C-23→C-27, V-09→V-10 — marquee selection mode with rubber-band rect, Space+drag pan, group drag, and delete)*
