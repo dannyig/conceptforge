@@ -87,8 +87,8 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
         minHeight={60}
         isVisible={hovered || selected}
         lineStyle={{
-          borderColor: COLOR_NODE_SELECTED,
-          borderWidth: 1,
+          borderColor: 'transparent',
+          borderWidth: 0,
         }}
         handleStyle={{
           width: 8,
