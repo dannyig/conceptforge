@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Canvas, type CanvasHandle } from '@/components/canvas/Canvas'
+import { HintTicker } from '@/components/canvas/HintTicker'
 import { FocusQuestionBar } from '@/components/ai/FocusQuestionBar'
 import { MissingKeyBanner } from '@/components/settings/MissingKeyBanner'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
@@ -55,6 +56,7 @@ export function App(): React.JSX.Element {
           onOpenSettings={handleOpenSettingsFromBanner}
           onDismiss={dismissBanner}
         />
+        <HintTicker />
       </div>
     </div>
   )

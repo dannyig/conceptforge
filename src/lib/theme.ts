@@ -61,6 +61,15 @@ export const FONT_SIZE_FOCUS_QUESTION = '15px'
 // Focus question bar
 export const FOCUS_BAR_HEIGHT = 52
 
+// Hint Ticker (H-01→H-06)
+export const COLOR_TICKER_BG = 'rgba(13,17,23,0.88)'
+export const COLOR_TICKER_BORDER = '#21262d'
+export const COLOR_TICKER_TEXT = '#6e7681'
+export const COLOR_TICKER_RESTORE_BG = 'rgba(22,27,34,0.9)'
+export const TICKER_HEIGHT = 26
+export const TICKER_FONT_SIZE = '11px'
+export const TICKER_SCROLL_DURATION = '60s'
+
 // Notes & Groups (G-01→G-10)
 // 10 dark colours that all yield near-white contrast text via the luminance formula
 export const NOTE_COLORS: readonly string[] = [
