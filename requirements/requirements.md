@@ -160,7 +160,7 @@
 | ID | Requirement |
 |---|---|
 | H-01 | Display a scrolling hint ticker as a fixed overlay anchored to the bottom of the canvas viewport; the bar is visible by default on every page load |
-| H-02 | Scroll a fixed, curated list of ConceptForge usage hints and cmap-related information continuously from right to left in a seamless loop; the list restarts without a visible gap when the end is reached |
+| H-02 | Display one hint at a time: each hint slides in from the right edge of the bar; once fully in view, the hint pauses long enough to be read; it then disappears instantly (no outgoing animation); the next hint immediately begins sliding in from the right. The hint text travels across the full width of the bar, passing in front of the dismiss button. Hint copy must be brief and direct — no more than eight words per hint. |
 | H-03 | Provide a small icon button at the right edge of the ticker bar to dismiss it; when dismissed, display a small persistent toggle icon anchored to the bottom-right corner of the canvas that restores the bar |
 | H-04 | Reset the bar to visible on every page load — the hidden/visible preference is not persisted to localStorage |
 | H-05 | Pause the scrolling animation while the user's cursor hovers over the ticker bar; resume scrolling when the cursor leaves |
@@ -237,4 +237,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 2.8 — March 2026 — Added hint ticker section (4.11): H-01 (visible by default on every page load), H-02 (continuous right-to-left scroll loop), H-03 (dismiss button + restore icon), H-04 (no localStorage persistence), H-05 (pause on hover), H-06 (subtle dark overlay styled from theme.ts)*
+*Version 2.9 — March 2026 — Refined H-02: one hint at a time slides in from right, pauses to read, disappears instantly; text passes in front of dismiss button; hint copy max 8 words*
