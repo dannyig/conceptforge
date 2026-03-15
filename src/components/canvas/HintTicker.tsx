@@ -3,15 +3,13 @@ import {
   COLOR_NODE_SELECTED,
   COLOR_TICKER_BG,
   COLOR_TICKER_BORDER,
-  COLOR_TICKER_RESTORE_BG,
   COLOR_TICKER_TEXT,
   FONT_FAMILY,
+  TICKER_FADE_MS,
   TICKER_FONT_SIZE,
   TICKER_HEIGHT,
   TICKER_READ_MS,
-  TICKER_SLIDE_MS,
   TRANSITION_FAST,
-  TRANSITION_NORMAL,
 } from '@/lib/theme'
 
 // Max 8 words per hint (H-02)
@@ -34,20 +32,19 @@ const HINTS: readonly string[] = [
   'Drag any selected node to move all',
 ]
 
-// Three-phase cycle per hint:
-//   idle     — text is off-screen right, no transition (instant reset)
-//   entering — text transitions from off-screen right to resting position
-//   reading  — text is at rest; timer counts down before next hint
-type Phase = 'idle' | 'entering' | 'reading'
+// Four-phase cycle per hint:
+//   idle       — opacity 0, no transition; index just advanced
+//   fading-in  — opacity 0 → 1 over TICKER_FADE_MS
+//   reading    — opacity 1; timer counts down (hover pauses it)
+//   fading-out — opacity 1 → 0 over TICKER_FADE_MS; then advance index
+type Phase = 'idle' | 'fading-in' | 'reading' | 'fading-out'
 
 export function HintTicker(): React.JSX.Element {
   const [visible, setVisible] = useState(true)
-  const [restoreHovered, setRestoreHovered] = useState(false)
   const [index, setIndex] = useState(0)
   const [phase, setPhase] = useState<Phase>('idle')
   const [hovered, setHovered] = useState(false)
 
-  // Track how much read-time has elapsed when hover pauses the timer
   const readStartRef = useRef<number>(0)
   const readElapsedRef = useRef<number>(0)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -59,51 +56,42 @@ export function HintTicker(): React.JSX.Element {
     }
   }, [])
 
-  const advanceToNextHint = useCallback((): void => {
-    clearTimer()
-    readElapsedRef.current = 0
-    setPhase('idle')
-    setIndex(prev => (prev + 1) % HINTS.length)
-  }, [clearTimer])
+  const startReadTimer = useCallback((remaining: number): void => {
+    readStartRef.current = Date.now()
+    timerRef.current = setTimeout((): void => setPhase('fading-out'), remaining)
+  }, [])
 
-  const startReadTimer = useCallback(
-    (remaining: number): void => {
-      readStartRef.current = Date.now()
-      timerRef.current = setTimeout(advanceToNextHint, remaining)
-    },
-    [advanceToNextHint]
-  )
-
-  // State machine: idle → entering → reading → idle → …
+  // State machine: idle → fading-in → reading → fading-out → idle → …
   useEffect(() => {
     if (!visible) return
 
     if (phase === 'idle') {
-      // One frame delay so the browser renders translateX(110%) before we
-      // add the transition and set translateX(0)
-      const raf = requestAnimationFrame((): void => {
-        setPhase('entering')
-      })
+      const raf = requestAnimationFrame((): void => setPhase('fading-in'))
       return (): void => cancelAnimationFrame(raf)
     }
 
-    if (phase === 'entering') {
-      timerRef.current = setTimeout((): void => {
-        setPhase('reading')
-      }, TICKER_SLIDE_MS)
+    if (phase === 'fading-in') {
+      timerRef.current = setTimeout((): void => setPhase('reading'), TICKER_FADE_MS)
       return clearTimer
     }
 
-    // 'reading' phase: timer is owned by the hover effect below
     if (phase === 'reading') {
       readElapsedRef.current = 0
     }
-  }, [phase, visible, clearTimer, startReadTimer])
+
+    if (phase === 'fading-out') {
+      timerRef.current = setTimeout((): void => {
+        readElapsedRef.current = 0
+        setIndex(prev => (prev + 1) % HINTS.length)
+        setPhase('idle')
+      }, TICKER_FADE_MS)
+      return clearTimer
+    }
+  }, [phase, visible, clearTimer])
 
   // Pause / resume read timer on hover
   useEffect(() => {
     if (phase !== 'reading') return
-
     if (hovered) {
       clearTimer()
       readElapsedRef.current += Date.now() - readStartRef.current
@@ -113,154 +101,113 @@ export function HintTicker(): React.JSX.Element {
     }
   }, [hovered, phase, clearTimer, startReadTimer])
 
-  // Reset to idle when ticker becomes visible again
+  // Restart cycle when ticker is re-shown
   useEffect(() => {
     if (visible) {
+      clearTimer()
       readElapsedRef.current = 0
       setPhase('idle')
     }
-  }, [visible])
+  }, [visible, clearTimer])
 
-  if (!visible) {
-    return (
-      <button
-        aria-label="Show hint ticker"
-        onClick={(): void => setVisible(true)}
-        onMouseEnter={(): void => setRestoreHovered(true)}
-        onMouseLeave={(): void => setRestoreHovered(false)}
-        style={{
-          position: 'absolute',
-          bottom: 10,
-          right: 54,
-          width: 22,
-          height: 22,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: COLOR_TICKER_RESTORE_BG,
-          border: `1px solid ${COLOR_TICKER_BORDER}`,
-          borderRadius: 4,
-          cursor: 'pointer',
-          padding: 0,
-          opacity: restoreHovered ? 0.9 : 0.35,
-          transition: `opacity ${TRANSITION_NORMAL}`,
-          zIndex: 10,
-        }}
-      >
-        <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-          <rect x="0" y="0" width="10" height="1.5" rx="0.75" fill={COLOR_TICKER_TEXT} />
-          <rect x="0" y="3.25" width="10" height="1.5" rx="0.75" fill={COLOR_TICKER_TEXT} />
-          <rect x="0" y="6.5" width="10" height="1.5" rx="0.75" fill={COLOR_TICKER_TEXT} />
-        </svg>
-      </button>
-    )
-  }
-
-  // Text is visible (at rest) during both 'entering' and 'reading'; off-screen only during 'idle'
-  const translateX = phase === 'idle' ? '110%' : '0%'
+  const opacity = phase === 'fading-in' || phase === 'reading' ? 1 : 0
   const transition =
-    phase === 'entering'
-      ? `transform ${TICKER_SLIDE_MS}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`
-      : 'none'
+    phase === 'fading-in' || phase === 'fading-out' ? `opacity ${TICKER_FADE_MS}ms ease` : 'none'
 
   return (
-    <div
-      aria-label="ConceptForge hints"
-      onMouseEnter={(): void => setHovered(true)}
-      onMouseLeave={(): void => setHovered(false)}
-      style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: TICKER_HEIGHT,
-        background: COLOR_TICKER_BG,
-        borderTop: `1px solid ${COLOR_TICKER_BORDER}`,
-        overflow: 'hidden',
-        zIndex: 10,
-        userSelect: 'none',
-      }}
-    >
-      {/* Sliding hint text — full width, passes in front of dismiss button (zIndex 2).
-          pointerEvents none so clicks reach the dismiss button beneath. */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          display: 'flex',
-          alignItems: 'center',
-          paddingLeft: 12,
-          transform: `translateX(${translateX})`,
-          transition,
-          zIndex: 2,
-          fontFamily: FONT_FAMILY,
-          fontSize: TICKER_FONT_SIZE,
-          lineHeight: 1,
-          color: COLOR_TICKER_TEXT,
-          letterSpacing: '0.03em',
-          whiteSpace: 'nowrap',
-          pointerEvents: 'none',
-        }}
-      >
-        <span style={{ color: COLOR_NODE_SELECTED, marginRight: 4, opacity: 0.7 }}>Tip:</span>
-        {HINTS[index]}
-      </div>
+    <>
+      {visible && (
+        <div
+          aria-label="ConceptForge hints"
+          onMouseEnter={(): void => setHovered(true)}
+          onMouseLeave={(): void => setHovered(false)}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: TICKER_HEIGHT,
+            background: COLOR_TICKER_BG,
+            borderTop: `1px solid ${COLOR_TICKER_BORDER}`,
+            overflow: 'hidden',
+            zIndex: 10,
+            userSelect: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <div
+            style={{
+              opacity,
+              transition,
+              fontFamily: FONT_FAMILY,
+              fontSize: TICKER_FONT_SIZE,
+              lineHeight: 1,
+              color: COLOR_TICKER_TEXT,
+              letterSpacing: '0.03em',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+            }}
+          >
+            <span style={{ color: COLOR_NODE_SELECTED, marginRight: 5, opacity: 0.75 }}>Tip:</span>
+            {HINTS[index]}
+          </div>
+        </div>
+      )}
 
-      {/* Dismiss button — behind sliding text (zIndex 1) */}
-      <DismissButton onDismiss={(): void => setVisible(false)} />
-    </div>
+      <TipsToggle visible={visible} onToggle={(): void => setVisible(v => !v)} />
+    </>
   )
 }
 
-function DismissButton({ onDismiss }: { onDismiss: () => void }): React.JSX.Element {
+function TipsToggle({
+  visible,
+  onToggle,
+}: {
+  visible: boolean
+  onToggle: () => void
+}): React.JSX.Element {
   const [hovered, setHovered] = useState(false)
 
   return (
     <button
-      aria-label="Hide hint ticker"
-      onClick={onDismiss}
+      aria-label={visible ? 'Hide hints' : 'Show hints'}
+      aria-pressed={visible}
+      onClick={onToggle}
       onMouseEnter={(): void => setHovered(true)}
       onMouseLeave={(): void => setHovered(false)}
       style={{
         position: 'absolute',
-        right: 0,
-        top: 0,
         bottom: 0,
-        width: 32,
+        right: 0,
+        height: TICKER_HEIGHT,
+        padding: '0 10px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        background: hovered ? 'rgba(255,255,255,0.05)' : 'transparent',
+        background: visible
+          ? hovered
+            ? 'rgba(249,115,22,0.12)'
+            : 'rgba(249,115,22,0.07)'
+          : hovered
+            ? 'rgba(255,255,255,0.04)'
+            : 'transparent',
         border: 'none',
         borderLeft: `1px solid ${COLOR_TICKER_BORDER}`,
+        borderTop: visible ? `1px solid ${COLOR_TICKER_BORDER}` : 'none',
         cursor: 'pointer',
-        padding: 0,
-        color: COLOR_TICKER_TEXT,
-        opacity: hovered ? 1 : 0.5,
-        transition: `opacity ${TRANSITION_FAST}, background ${TRANSITION_FAST}`,
-        zIndex: 1,
+        fontFamily: FONT_FAMILY,
+        fontSize: TICKER_FONT_SIZE,
+        fontWeight: 600,
+        letterSpacing: '0.08em',
+        color: visible ? COLOR_NODE_SELECTED : COLOR_TICKER_TEXT,
+        opacity: visible ? 1 : hovered ? 0.6 : 0.35,
+        transition: `opacity ${TRANSITION_FAST}, background ${TRANSITION_FAST}, color ${TRANSITION_FAST}`,
+        zIndex: 11,
+        textTransform: 'uppercase',
       }}
     >
-      <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-        <line
-          x1="1"
-          y1="1"
-          x2="7"
-          y2="7"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-        <line
-          x1="7"
-          y1="1"
-          x2="1"
-          y2="7"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-      </svg>
+      Tips
     </button>
   )
 }
