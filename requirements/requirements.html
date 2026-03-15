@@ -208,7 +208,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v2.7 &nbsp;·&nbsp; March 2026</span>
+    <span class="version-badge">v2.8 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -392,6 +392,19 @@
         <tr><td class="req-id">B-04</td><td>The fly.io deployment must be tagged with the app version as a Docker image label (e.g. <code>org.opencontainers.image.version</code>) &nbsp;<span class="badge badge-core">NEW</span></td></tr>
       </tbody>
     </table>
+
+    <h3>4.11 Hint Ticker &nbsp;<span class="badge badge-core">NEW</span></h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td class="req-id">H-01</td><td>Display a scrolling hint ticker as a fixed overlay anchored to the bottom of the canvas viewport; the bar is visible by default on every page load &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">H-02</td><td>Scroll a fixed, curated list of ConceptForge usage hints and cmap-related information continuously from right to left in a seamless loop; the list restarts without a visible gap when the end is reached &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">H-03</td><td>Provide a small icon button at the right edge of the ticker bar to dismiss it; when dismissed, display a small persistent toggle icon anchored to the bottom-right corner of the canvas that restores the bar &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">H-04</td><td>Reset the bar to visible on every page load — the hidden/visible preference is not persisted to localStorage &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">H-05</td><td>Pause the scrolling animation while the user's cursor hovers over the ticker bar; resume scrolling when the cursor leaves &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">H-06</td><td>Style the bar as a subtle, non-intrusive overlay: semi-transparent dark background, small typography, all colour values sourced from <code>theme.ts</code>; the bar must not obstruct the canvas controls, toolbar, or focus question bar &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+      </tbody>
+    </table>
   </section>
 
   <!-- 5. Nice to Have -->
@@ -472,7 +485,7 @@
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v2.7 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v2.8 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>

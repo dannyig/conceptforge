@@ -155,6 +155,17 @@
 | B-03 | The GitHub Actions deploy workflow must print the app version (read from `package.json`) as an explicit, named step before `flyctl deploy` runs |
 | B-04 | The fly.io deployment must be tagged with the app version as a Docker image label (e.g. `org.opencontainers.image.version`) |
 
+### 4.11 Hint Ticker
+
+| ID | Requirement |
+|---|---|
+| H-01 | Display a scrolling hint ticker as a fixed overlay anchored to the bottom of the canvas viewport; the bar is visible by default on every page load |
+| H-02 | Scroll a fixed, curated list of ConceptForge usage hints and cmap-related information continuously from right to left in a seamless loop; the list restarts without a visible gap when the end is reached |
+| H-03 | Provide a small icon button at the right edge of the ticker bar to dismiss it; when dismissed, display a small persistent toggle icon anchored to the bottom-right corner of the canvas that restores the bar |
+| H-04 | Reset the bar to visible on every page load — the hidden/visible preference is not persisted to localStorage |
+| H-05 | Pause the scrolling animation while the user's cursor hovers over the ticker bar; resume scrolling when the cursor leaves |
+| H-06 | Style the bar as a subtle, non-intrusive overlay: semi-transparent dark background, small typography, all colour values sourced from `theme.ts`; the bar must not obstruct the canvas controls, toolbar, or focus question bar |
+
 ---
 
 ## 5. Nice to Have (Post-MVP)
@@ -226,4 +237,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 2.7 — March 2026 — Added marquee selection: C-23 (Select toggle in pane context menu), C-24 (rubber-band drag to select), C-25 (Space+drag to pan in select mode), C-26 (multi-item drag moves whole selection), C-27 (Delete removes all selected items); added V-09 (selection rectangle visual style), V-10 (selected item highlight in multi-select)*
+*Version 2.8 — March 2026 — Added hint ticker section (4.11): H-01 (visible by default on every page load), H-02 (continuous right-to-left scroll loop), H-03 (dismiss button + restore icon), H-04 (no localStorage persistence), H-05 (pause on hover), H-06 (subtle dark overlay styled from theme.ts)*
