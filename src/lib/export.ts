@@ -1,4 +1,4 @@
-import type { BranchingEdge, ConceptEdge, ConceptNode, MapData } from '@/types'
+import type { BranchingEdge, ConceptEdge, ConceptNode, MapData, NoteData } from '@/types'
 
 function todayString(): string {
   return new Date().toISOString().slice(0, 10)
@@ -72,6 +72,21 @@ function assertEdge(val: unknown): ConceptEdge {
   return val as unknown as ConceptEdge
 }
 
+function assertNote(val: unknown): NoteData {
+  if (!isObject(val)) throw new Error('Invalid map file')
+  if (typeof val.id !== 'string') throw new Error('Invalid map file')
+  if (!isObject(val.position)) throw new Error('Invalid map file')
+  if (typeof val.position.x !== 'number') throw new Error('Invalid map file')
+  if (typeof val.position.y !== 'number') throw new Error('Invalid map file')
+  if (typeof val.width !== 'number') throw new Error('Invalid map file')
+  if (typeof val.height !== 'number') throw new Error('Invalid map file')
+  if (typeof val.backgroundColor !== 'string') throw new Error('Invalid map file')
+  if (val.text !== undefined && typeof val.text !== 'string') throw new Error('Invalid map file')
+  const validSizes = new Set(['small', 'medium', 'large', undefined])
+  if (!validSizes.has(val.textSize as string | undefined)) throw new Error('Invalid map file')
+  return val as unknown as NoteData
+}
+
 function assertBranchingEdge(val: unknown): BranchingEdge {
   if (!isObject(val)) throw new Error('Invalid map file')
   if (typeof val.id !== 'string') throw new Error('Invalid map file')
@@ -107,10 +122,17 @@ export function validateMapData(raw: unknown): MapData {
     branchingEdges = raw.branchingEdges.map(assertBranchingEdge)
   }
 
+  let notes: NoteData[] | undefined
+  if (raw.notes !== undefined) {
+    if (!Array.isArray(raw.notes)) throw new Error('Invalid map file')
+    notes = raw.notes.map(assertNote)
+  }
+
   return {
     nodes,
     edges,
     ...(branchingEdges !== undefined ? { branchingEdges } : {}),
+    ...(notes !== undefined ? { notes } : {}),
     ...(typeof raw.focusQuestion === 'string' ? { focusQuestion: raw.focusQuestion } : {}),
   }
 }
