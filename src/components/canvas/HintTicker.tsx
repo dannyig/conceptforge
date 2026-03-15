@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   COLOR_TICKER_BG,
   COLOR_TICKER_BORDER,
@@ -7,58 +7,119 @@ import {
   FONT_FAMILY,
   TICKER_FONT_SIZE,
   TICKER_HEIGHT,
-  TICKER_SCROLL_DURATION,
+  TICKER_READ_MS,
+  TICKER_SLIDE_MS,
   TRANSITION_FAST,
   TRANSITION_NORMAL,
 } from '@/lib/theme'
 
+// Max 8 words per hint (H-02)
 const HINTS: readonly string[] = [
-  'Double-click the canvas to add a node',
-  'Right-click any node to expand it with AI',
-  'Drag from a node handle to connect two nodes',
-  'Right-click the canvas for Add Node and Add Note options',
-  'In Select mode, drag to rubber-band select multiple items',
-  'Hold Space in Select mode to pan instead of selecting',
-  'Drag an edge label to reposition it as a waypoint',
-  'Right-click a labelled edge to branch it to multiple targets',
-  'Double-click a node or edge label to edit it inline',
-  'Save your map as JSON — all positions and labels are preserved',
-  'Use the Focus Question bar to guide your AI map generation',
-  'Export your full canvas as a PNG from the toolbar',
-  'Concept maps work best with 5–10 nodes per cluster',
-  'Use branching edges to show one concept relating to many',
-  'Drag a node handle to an empty area to create and connect a new node',
-  'Select multiple items and drag any selected node to move the group',
-  'Press Delete while items are selected to remove them all at once',
-  'Right-click a branching hub to restructure or delete the entire branch',
-  'The focus question is saved with your map and included in AI prompts',
-  'Notes can be resized by dragging their edges or corners',
+  'Double-click canvas to add a node',
+  'Right-click a node to expand with AI',
+  'Drag node handles to connect two nodes',
+  'Right-click canvas — Add Node or Note',
+  'Select mode: drag to rubber-band select',
+  'Space+drag in Select mode to pan',
+  'Drag an edge label to reposition it',
+  'Right-click a label to branch it',
+  'Double-click any label to edit inline',
+  'Save and load your map as JSON',
+  'Focus question guides AI map generation',
+  'Export your full canvas as PNG',
+  'Notes resize by dragging edges or corners',
+  'Delete key removes all selected items',
+  'Drag a handle to empty space — new node',
+  'Drag any selected node to move all',
 ]
 
-const TICKER_ANIMATION_ID = 'cf-ticker-keyframes'
-
-function ensureTickerKeyframes(): void {
-  if (document.getElementById(TICKER_ANIMATION_ID)) return
-  const style = document.createElement('style')
-  style.id = TICKER_ANIMATION_ID
-  style.textContent = `
-    @keyframes cf-ticker-scroll {
-      0%   { transform: translateX(100vw); }
-      100% { transform: translateX(-100%); }
-    }
-  `
-  document.head.appendChild(style)
-}
+// Three-phase cycle per hint:
+//   idle     — text is off-screen right, no transition (instant reset)
+//   entering — text transitions from off-screen right to resting position
+//   reading  — text is at rest; timer counts down before next hint
+type Phase = 'idle' | 'entering' | 'reading'
 
 export function HintTicker(): React.JSX.Element {
   const [visible, setVisible] = useState(true)
-  const [hovered, setHovered] = useState(false)
   const [restoreHovered, setRestoreHovered] = useState(false)
+  const [index, setIndex] = useState(0)
+  const [phase, setPhase] = useState<Phase>('idle')
+  const [hovered, setHovered] = useState(false)
 
-  // Inject @keyframes once into document head (no .css file)
-  ensureTickerKeyframes()
+  // Track how much read-time has elapsed when hover pauses the timer
+  const readStartRef = useRef<number>(0)
+  const readElapsedRef = useRef<number>(0)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const tickerText = HINTS.join('  ·  ')
+  const clearTimer = useCallback((): void => {
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+  }, [])
+
+  const advanceToNextHint = useCallback((): void => {
+    clearTimer()
+    readElapsedRef.current = 0
+    setPhase('idle')
+    setIndex(prev => (prev + 1) % HINTS.length)
+  }, [clearTimer])
+
+  const startReadTimer = useCallback(
+    (remaining: number): void => {
+      readStartRef.current = Date.now()
+      timerRef.current = setTimeout(advanceToNextHint, remaining)
+    },
+    [advanceToNextHint]
+  )
+
+  // State machine: idle → entering → reading → idle → …
+  useEffect(() => {
+    if (!visible) return
+
+    if (phase === 'idle') {
+      // One frame delay so the browser renders translateX(110%) before we
+      // add the transition and set translateX(0)
+      const raf = requestAnimationFrame((): void => {
+        setPhase('entering')
+      })
+      return (): void => cancelAnimationFrame(raf)
+    }
+
+    if (phase === 'entering') {
+      timerRef.current = setTimeout((): void => {
+        setPhase('reading')
+      }, TICKER_SLIDE_MS)
+      return clearTimer
+    }
+
+    if (phase === 'reading') {
+      readElapsedRef.current = 0
+      startReadTimer(TICKER_READ_MS)
+      return clearTimer
+    }
+  }, [phase, visible, clearTimer, startReadTimer])
+
+  // Pause / resume read timer on hover
+  useEffect(() => {
+    if (phase !== 'reading') return
+
+    if (hovered) {
+      clearTimer()
+      readElapsedRef.current += Date.now() - readStartRef.current
+    } else {
+      const remaining = Math.max(0, TICKER_READ_MS - readElapsedRef.current)
+      startReadTimer(remaining)
+    }
+  }, [hovered, phase, clearTimer, startReadTimer])
+
+  // Reset to idle when ticker becomes visible again
+  useEffect(() => {
+    if (visible) {
+      readElapsedRef.current = 0
+      setPhase('idle')
+    }
+  }, [visible])
 
   if (!visible) {
     return (
@@ -69,8 +130,8 @@ export function HintTicker(): React.JSX.Element {
         onMouseLeave={(): void => setRestoreHovered(false)}
         style={{
           position: 'absolute',
-          bottom: 12,
-          right: 56,
+          bottom: 10,
+          right: 54,
           width: 22,
           height: 22,
           display: 'flex',
@@ -81,23 +142,28 @@ export function HintTicker(): React.JSX.Element {
           borderRadius: 4,
           cursor: 'pointer',
           padding: 0,
-          opacity: restoreHovered ? 0.9 : 0.45,
+          opacity: restoreHovered ? 0.9 : 0.35,
           transition: `opacity ${TRANSITION_NORMAL}`,
           zIndex: 10,
         }}
       >
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <rect x="1" y="3.5" width="8" height="1" rx="0.5" fill={COLOR_TICKER_TEXT} />
-          <rect x="1" y="5.5" width="8" height="1" rx="0.5" fill={COLOR_TICKER_TEXT} />
-          <rect x="1" y="7.5" width="8" height="1" rx="0.5" fill={COLOR_TICKER_TEXT} />
+        <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+          <rect x="0" y="0" width="10" height="1.5" rx="0.75" fill={COLOR_TICKER_TEXT} />
+          <rect x="0" y="3.25" width="10" height="1.5" rx="0.75" fill={COLOR_TICKER_TEXT} />
+          <rect x="0" y="6.5" width="10" height="1.5" rx="0.75" fill={COLOR_TICKER_TEXT} />
         </svg>
       </button>
     )
   }
 
+  const isSliding = phase === 'entering'
+  const translateX = isSliding ? '0%' : '110%'
+  const transition = isSliding
+    ? `transform ${TICKER_SLIDE_MS}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`
+    : 'none'
+
   return (
     <div
-      role="marquee"
       aria-label="ConceptForge hints"
       onMouseEnter={(): void => setHovered(true)}
       onMouseLeave={(): void => setHovered(false)}
@@ -110,30 +176,32 @@ export function HintTicker(): React.JSX.Element {
         background: COLOR_TICKER_BG,
         borderTop: `1px solid ${COLOR_TICKER_BORDER}`,
         overflow: 'hidden',
-        display: 'flex',
-        alignItems: 'center',
         zIndex: 10,
-        fontFamily: FONT_FAMILY,
-        fontSize: TICKER_FONT_SIZE,
-        color: COLOR_TICKER_TEXT,
-        letterSpacing: '0.02em',
         userSelect: 'none',
       }}
     >
-      {/* Scrolling text track */}
-      <span
+      {/* Sliding hint text — full width, passes in front of dismiss button (zIndex 2) */}
+      <div
         style={{
-          display: 'inline-block',
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          paddingLeft: 12,
+          transform: `translateX(${translateX})`,
+          transition,
+          zIndex: 2,
+          fontFamily: FONT_FAMILY,
+          fontSize: TICKER_FONT_SIZE,
+          color: COLOR_TICKER_TEXT,
+          letterSpacing: '0.03em',
           whiteSpace: 'nowrap',
-          animation: `cf-ticker-scroll ${TICKER_SCROLL_DURATION} linear infinite`,
-          animationPlayState: hovered ? 'paused' : 'running',
-          paddingRight: '4rem',
         }}
       >
-        {tickerText}
-      </span>
+        {HINTS[index]}
+      </div>
 
-      {/* Dismiss button */}
+      {/* Dismiss button — behind sliding text (zIndex 1) */}
       <DismissButton onDismiss={(): void => setVisible(false)} />
     </div>
   )
@@ -163,9 +231,9 @@ function DismissButton({ onDismiss }: { onDismiss: () => void }): React.JSX.Elem
         cursor: 'pointer',
         padding: 0,
         color: COLOR_TICKER_TEXT,
-        opacity: hovered ? 1 : 0.6,
+        opacity: hovered ? 1 : 0.5,
         transition: `opacity ${TRANSITION_FAST}, background ${TRANSITION_FAST}`,
-        flexShrink: 0,
+        zIndex: 1,
       }}
     >
       <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
