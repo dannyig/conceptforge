@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
+  COLOR_NODE_SELECTED,
   COLOR_TICKER_BG,
   COLOR_TICKER_BORDER,
   COLOR_TICKER_RESTORE_BG,
@@ -180,7 +181,8 @@ export function HintTicker(): React.JSX.Element {
         userSelect: 'none',
       }}
     >
-      {/* Sliding hint text — full width, passes in front of dismiss button (zIndex 2) */}
+      {/* Sliding hint text — full width, passes in front of dismiss button (zIndex 2).
+          pointerEvents none so clicks reach the dismiss button beneath. */}
       <div
         style={{
           position: 'absolute',
@@ -193,11 +195,14 @@ export function HintTicker(): React.JSX.Element {
           zIndex: 2,
           fontFamily: FONT_FAMILY,
           fontSize: TICKER_FONT_SIZE,
+          lineHeight: 1,
           color: COLOR_TICKER_TEXT,
           letterSpacing: '0.03em',
           whiteSpace: 'nowrap',
+          pointerEvents: 'none',
         }}
       >
+        <span style={{ color: COLOR_NODE_SELECTED, marginRight: 4, opacity: 0.7 }}>Tip:</span>
         {HINTS[index]}
       </div>
 
