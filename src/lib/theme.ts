@@ -68,7 +68,8 @@ export const COLOR_TICKER_TEXT = '#6e7681'
 export const COLOR_TICKER_RESTORE_BG = 'rgba(22,27,34,0.9)'
 export const TICKER_HEIGHT = 26
 export const TICKER_FONT_SIZE = '11px'
-export const TICKER_SCROLL_DURATION = '60s'
+export const TICKER_SLIDE_MS = 500 // slide-in transition duration (ms)
+export const TICKER_READ_MS = 4000 // pause-to-read duration (ms)
 
 // Notes & Groups (G-01→G-10)
 // 10 dark colours that all yield near-white contrast text via the luminance formula
