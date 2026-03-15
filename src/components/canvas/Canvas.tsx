@@ -56,6 +56,7 @@ import {
   NOTE_DEFAULT_HEIGHT,
   NOTE_DEFAULT_WIDTH,
   NOTE_TEXT_SIZES,
+  TICKER_HEIGHT,
   TRANSITION_FAST,
   FONT_WEIGHT_NODE_LABEL,
   COLOR_TEXT_MUTED,
@@ -870,12 +871,12 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
           size={BG_DOT_SIZE}
           gap={BG_DOT_GAP}
         />
-        <Controls aria-label="Canvas controls" />
+        <Controls aria-label="Canvas controls" style={{ bottom: TICKER_HEIGHT + 8 }} />
         <MiniMap
           nodeColor={COLOR_NODE_BG}
           nodeStrokeColor={COLOR_NODE_BORDER}
           maskColor={COLOR_MINIMAP_MASK}
-          style={{ backgroundColor: COLOR_CANVAS_BG }}
+          style={{ backgroundColor: COLOR_CANVAS_BG, bottom: TICKER_HEIGHT + 8 }}
           aria-label="Minimap"
         />
       </ReactFlow>
