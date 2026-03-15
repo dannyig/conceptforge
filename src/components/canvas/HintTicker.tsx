@@ -93,10 +93,9 @@ export function HintTicker(): React.JSX.Element {
       return clearTimer
     }
 
+    // 'reading' phase: timer is owned by the hover effect below
     if (phase === 'reading') {
       readElapsedRef.current = 0
-      startReadTimer(TICKER_READ_MS)
-      return clearTimer
     }
   }, [phase, visible, clearTimer, startReadTimer])
 
@@ -156,11 +155,12 @@ export function HintTicker(): React.JSX.Element {
     )
   }
 
-  const isSliding = phase === 'entering'
-  const translateX = isSliding ? '0%' : '110%'
-  const transition = isSliding
-    ? `transform ${TICKER_SLIDE_MS}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`
-    : 'none'
+  // Text is visible (at rest) during both 'entering' and 'reading'; off-screen only during 'idle'
+  const translateX = phase === 'idle' ? '110%' : '0%'
+  const transition =
+    phase === 'entering'
+      ? `transform ${TICKER_SLIDE_MS}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`
+      : 'none'
 
   return (
     <div
