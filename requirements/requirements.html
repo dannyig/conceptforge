@@ -208,7 +208,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v2.8 &nbsp;·&nbsp; March 2026</span>
+    <span class="version-badge">v2.9 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -398,7 +398,7 @@
       <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
       <tbody>
         <tr><td class="req-id">H-01</td><td>Display a scrolling hint ticker as a fixed overlay anchored to the bottom of the canvas viewport; the bar is visible by default on every page load &nbsp;<span class="badge badge-core">NEW</span></td></tr>
-        <tr><td class="req-id">H-02</td><td>Scroll a fixed, curated list of ConceptForge usage hints and cmap-related information continuously from right to left in a seamless loop; the list restarts without a visible gap when the end is reached &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">H-02</td><td>Display one hint at a time: each hint slides in from the right edge of the bar; once fully in view, the hint pauses long enough to be read; it then disappears instantly (no outgoing animation); the next hint immediately begins sliding in from the right. The hint text travels across the full width of the bar, passing in front of the dismiss button. Hint copy must be brief and direct — no more than eight words per hint. &nbsp;<span class="badge badge-core">UPDATED</span></td></tr>
         <tr><td class="req-id">H-03</td><td>Provide a small icon button at the right edge of the ticker bar to dismiss it; when dismissed, display a small persistent toggle icon anchored to the bottom-right corner of the canvas that restores the bar &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">H-04</td><td>Reset the bar to visible on every page load — the hidden/visible preference is not persisted to localStorage &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">H-05</td><td>Pause the scrolling animation while the user's cursor hovers over the ticker bar; resume scrolling when the cursor leaves &nbsp;<span class="badge badge-core">NEW</span></td></tr>
@@ -485,7 +485,7 @@
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v2.8 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v2.9 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>
