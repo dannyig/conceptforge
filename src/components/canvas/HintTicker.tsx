@@ -180,7 +180,7 @@ function TipsToggle({
       style={{
         position: 'absolute',
         bottom: 0,
-        right: 0,
+        left: 0,
         height: TICKER_HEIGHT,
         padding: '0 10px',
         display: 'flex',
@@ -193,7 +193,7 @@ function TipsToggle({
             ? 'rgba(255,255,255,0.04)'
             : 'transparent',
         border: 'none',
-        borderLeft: `1px solid ${COLOR_TICKER_BORDER}`,
+        borderRight: `1px solid ${COLOR_TICKER_BORDER}`,
         borderTop: visible ? `1px solid ${COLOR_TICKER_BORDER}` : 'none',
         cursor: 'pointer',
         fontFamily: FONT_FAMILY,

@@ -67,7 +67,7 @@ export const COLOR_TICKER_BORDER = '#21262d'
 export const COLOR_TICKER_TEXT = '#6e7681'
 export const COLOR_TICKER_RESTORE_BG = 'rgba(22,27,34,0.9)'
 export const TICKER_HEIGHT = 26
-export const TICKER_FONT_SIZE = '11px'
+export const TICKER_FONT_SIZE = '13px'
 export const TICKER_FADE_MS = 600 // fade in / fade out duration (ms)
 export const TICKER_READ_MS = 5500 // pause-to-read duration (ms)
 
