@@ -94,6 +94,9 @@
 | P-01 | Allow the user to save the current map as a JSON file |
 | P-02 | Allow the user to load a previously saved JSON map file |
 | P-03 | JSON format must preserve all node positions, labels, edge data, and notes |
+| P-04 | When the app loads with a `?autoload=<base64>` query parameter present, decode it from base64, validate it as `MapData`, and load the resulting map onto the canvas automatically |
+| P-05 | Immediately after processing the `?autoload=` parameter — whether successful or not — remove it from the browser URL using `history.replaceState()` so the encoded data does not persist in browser history |
+| P-06 | If the `?autoload=` parameter fails base64 decoding or `MapData` validation, display a visible error message to the user indicating the map could not be loaded from the URL, and leave the canvas in its default empty state |
 
 ### 4.6 Export
 
@@ -180,6 +183,7 @@
 | N-06 | Undo / redo | Full history stack for canvas actions |
 | N-07 | Keyboard shortcuts | Power-user shortcuts for common actions |
 | N-08 | Onboarding | First-use guided prompt to help users get started |
+| N-09 | URL map sharing | Allow the user to copy a shareable `?autoload=<base64>` URL for the current map to the clipboard via a toolbar button; the recipient opens the URL to see the map load automatically |
 
 ---
 
@@ -237,4 +241,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 2.9 — March 2026 — Refined H-02: one hint at a time slides in from right, pauses to read, disappears instantly; text passes in front of dismiss button; hint copy max 8 words*
+*Version 3.0 — March 2026 — Added P-04, P-05, P-06 (URL autoload — base64 `?autoload=` param, URL cleanup, error handling); added N-09 (URL map sharing, post-MVP)*
