@@ -56,6 +56,9 @@ export default [
         TouchEvent: 'readonly',
         PointerEvent: 'readonly',
         __APP_VERSION__: 'readonly',
+        URLSearchParams: 'readonly',
+        atob: 'readonly',
+        btoa: 'readonly',
       },
     },
     plugins: {

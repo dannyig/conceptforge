@@ -17,6 +17,7 @@ interface ToolbarProps {
   canvasRef: React.RefObject<CanvasHandle | null>
   hasNodes: boolean
   onFocusQuestionLoad: (q: string) => void
+  autoloadError?: string | null
 }
 
 function SaveIcon(): React.JSX.Element {
@@ -70,8 +71,10 @@ export function Toolbar({
   canvasRef,
   hasNodes,
   onFocusQuestionLoad,
+  autoloadError = null,
 }: ToolbarProps): React.JSX.Element {
   const [error, setError] = useState<string | null>(null)
+  const displayedError = error ?? autoloadError
 
   const handleSave = useCallback((): void => {
     const data = canvasRef.current?.getMapData()
@@ -134,7 +137,7 @@ export function Toolbar({
             <span>Load</span>
           </button>
         </div>
-        {error !== null && (
+        {displayedError !== null && (
           <span
             role="alert"
             style={{
@@ -143,7 +146,7 @@ export function Toolbar({
               color: COLOR_STATUS_ERROR,
             }}
           >
-            {error}
+            {displayedError}
           </span>
         )}
       </div>
