@@ -2,7 +2,7 @@
 
 **Agent:** Persistence Agent
 **Sequence:** 04 — runs after Canvas Agent completes
-**Trigger:** Human assigns requirement IDs P-01 → P-03, E-01 → E-02, and C-13 (BranchingEdge persistence)
+**Trigger:** Human assigns requirement IDs P-01 → P-06, E-01 → E-02, and C-13 (BranchingEdge persistence)
 **Branch:** `feature/P-01-save-load-export`
 **Depends on:** Canvas Agent (01) merged to main
 **Parallel with:** AI Agent (03)
@@ -100,7 +100,25 @@ Complete all items below in order. Commit after each group.
 
 ---
 
-### Group 3 — Toolbar Integration
+### Group 3 — URL Autoload (P-04, P-05, P-06)
+
+- [ ] In `src/App.tsx`, add a `useEffect` that runs once on mount:
+  - Reads `window.location.search` and extracts the `autoload` query parameter
+  - Calls `history.replaceState({}, '', window.location.pathname)` immediately to strip the param from the URL bar (P-05)
+  - Attempts to decode the value with `atob()` and parse as JSON
+  - Passes the parsed value through `validateMapData()` (P-04)
+  - On success: calls `canvasRef.current?.setMapData(mapData)` to load the map
+  - On failure (decode error or validation failure): displays a visible error message inline, consistent with the existing load-error pattern in the toolbar (P-06)
+
+- [ ] Error message copy: `"Could not load map from URL — the link may be invalid or corrupted."`
+
+- [ ] The `?autoload=` handler must run before any analytics or other side effects fire — the `replaceState` call must be synchronous and first
+
+**Commit:** `feat(P-04,P-05,P-06): URL autoload via ?autoload= base64 query parameter`
+
+---
+
+### Group 4 — Toolbar Integration
 
 - [ ] Create or update `src/components/toolbar/Toolbar.tsx`:
   - "Save" button → calls `saveMapToJson` with current canvas `MapData`
@@ -117,10 +135,12 @@ Complete all items below in order. Commit after each group.
 
 ---
 
-### Group 4 — UI Verification (Playwright MCP)
+### Group 5 — UI Verification (Playwright MCP)
 
 Before committing Group 3, start the dev server and use Playwright MCP + Chrome to verify:
 
+- [ ] Opening `/?autoload=<valid base64 MapData>` loads the map automatically and the URL is immediately cleaned to `/`
+- [ ] Opening `/?autoload=<invalid base64>` shows the error message and leaves the canvas empty
 - [ ] Toolbar is visible with Save, Load, and Export PNG buttons
 - [ ] Adding nodes to canvas, then clicking Save → file download is triggered
 - [ ] Clicking Load → file picker opens; selecting the previously saved file restores all nodes and edges with correct positions
