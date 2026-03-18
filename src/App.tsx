@@ -6,6 +6,7 @@ import { MissingKeyBanner } from '@/components/settings/MissingKeyBanner'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
 import { SettingsTrigger } from '@/components/toolbar/SettingsTrigger'
 import { Toolbar } from '@/components/toolbar/Toolbar'
+import { validateMapData } from '@/lib/export'
 import { OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
 
 export function App(): React.JSX.Element {
@@ -14,6 +15,24 @@ export function App(): React.JSX.Element {
   const [showMissingKeyBanner, setShowMissingKeyBanner] = useState(false)
   const [focusQuestion, setFocusQuestion] = useState('')
   const [nodeCount, setNodeCount] = useState(0)
+  const [autoloadError, setAutoloadError] = useState<string | null>(null)
+
+  // P-04, P-05, P-06 — URL autoload via ?autoload=<base64> query parameter
+  useEffect((): void => {
+    const params = new URLSearchParams(window.location.search)
+    const encoded = params.get('autoload')
+    // P-05 — strip param immediately, before any other side-effect
+    window.history.replaceState({}, '', window.location.pathname)
+    if (!encoded) return
+    try {
+      const mapData = validateMapData(JSON.parse(atob(encoded)))
+      canvasRef.current?.setMapData(mapData)
+      setFocusQuestion(mapData.focusQuestion ?? '')
+    } catch {
+      // P-06 — visible error; canvas remains empty
+      setAutoloadError('Could not load map from URL — the link may be invalid or corrupted.')
+    }
+  }, [])
 
   // Listen for openSettings events dispatched by useApiKey hook
   useEffect((): (() => void) => {
@@ -48,6 +67,7 @@ export function App(): React.JSX.Element {
           canvasRef={canvasRef}
           hasNodes={nodeCount > 0}
           onFocusQuestionLoad={setFocusQuestion}
+          autoloadError={autoloadError}
         />
         <SettingsTrigger onOpen={openSettings} />
         <SettingsPanel isOpen={isSettingsOpen} onClose={closeSettings} />
