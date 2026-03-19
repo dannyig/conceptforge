@@ -101,6 +101,20 @@ function pickTargetHandle(
   return dy >= 0 ? 'top-t' : 'bottom-t'
 }
 
+// Returns the best source handle ID for an edge leaving `source` toward `target`.
+// Mirror of pickTargetHandle — picks the face that most directly faces the target node.
+function pickSourceHandle(
+  source: { x: number; y: number },
+  target: { x: number; y: number }
+): string {
+  const dx = target.x - source.x
+  const dy = target.y - source.y
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    return dx >= 0 ? 'right' : 'left'
+  }
+  return dy >= 0 ? 'bottom' : 'top'
+}
+
 // ID helpers — pure functions at module scope
 function hubNodeId(beId: string): string {
   return `hub-${beId}`
@@ -309,15 +323,19 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
         if (data.branchingEdges) {
           for (const be of data.branchingEdges) {
             const hub = hubNodeId(be.id)
+            const hubPos = be.labelPosition ?? { x: 0, y: 0 }
             newNodes.push({
               id: hub,
               type: 'branchHub' as const,
-              position: be.labelPosition ?? { x: 0, y: 0 },
+              position: hubPos,
               data: { label: be.label, branchingEdgeId: be.id },
             })
+            const srcNode = newNodes.find(n => n.id === be.source)
+            const stemSourceHandle = srcNode ? pickSourceHandle(srcNode.position, hubPos) : null
             newEdges.push({
               id: stemEdgeId(be.id),
               source: be.source,
+              sourceHandle: stemSourceHandle,
               target: hub,
               type: 'branchStem',
               data: { branchingEdgeId: be.id, isStem: true },
