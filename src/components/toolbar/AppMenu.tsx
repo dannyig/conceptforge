@@ -161,16 +161,23 @@ export function AppMenu({
       })
   }, [])
 
-  // Close menu on outside click
+  // Close menu on outside click or Escape
   useEffect((): (() => void) => {
     if (!menuOpen) return (): void => {}
-    const handler = (e: MouseEvent): void => {
+    const handleClick = (e: MouseEvent): void => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false)
       }
     }
-    document.addEventListener('mousedown', handler)
-    return (): void => document.removeEventListener('mousedown', handler)
+    const handleKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleKey)
+    return (): void => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleKey)
+    }
   }, [menuOpen])
 
   const handleSave = useCallback((): void => {
