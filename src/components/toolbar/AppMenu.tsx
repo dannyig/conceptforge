@@ -172,10 +172,10 @@ export function AppMenu({
     const handleKey = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') setMenuOpen(false)
     }
-    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('mousedown', handleClick, true)
     document.addEventListener('keydown', handleKey)
     return (): void => {
-      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('mousedown', handleClick, true)
       document.removeEventListener('keydown', handleKey)
     }
   }, [menuOpen])
