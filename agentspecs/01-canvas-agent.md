@@ -456,7 +456,7 @@ interface MapData {
   - If the saved text is empty (user deleted the content), set `description` to `undefined` — do not store an empty string
   - Pressing Escape cancels without saving
 - [ ] **C-29 — Green dot indicator:**
-  - In `ConceptNode.tsx`, render a small green dot (6–8px diameter, `#22c55e`) positioned at the top-right corner of the node using `position: absolute`, offset so it sits just outside the node label area (e.g. `top: -4px; right: -4px`)
+  - In `ConceptNode.tsx`, render a small green dot (5px diameter, `#22c55e`) positioned inside the node boundary at the top-right corner using `position: absolute`, with a small margin from the border lines (e.g. `top: 4px; right: 4px`) so it does not touch the node edges or obstruct the label
   - The dot is only rendered when `data.description` is a non-empty string
   - The dot must use `pointer-events: auto` so hover events fire on it (see C-30)
   - Add the green dot colour as a token in `theme.ts`: `COLOR_NODE_INFO_DOT = '#22c55e'`
