@@ -4,8 +4,7 @@ import { HintTicker } from '@/components/canvas/HintTicker'
 import { FocusQuestionBar } from '@/components/ai/FocusQuestionBar'
 import { MissingKeyBanner } from '@/components/settings/MissingKeyBanner'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
-import { SettingsTrigger } from '@/components/toolbar/SettingsTrigger'
-import { Toolbar } from '@/components/toolbar/Toolbar'
+import { AppMenu } from '@/components/toolbar/AppMenu'
 import { validateMapData } from '@/lib/export'
 import { OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
 
@@ -91,13 +90,13 @@ export function App(): React.JSX.Element {
       <FocusQuestionBar value={focusQuestion} onChange={setFocusQuestion} />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
         <Canvas ref={canvasRef} onNodeCountChange={setNodeCount} />
-        <Toolbar
+        <AppMenu
           canvasRef={canvasRef}
           hasNodes={nodeCount > 0}
           onFocusQuestionLoad={setFocusQuestion}
+          onOpenSettings={openSettings}
           autoloadError={autoloadError}
         />
-        <SettingsTrigger onOpen={openSettings} />
         <SettingsPanel isOpen={isSettingsOpen} onClose={closeSettings} />
         <MissingKeyBanner
           isVisible={showMissingKeyBanner}
