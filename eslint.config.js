@@ -63,6 +63,7 @@ export default [
         ReadableStreamReadResult: 'readonly',
         TextDecoder: 'readonly',
         Uint8Array: 'readonly',
+        Node: 'readonly',
       },
     },
     plugins: {
