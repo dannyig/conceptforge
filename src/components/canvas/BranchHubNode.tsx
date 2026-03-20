@@ -85,7 +85,7 @@ export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React
         style={{
           background: COLOR_NODE_BG,
           borderRadius: 3,
-          padding: '1px 6px',
+          padding: '1px 6px 10px',
           fontFamily: FONT_FAMILY,
           fontSize: FONT_SIZE_EDGE_LABEL,
           fontWeight: FONT_WEIGHT_NODE_LABEL,
