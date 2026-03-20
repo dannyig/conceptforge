@@ -31,8 +31,8 @@ export const BG_DOT_GAP = 24
 
 // Typography
 export const FONT_FAMILY = "'JetBrains Mono', 'Fira Code', monospace"
-export const FONT_SIZE_NODE_LABEL = '13px'
-export const FONT_SIZE_EDGE_LABEL = '9px'
+export const FONT_SIZE_NODE_LABEL = '14px'
+export const FONT_SIZE_EDGE_LABEL = '10px'
 export const FONT_WEIGHT_NODE_LABEL = '500'
 
 // Motion — all transitions use these timings
