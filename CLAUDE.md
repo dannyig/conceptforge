@@ -202,6 +202,7 @@ interface ConceptNode {
   label: string
   position: { x: number; y: number }
   type?: 'concept' | 'question' | 'source' | 'insight'
+  description?: string              // C-28: short freeform description; absent when not set
 }
 
 interface ConceptEdge {

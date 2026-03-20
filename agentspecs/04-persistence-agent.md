@@ -2,7 +2,7 @@
 
 **Agent:** Persistence Agent
 **Sequence:** 04 — runs after Canvas Agent completes
-**Trigger:** Human assigns requirement IDs P-01 → P-06, E-01 → E-02, and C-13 (BranchingEdge persistence)
+**Trigger:** Human assigns requirement IDs P-01 → P-07, E-01 → E-02, and C-13 (BranchingEdge persistence)
 **Branch:** `feature/P-01-save-load-export`
 **Depends on:** Canvas Agent (01) merged to main
 **Parallel with:** AI Agent (03)
@@ -75,6 +75,7 @@ Complete all items below in order. Commit after each group.
   - Confirms `edges` is an array of objects each with `id`, `source`, and `target`
   - Accepts optional `focusQuestion` string field — valid whether present or absent (F-06)
   - Accepts optional `branchingEdges` array — if present, each entry must have `id`, `source` (string), `label` (string), and `targets` (string array); optional `labelPosition: { x, y }` (C-13)
+  - Accepts optional `description` string on each node entry — valid whether present or absent (P-07)
   - Throws `Error('Invalid map file')` if validation fails
 
 **Commit:** `feat(P-01,P-02,P-03): JSON save and load with MapData validation`
@@ -191,4 +192,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Persistence Agent Spec v1.1 — March 2026 (C-13: added BranchingEdge validation to validateMapData)*
+*Persistence Agent Spec v1.2 — March 2026 (P-07: node description field accepted in validateMapData; excluded from PNG export)*

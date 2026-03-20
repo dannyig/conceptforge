@@ -58,6 +58,9 @@
 | C-25 | In selection mode, holding Space while dragging pans the canvas instead of drawing a selection rectangle |
 | C-26 | When two or more items are selected, dragging any selected node or note moves the entire selection together; edges follow their connected nodes automatically and do not disconnect from their source node or label hub |
 | C-27 | Pressing the Delete key while one or more items are selected removes all selected nodes, notes, and any edges directly attached to a deleted node |
+| C-28 | Add an "Edit Info" action to the node right-click context menu; selecting it opens a popover panel positioned near the node containing a short freeform text input pre-filled with any existing description; clicking outside the popover saves the current text (including empty, which clears the description) |
+| C-29 | When a node has a non-empty description, display a small green dot indicator positioned at the top-right corner of the node, outside the label area so it does not obstruct the node label; when the description is absent or empty, the dot must not be shown |
+| C-30 | When the user hovers the cursor over a node's green info dot, display a read-only popover showing the description text; the popover disappears automatically when the cursor moves away from the dot |
 
 ### 4.2 AI — Map Generation
 
@@ -77,6 +80,7 @@
 | A-07 | On expand, call the Claude API to generate related child nodes |
 | A-08 | Append generated child nodes and edges to the existing map |
 | A-09 | Prevent duplicate nodes from being added on repeated expansions |
+| A-10 | When expanding a node that has a non-empty description (C-28), include the description as additional context in the AI prompt alongside the node label |
 
 ### 4.4 API Key Management
 
@@ -97,6 +101,7 @@
 | P-04 | When the app loads with a `?autoload=<base64>` query parameter present, decode it from base64, validate it as `MapData`, and load the resulting map onto the canvas automatically |
 | P-05 | Immediately after processing the `?autoload=` parameter — whether successful or not — remove it from the browser URL using `history.replaceState()` so the encoded data does not persist in browser history |
 | P-06 | If the `?autoload=` parameter fails base64 decoding or `MapData` validation, display a visible error message to the user indicating the map could not be loaded from the URL, and leave the canvas in its default empty state |
+| P-07 | Save each node's description in the map's JSON data; restore descriptions when a saved map is loaded; node descriptions must not be rendered in PNG canvas exports |
 
 ### 4.6 Export
 
@@ -241,4 +246,4 @@ The app will validate and sanitise this output before rendering.
 
 ---
 
-*Version 3.0 — March 2026 — Added P-04, P-05, P-06 (URL autoload — base64 `?autoload=` param, URL cleanup, error handling); added N-09 (URL map sharing, post-MVP)*
+*Version 3.1 — March 2026 — Added C-28, C-29, C-30 (node descriptions — Edit Info popover, green dot indicator, hover tooltip); added A-10 (description context in node expansion); added P-07 (node description persistence in JSON)*

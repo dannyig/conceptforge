@@ -2,7 +2,7 @@
 
 **Agent:** AI Agent
 **Sequence:** 03 — runs after Canvas Agent and Settings Agent both complete
-**Trigger:** Human assigns requirement IDs A-01 → A-09
+**Trigger:** Human assigns requirement IDs A-01 → A-10
 **Branch:** `feature/A-01-map-generation`
 **Depends on:** Canvas Agent (01) and Settings Agent (02) both merged to main
 **Parallel with:** Persistence Agent (04)
@@ -140,7 +140,12 @@ Populate the stub at `src/lib/claude.ts`. This file is the single interface to t
 
 - [ ] Auto-position new nodes around the expanded parent node — use `src/lib/graph.ts`
 
-**Commit:** `feat(A-06,A-07,A-08,A-09): right-click node expansion with duplicate prevention`
+- [ ] **A-10 — Node description as expansion context:**
+  - When building the `ExpandNodeRequest` for a node that has a non-empty `description`, include the description in the prompt alongside the node label
+  - Prompt format: `"Node: <label>\nDescription: <description>"` (vs `"Node: <label>"` when no description is set)
+  - If the node has no description, the prompt is unchanged (no regression to existing behaviour)
+
+**Commit:** `feat(A-06,A-07,A-08,A-09,A-10): right-click node expansion with duplicate prevention and description context`
 
 ---
 
@@ -218,4 +223,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*AI Agent Spec v1.2 — March 2026 (added Group 0: FocusQuestionBar F-01→F-04; F-07 AI context wired into Groups 2 and 3)*
+*AI Agent Spec v1.3 — March 2026 (added A-10: node description as expansion context in Group 3)*
