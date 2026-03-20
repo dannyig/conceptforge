@@ -1,7 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react'
 import { Handle, Position, useReactFlow, type NodeProps } from '@xyflow/react'
 import {
-  COLOR_EDGE,
   COLOR_EDGE_SELECTED,
   COLOR_HANDLE,
   COLOR_HANDLE_HOVER,
@@ -85,17 +84,15 @@ export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React
         onDoubleClick={startEdit}
         style={{
           background: COLOR_NODE_BG,
-          border: `1px solid ${selected ? COLOR_EDGE_SELECTED : COLOR_EDGE}`,
-          borderRadius: 4,
-          padding: '4px 12px',
+          borderRadius: 3,
+          padding: '1px 6px',
           fontFamily: FONT_FAMILY,
           fontSize: FONT_SIZE_EDGE_LABEL,
           fontWeight: FONT_WEIGHT_NODE_LABEL,
           color: selected ? COLOR_EDGE_SELECTED : COLOR_NODE_TEXT,
           cursor: 'grab',
           userSelect: 'none',
-          transition: `border-color ${TRANSITION_FAST}, color ${TRANSITION_FAST}`,
-          minWidth: 48,
+          transition: `color ${TRANSITION_FAST}`,
           textAlign: 'center',
           whiteSpace: 'nowrap',
         }}
