@@ -176,6 +176,19 @@
 
 ---
 
+### 4.12 Skill Distribution
+
+| ID | Requirement |
+|----|-------------|
+| SK-01 | The `/cmap` skill file must carry an independent version number in a comment header at the top of the file (e.g. `<!-- version: 1.0 -->`); this version is incremented whenever the skill content changes and is completely independent of the ConceptForge app version |
+| SK-02 | When the `/cmap` skill is invoked with `version` as the sole argument, it must read and report its own embedded version number; if network is available it must also fetch the latest version from the GitHub Pages manifest and tell the user whether they are up to date or behind |
+| SK-03 | A `skills/` directory in the repo contains `cmap.md` (the versioned skill file) and `manifest.json` (`{ "version": "x.y" }`); a dedicated GitHub Actions workflow deploys this directory to GitHub Pages on every push to `main` that touches `skills/`, independently of the fly.io deployment |
+| SK-04 | On application load, ConceptForge fetches the skills manifest from GitHub Pages and displays the available `/cmap` skill version inside the toolbar menu; if the fetch fails the version shows as "unavailable" without disrupting the UI |
+| SK-05 | Replace the current standalone settings button in the toolbar with a single menu button; the menu contains four actions: **Save**, **Load**, **Settings**, and **Download cmap skill** — the last item shows the available version number inline (e.g. "Download cmap skill v1.0") |
+| SK-06 | Selecting "Download cmap skill" from the menu triggers a download of `cmap.md` from GitHub Pages and displays a placement instruction panel telling the user the exact path to place the file: `~/.claude/commands/cmap.md` on macOS/Linux and `%USERPROFILE%\.claude\commands\cmap.md` on Windows |
+
+---
+
 ## 5. Nice to Have (Post-MVP)
 
 | ID | Feature | Description |
@@ -249,3 +262,5 @@ The app will validate and sanitise this output before rendering.
 *Version 3.1 — March 2026 — Added C-28, C-29, C-30 (node descriptions — Edit Info popover, green dot indicator, hover tooltip); added A-10 (description context in node expansion); added P-07 (node description persistence in JSON)*
 
 *Version 3.2 — March 2026 — Refined C-29: green dot repositioned inside node boundary at top-right corner with margin from border lines; dot size reduced*
+
+*Version 3.3 — March 2026 — Added SK-01 through SK-06 (Skill Distribution: versioned /cmap skill, GitHub Pages skill server, toolbar menu consolidation, in-app skill download with placement instructions)*
