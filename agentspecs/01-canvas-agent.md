@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-27, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
+**Trigger:** Human assigns requirement IDs C-01 → C-30, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -444,6 +444,33 @@ interface MapData {
 
 ---
 
+### Group 4j — Node Descriptions (C-28, C-29, C-30)
+
+> **Before starting this group:** Extend `ConceptNode` in `src/types/index.ts` with `description?: string` before writing any component code.
+
+- [ ] **C-28 — Edit Info popover:**
+  - In `NodeContextMenu.tsx` (or the node right-click handler), add an "Edit Info" menu item alongside "Expand"
+  - Selecting "Edit Info" opens a small popover panel positioned near the node
+  - The popover contains a single text input pre-filled with the node's current `description` (or empty if none)
+  - Clicking outside the popover (blur) saves the current text to the node's `description` field via `setNodes`
+  - If the saved text is empty (user deleted the content), set `description` to `undefined` — do not store an empty string
+  - Pressing Escape cancels without saving
+- [ ] **C-29 — Green dot indicator:**
+  - In `ConceptNode.tsx`, render a small green dot (6–8px diameter, `#22c55e`) positioned at the top-right corner of the node using `position: absolute`, offset so it sits just outside the node label area (e.g. `top: -4px; right: -4px`)
+  - The dot is only rendered when `data.description` is a non-empty string
+  - The dot must use `pointer-events: auto` so hover events fire on it (see C-30)
+  - Add the green dot colour as a token in `theme.ts`: `COLOR_NODE_INFO_DOT = '#22c55e'`
+- [ ] **C-30 — Hover tooltip:**
+  - When the user's cursor enters the green dot, display a small read-only popover showing the `description` text
+  - The popover appears near the dot (e.g. above or to the left) and disappears automatically when the cursor leaves the dot
+  - Implement using `onMouseEnter` / `onMouseLeave` on the dot element — no library tooltip component
+  - Style: dark background (`COLOR_NODE_BG`), `COLOR_NODE_TEXT` text, small font (`FONT_SIZE_NODE_LABEL`), `border: 1px solid COLOR_NODE_BORDER`, `border-radius: 4px`, padding `6px 10px`, `z-index` above all canvas elements
+  - The tooltip must be `pointer-events: none` so it does not interfere with cursor leave detection
+
+**Commit:** `feat(C-28,C-29,C-30): node descriptions — Edit Info popover, green dot indicator, hover tooltip`
+
+---
+
 ### Group 5 — UI Verification (Playwright MCP)
 
 Before committing Group 4, run the web design audit and the Playwright visual check:
@@ -526,4 +553,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.14 — March 2026 (added Group 4i: C-23→C-27, V-09→V-10 — marquee selection mode with rubber-band rect, Space+drag pan, group drag, and delete)*
+*Canvas Agent Spec v1.15 — March 2026 (added Group 4j: C-28→C-30 — node descriptions with Edit Info popover, green dot indicator, and hover tooltip)*
