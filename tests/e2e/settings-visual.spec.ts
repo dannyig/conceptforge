@@ -7,13 +7,14 @@ test('settings panel visual verification', async ({ page }) => {
   await page.goto('/')
   await page.waitForTimeout(1000)
 
-  // Settings trigger visible (by aria-label on the toolbar button specifically)
-  const trigger = page.locator('.cf-settings-trigger')
-  await expect(trigger).toBeVisible()
+  // Menu button visible (SK-05: replaces standalone settings trigger)
+  const menuBtn = page.locator('.cf-menu-trigger')
+  await expect(menuBtn).toBeVisible()
   await page.screenshot({ path: 'tests/e2e/screenshots/settings-trigger.png' })
 
-  // Open panel
-  await trigger.click()
+  // Open menu then click Settings
+  await menuBtn.click()
+  await page.getByRole('menuitem', { name: 'Open settings' }).click()
   await page.waitForTimeout(300)
   await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible()
   await page.screenshot({ path: 'tests/e2e/screenshots/settings-open.png' })
