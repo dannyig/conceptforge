@@ -74,6 +74,7 @@ type CanvasNodeData = {
   backgroundColor?: string
   text?: string
   textSize?: 'small' | 'medium' | 'large'
+  description?: string // C-28: short freeform description
 }
 type CanvasFlowNode = Node<CanvasNodeData>
 
@@ -228,10 +229,28 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
   // C-25: track whether Space is held so drag can temporarily pan while in select mode
   const [spacePanning, setSpacePanning] = useState(false)
 
+  // C-28: concept node right-click menu state
+  const [nodeMenu, setNodeMenu] = useState<{
+    nodeId: string
+    x: number
+    y: number
+  } | null>(null)
+
+  // C-28: description edit popover state
+  const [nodeInfoEdit, setNodeInfoEdit] = useState<{
+    nodeId: string
+    x: number
+    y: number
+    draft: string
+  } | null>(null)
+  // Ref used to cancel save when Escape is pressed before onBlur fires
+  const nodeInfoCancelledRef = useRef(false)
+
   const closeAllMenus = useCallback((): void => {
     setContextMenu(null)
     setPaneMenu(null)
     setNoteMenu(null)
+    setNodeMenu(null)
   }, [])
 
   // ---------- imperative handle (Persistence Agent) ----------
@@ -285,6 +304,7 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
                 label: n.data.label,
                 position: n.position,
                 type: n.data.conceptType,
+                description: n.data.description || undefined,
               })
             ),
           edges: es
@@ -308,7 +328,7 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
           id: n.id,
           type: 'concept' as const,
           position: n.position,
-          data: { label: n.label, conceptType: n.type },
+          data: { label: n.label, conceptType: n.type, description: n.description },
         }))
         const newEdges: CanvasFlowEdge[] = data.edges.map(e => ({
           id: e.id,
@@ -724,22 +744,27 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
     [screenToFlowPosition, setNodes]
   )
 
-  // ---------- G-11: right-click on note → context menu ----------
+  // ---------- C-28 / G-11: right-click on concept node or note → context menu ----------
 
   const onNodeContextMenu = useCallback(
     (event: React.MouseEvent, node: CanvasFlowNode): void => {
-      if (node.type !== 'note') return
       event.preventDefault()
       closeAllMenus()
-      const flowPos = screenToFlowPosition({ x: event.clientX, y: event.clientY })
-      setNoteMenu({
-        nodeId: node.id,
-        x: event.clientX,
-        y: event.clientY,
-        flowX: flowPos.x,
-        flowY: flowPos.y,
-        mode: 'main',
-      })
+      if (node.type === 'concept') {
+        setNodeMenu({ nodeId: node.id, x: event.clientX, y: event.clientY })
+        return
+      }
+      if (node.type === 'note') {
+        const flowPos = screenToFlowPosition({ x: event.clientX, y: event.clientY })
+        setNoteMenu({
+          nodeId: node.id,
+          x: event.clientX,
+          y: event.clientY,
+          flowX: flowPos.x,
+          flowY: flowPos.y,
+          mode: 'main',
+        })
+      }
     },
     [closeAllMenus, screenToFlowPosition]
   )
@@ -799,17 +824,22 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
   )
 
   useEffect((): (() => void) => {
-    const anyOpen = contextMenu || paneMenu || noteMenu || selectionMode
+    const anyOpen = contextMenu || paneMenu || noteMenu || nodeMenu || nodeInfoEdit || selectionMode
     if (!anyOpen) return (): void => {}
     const handler = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
+        if (nodeInfoEdit) {
+          nodeInfoCancelledRef.current = true
+          setNodeInfoEdit(null)
+          return
+        }
         closeAllMenus()
         setSelectionMode(false)
       }
     }
     window.addEventListener('keydown', handler)
     return (): void => window.removeEventListener('keydown', handler)
-  }, [contextMenu, paneMenu, noteMenu, selectionMode, closeAllMenus])
+  }, [contextMenu, paneMenu, noteMenu, nodeMenu, nodeInfoEdit, selectionMode, closeAllMenus])
 
   // C-25: while in selection mode, Space held → temporarily switch to pan mode
   useEffect((): (() => void) => {
@@ -957,6 +987,153 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
           >
             Branch
           </button>
+        </div>
+      )}
+
+      {/* C-28: concept node right-click menu */}
+      {nodeMenu && (
+        <>
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 999 }}
+            onClick={(): void => setNodeMenu(null)}
+            onContextMenu={(e): void => {
+              e.preventDefault()
+              setNodeMenu(null)
+            }}
+          />
+          <div
+            role="menu"
+            aria-label="Node options"
+            style={{
+              position: 'fixed',
+              left: nodeMenu.x,
+              top: nodeMenu.y,
+              zIndex: 1000,
+              background: COLOR_NODE_BG,
+              border: `1px solid ${COLOR_NODE_BORDER}`,
+              borderRadius: 6,
+              overflow: 'hidden',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+              minWidth: 130,
+            }}
+          >
+            <button
+              role="menuitem"
+              onClick={(): void => {
+                const node = nodesRef.current.find(n => n.id === nodeMenu.nodeId)
+                const currentDesc = node?.data.description ?? ''
+                setNodeInfoEdit({
+                  nodeId: nodeMenu.nodeId,
+                  x: nodeMenu.x,
+                  y: nodeMenu.y + 8,
+                  draft: currentDesc,
+                })
+                setNodeMenu(null)
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 16px',
+                background: 'none',
+                border: 'none',
+                color: COLOR_NODE_TEXT,
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_NODE_LABEL,
+                textAlign: 'left',
+                cursor: 'pointer',
+                transition: `background ${TRANSITION_FAST}`,
+              }}
+              onMouseEnter={(e): void => {
+                ;(e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+              }}
+              onMouseLeave={(e): void => {
+                ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
+              }}
+              aria-label="Edit node description"
+            >
+              Edit Info
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* C-28: description edit popover — blur saves, Escape cancels */}
+      {nodeInfoEdit && (
+        <div
+          style={{
+            position: 'fixed',
+            left: nodeInfoEdit.x,
+            top: nodeInfoEdit.y,
+            zIndex: 1000,
+            background: COLOR_NODE_BG,
+            border: `1px solid ${COLOR_NODE_BORDER}`,
+            borderRadius: 6,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+            padding: '10px 12px',
+            width: 220,
+          }}
+          // Prevent clicks inside the popover from propagating to the canvas
+          onClick={(e): void => e.stopPropagation()}
+          onContextMenu={(e): void => e.stopPropagation()}
+        >
+          <div
+            style={{
+              fontSize: '10px',
+              letterSpacing: '1px',
+              textTransform: 'uppercase',
+              color: COLOR_TEXT_MUTED,
+              fontFamily: FONT_FAMILY,
+              marginBottom: 8,
+            }}
+          >
+            Node Info
+          </div>
+          <textarea
+            autoFocus
+            value={nodeInfoEdit.draft}
+            onChange={(e): void =>
+              setNodeInfoEdit(prev => (prev ? { ...prev, draft: e.target.value } : null))
+            }
+            onBlur={(): void => {
+              if (nodeInfoCancelledRef.current) {
+                nodeInfoCancelledRef.current = false
+                return
+              }
+              const desc = nodeInfoEdit.draft.trim() || undefined
+              setNodes(nds =>
+                nds.map(n =>
+                  n.id === nodeInfoEdit.nodeId
+                    ? { ...n, data: { ...n.data, description: desc } }
+                    : n
+                )
+              )
+              setNodeInfoEdit(null)
+            }}
+            onKeyDown={(e): void => {
+              e.stopPropagation()
+              if (e.key === 'Escape') {
+                e.preventDefault()
+                nodeInfoCancelledRef.current = true
+                setNodeInfoEdit(null)
+              }
+            }}
+            placeholder="Enter a brief description…"
+            rows={3}
+            style={{
+              width: '100%',
+              background: COLOR_CANVAS_BG,
+              border: `1px solid ${COLOR_NODE_BORDER}`,
+              borderRadius: 4,
+              color: COLOR_NODE_TEXT,
+              fontFamily: FONT_FAMILY,
+              fontSize: FONT_SIZE_NODE_LABEL,
+              padding: '6px 8px',
+              resize: 'none',
+              boxSizing: 'border-box',
+              outline: 'none',
+            }}
+            aria-label="Node description"
+          />
         </div>
       )}
 
