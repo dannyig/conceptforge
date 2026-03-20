@@ -30,6 +30,9 @@ const HINTS: readonly string[] = [
   'Delete key removes all selected items',
   'Drag a handle to empty space — new node',
   'Drag any selected node to move all',
+  'Right-click a node to add a description',
+  'Green dot on node — hover to read info',
+  'Menu → Download cmap skill for Claude Code',
 ]
 
 // Four-phase cycle per hint:
