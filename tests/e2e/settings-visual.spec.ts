@@ -4,6 +4,11 @@ test('settings panel visual verification', async ({ page }) => {
   const errors: string[] = []
   page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()) })
 
+  // Mock the skill manifest so the AppMenu fetch doesn't cause CORS errors in CI
+  await page.route('https://dannyig.github.io/conceptforge/manifest.json', route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '{"version":"1.0"}' })
+  )
+
   await page.goto('/')
   await page.waitForTimeout(1000)
 
