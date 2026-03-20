@@ -198,10 +198,10 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
             onMouseLeave={(): void => setShowTooltip(false)}
             style={{
               position: 'absolute',
-              top: -4,
-              right: -4,
-              width: 8,
-              height: 8,
+              top: 4,
+              right: 4,
+              width: 5,
+              height: 5,
               borderRadius: '50%',
               backgroundColor: COLOR_NODE_INFO_DOT,
               pointerEvents: 'auto',
