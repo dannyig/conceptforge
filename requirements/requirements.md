@@ -119,7 +119,7 @@
 | V-03 | All edges — regular edges, branching edge stems, and branching edge arrows — must render as straight lines with directional arrowheads. Curved or bezier paths are not permitted |
 | V-04 | Responsive layout — usable on desktop screens (1280px+) |
 | V-05 | Node labels must be horizontally centred within the node |
-| V-06 | Edge label captions and branching edge hub labels must be rendered without a visible border, at a font size of `9px` |
+| V-06 | Edge label captions and branching edge hub labels must be rendered as plain floating text: no visible border, no background fill, transparent container, at a font size of `9px` — matching the visual treatment of single edge label captions exactly |
 | V-07 | When the canvas contains no nodes, display a low-opacity "Double click to start" hint centred on the canvas; the hint disappears when a node is present and reappears if all nodes are removed |
 | V-08 | The canvas must never auto-fit the viewport in response to node additions or changes. On initial load with no nodes, the canvas starts at a default zoom of `0.85`. When a saved map is loaded, the viewport is fitted to content once (padding `0.5`, maximum zoom `0.85`). The fitView button in the canvas Controls remains available at all times and is not subject to the `0.85` cap |
 | V-09 | The rubber-band selection rectangle must render as a subtle frame: a thin single-pixel border in the orange accent colour (`#f97316`) at low opacity, with a near-transparent fill of the same colour; no solid background, no drop shadow |
@@ -267,3 +267,5 @@ The app will validate and sanitise this output before rendering.
 *Version 3.3 — March 2026 — Added SK-01 through SK-06 (Skill Distribution: versioned /cmap skill, GitHub Pages skill server, toolbar menu consolidation, in-app skill download with placement instructions)*
 
 *Version 3.4 — March 2026 — Added SK-07 (AppMenu dismiss: click outside, Escape, or toggle button)*
+
+*Version 3.5 — March 2026 — Updated V-06: branching edge hub label must render as plain floating text (no background, no border, transparent container) matching single edge label captions*
