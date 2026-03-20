@@ -59,7 +59,7 @@
 | C-26 | When two or more items are selected, dragging any selected node or note moves the entire selection together; edges follow their connected nodes automatically and do not disconnect from their source node or label hub |
 | C-27 | Pressing the Delete key while one or more items are selected removes all selected nodes, notes, and any edges directly attached to a deleted node |
 | C-28 | Add an "Edit Info" action to the node right-click context menu; selecting it opens a popover panel positioned near the node containing a short freeform text input pre-filled with any existing description; clicking outside the popover saves the current text (including empty, which clears the description) |
-| C-29 | When a node has a non-empty description, display a small green dot indicator positioned at the top-right corner of the node, outside the label area so it does not obstruct the node label; when the description is absent or empty, the dot must not be shown |
+| C-29 | When a node has a non-empty description, display a small green dot indicator inside the node boundary at the top-right corner, with a small margin from the node's border lines so it does not touch the edges; the dot must be smaller than the current size and must not obstruct the node label; when the description is absent or empty, the dot must not be shown |
 | C-30 | When the user hovers the cursor over a node's green info dot, display a read-only popover showing the description text; the popover disappears automatically when the cursor moves away from the dot |
 
 ### 4.2 AI — Map Generation
@@ -247,3 +247,5 @@ The app will validate and sanitise this output before rendering.
 ---
 
 *Version 3.1 — March 2026 — Added C-28, C-29, C-30 (node descriptions — Edit Info popover, green dot indicator, hover tooltip); added A-10 (description context in node expansion); added P-07 (node description persistence in JSON)*
+
+*Version 3.2 — March 2026 — Refined C-29: green dot repositioned inside node boundary at top-right corner with margin from border lines; dot size reduced*
