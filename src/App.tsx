@@ -18,20 +18,48 @@ export function App(): React.JSX.Element {
   const [autoloadError, setAutoloadError] = useState<string | null>(null)
 
   // P-04, P-05, P-06 — URL autoload via ?autoload=<base64> query parameter
+  // Supports both plain base64-JSON (legacy) and deflate-compressed base64 (P-08)
   useEffect((): void => {
     const params = new URLSearchParams(window.location.search)
     const encoded = params.get('autoload')
     // P-05 — strip param immediately, before any other side-effect
     window.history.replaceState({}, '', window.location.pathname)
     if (!encoded) return
-    try {
-      const mapData = validateMapData(JSON.parse(atob(encoded)))
-      canvasRef.current?.setMapData(mapData)
-      setFocusQuestion(mapData.focusQuestion ?? '')
-    } catch {
-      // P-06 — visible error; canvas remains empty
-      setAutoloadError('Could not load map from URL — the link may be invalid or corrupted.')
-    }
+    void (async (): Promise<void> => {
+      try {
+        const raw = atob(encoded)
+        let json: string
+        if (raw.startsWith('{') || raw.startsWith('[')) {
+          // Legacy: plain JSON encoded as base64
+          json = raw
+        } else {
+          // P-08: deflate-raw compressed then base64-encoded
+          const bytes = Uint8Array.from(raw, c => c.charCodeAt(0))
+          const ds = new DecompressionStream('deflate-raw')
+          const writer = ds.writable.getWriter()
+          void writer.write(bytes)
+          void writer.close()
+          const chunks: Uint8Array[] = []
+          const reader = ds.readable.getReader()
+          let chunk: ReadableStreamReadResult<Uint8Array>
+          while (!(chunk = await reader.read()).done) chunks.push(chunk.value)
+          const total = chunks.reduce((n, c) => n + c.length, 0)
+          const merged = new Uint8Array(total)
+          let offset = 0
+          for (const c of chunks) {
+            merged.set(c, offset)
+            offset += c.length
+          }
+          json = new TextDecoder().decode(merged)
+        }
+        const mapData = validateMapData(JSON.parse(json))
+        canvasRef.current?.setMapData(mapData)
+        setFocusQuestion(mapData.focusQuestion ?? '')
+      } catch {
+        // P-06 — visible error; canvas remains empty
+        setAutoloadError('Could not load map from URL — the link may be invalid or corrupted.')
+      }
+    })()
   }, [])
 
   // Listen for openSettings events dispatched by useApiKey hook

@@ -59,6 +59,10 @@ export default [
         URLSearchParams: 'readonly',
         atob: 'readonly',
         btoa: 'readonly',
+        DecompressionStream: 'readonly',
+        ReadableStreamReadResult: 'readonly',
+        TextDecoder: 'readonly',
+        Uint8Array: 'readonly',
       },
     },
     plugins: {
