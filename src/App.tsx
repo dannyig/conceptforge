@@ -89,7 +89,7 @@ export function App(): React.JSX.Element {
     >
       <FocusQuestionBar value={focusQuestion} onChange={setFocusQuestion} />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
-        <Canvas ref={canvasRef} onNodeCountChange={setNodeCount} />
+        <Canvas ref={canvasRef} onNodeCountChange={setNodeCount} focusQuestion={focusQuestion} />
         <AppMenu
           canvasRef={canvasRef}
           hasNodes={nodeCount > 0}

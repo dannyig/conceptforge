@@ -60,7 +60,10 @@ import {
   TRANSITION_FAST,
   FONT_WEIGHT_NODE_LABEL,
   COLOR_TEXT_MUTED,
+  COLOR_STATUS_ERROR,
 } from '@/lib/theme'
+import { expandNode } from '@/lib/claude'
+import { getApiKey, OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
 
 // Canvas-internal node data — superset of concept-node, branch-hub, and note data
 type CanvasNodeData = {
@@ -153,10 +156,30 @@ export interface CanvasHandle {
 interface CanvasFlowProps {
   ref?: React.Ref<CanvasHandle>
   onNodeCountChange?: (count: number) => void
+  focusQuestion?: string
+}
+
+// Fan-position new nodes in an arc below/around the source node (A-07)
+function fanPositions(
+  source: { x: number; y: number },
+  count: number
+): Array<{ x: number; y: number }> {
+  const RADIUS = 220
+  const SPREAD = (Math.PI * 2) / 3 // 120-degree arc
+  const CENTER = Math.PI / 2 // pointing downward in canvas coordinates
+  if (count === 1) return [{ x: source.x, y: source.y + RADIUS }]
+  return Array.from({ length: count }, (_, i) => ({
+    x: Math.round(source.x + Math.cos(CENTER - SPREAD / 2 + (i / (count - 1)) * SPREAD) * RADIUS),
+    y: Math.round(source.y + Math.sin(CENTER - SPREAD / 2 + (i / (count - 1)) * SPREAD) * RADIUS),
+  }))
 }
 
 // Inner component — must be inside ReactFlowProvider to use useReactFlow
-function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Element {
+function CanvasFlow({
+  ref,
+  onNodeCountChange,
+  focusQuestion = '',
+}: CanvasFlowProps): React.JSX.Element {
   const { screenToFlowPosition, fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasFlowNode>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasFlowEdge>([])
@@ -245,6 +268,10 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
   } | null>(null)
   // Ref used to cancel save when Escape is pressed before onBlur fires
   const nodeInfoCancelledRef = useRef(false)
+
+  // A-06–A-10: node expansion state
+  const [expandingNodeId, setExpandingNodeId] = useState<string | null>(null)
+  const [expandError, setExpandError] = useState<string | null>(null)
 
   const closeAllMenus = useCallback((): void => {
     setContextMenu(null)
@@ -769,6 +796,88 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
     [closeAllMenus, screenToFlowPosition]
   )
 
+  // A-06–A-10, F-07: expand a concept node via Claude API
+  const handleExpand = useCallback(
+    async (nodeId: string): Promise<void> => {
+      const node = nodesRef.current.find(n => n.id === nodeId && n.type === 'concept')
+      if (!node) return
+
+      const apiKey = getApiKey()
+      if (!apiKey) {
+        window.dispatchEvent(new CustomEvent(OPEN_SETTINGS_EVENT))
+        return
+      }
+
+      setExpandingNodeId(nodeId)
+      setExpandError(null)
+
+      const existingNodes: ConceptNodeType[] = nodesRef.current
+        .filter(n => n.type === 'concept')
+        .map(n => ({
+          id: n.id,
+          label: n.data.label,
+          position: n.position,
+          description: n.data.description,
+        }))
+
+      try {
+        const response = await expandNode(
+          {
+            nodeId,
+            nodeLabel: node.data.label,
+            nodeDescription: node.data.description,
+            focusQuestion,
+            existingNodes,
+          },
+          apiKey
+        )
+
+        // A-09: deduplicate by label (case-insensitive)
+        const existingLabels = new Set(existingNodes.map(n => n.label.toLowerCase().trim()))
+        const newNodes = response.nodes.filter(
+          n => !existingLabels.has(n.label.toLowerCase().trim())
+        )
+        if (newNodes.length === 0) return
+
+        // Map Claude IDs → unique canvas IDs
+        const ts = Date.now()
+        const idMap = new Map<string, string>()
+        newNodes.forEach((n, i) => {
+          idMap.set(n.id, `node-${ts}-${i}`)
+        })
+
+        const positions = fanPositions(node.position, newNodes.length)
+        const newFlowNodes: CanvasFlowNode[] = newNodes.map((n, i) => ({
+          id: idMap.get(n.id) ?? `node-${ts}-${i}`,
+          type: 'concept' as const,
+          position: positions[i],
+          data: { label: n.label },
+        }))
+
+        const newNodeClaudeIds = new Set(newNodes.map(n => n.id))
+        const newFlowEdges: CanvasFlowEdge[] = response.edges
+          .filter(e => newNodeClaudeIds.has(e.target))
+          .map(e => ({
+            id: `edge-${ts}-${Math.random().toString(36).slice(2, 7)}`,
+            source: e.source === nodeId ? nodeId : (idMap.get(e.source) ?? e.source),
+            target: idMap.get(e.target) ?? e.target,
+            type: 'concept' as const,
+            data: { label: e.label },
+            markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
+            style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+          }))
+
+        setNodes(nds => [...nds, ...newFlowNodes])
+        setEdges(eds => [...eds, ...newFlowEdges])
+      } catch (err) {
+        setExpandError(err instanceof Error ? err.message : 'Expansion failed')
+      } finally {
+        setExpandingNodeId(null)
+      }
+    },
+    [focusQuestion, setNodes, setEdges]
+  )
+
   const deleteNote = useCallback(
     (nodeId: string): void => {
       setNoteMenu(null)
@@ -1019,6 +1128,40 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
           >
             <button
               role="menuitem"
+              disabled={expandingNodeId !== null}
+              onClick={(): void => {
+                const nodeId = nodeMenu.nodeId
+                setNodeMenu(null)
+                void handleExpand(nodeId)
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 16px',
+                background: 'none',
+                border: 'none',
+                color: COLOR_NODE_TEXT,
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_NODE_LABEL,
+                textAlign: 'left',
+                cursor: expandingNodeId !== null ? 'not-allowed' : 'pointer',
+                opacity: expandingNodeId !== null ? 0.4 : 1,
+                transition: `background ${TRANSITION_FAST}`,
+              }}
+              onMouseEnter={(e): void => {
+                if (expandingNodeId === null)
+                  (e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+              }}
+              onMouseLeave={(e): void => {
+                ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
+              }}
+              aria-label="Expand node with AI"
+            >
+              Expand
+            </button>
+            <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
+            <button
+              role="menuitem"
               onClick={(): void => {
                 const node = nodesRef.current.find(n => n.id === nodeMenu.nodeId)
                 const currentDesc = node?.data.description ?? ''
@@ -1055,6 +1198,55 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
             </button>
           </div>
         </>
+      )}
+
+      {/* A-04/A-05 analog: expansion loading and error indicators */}
+      {expandingNodeId !== null && (
+        <div
+          aria-live="polite"
+          style={{
+            position: 'absolute',
+            bottom: TICKER_HEIGHT + 36,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 20,
+            backgroundColor: COLOR_NODE_BG,
+            border: `1px solid ${COLOR_NODE_BORDER}`,
+            borderRadius: 6,
+            padding: '6px 14px',
+            fontFamily: FONT_FAMILY,
+            fontSize: FONT_SIZE_NODE_LABEL,
+            color: COLOR_TEXT_MUTED,
+            pointerEvents: 'none',
+          }}
+        >
+          Expanding…
+        </div>
+      )}
+      {expandError !== null && (
+        <div
+          role="alert"
+          onClick={(): void => setExpandError(null)}
+          style={{
+            position: 'absolute',
+            bottom: TICKER_HEIGHT + 36,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 20,
+            backgroundColor: COLOR_NODE_BG,
+            border: `1px solid ${COLOR_NODE_BORDER}`,
+            borderRadius: 6,
+            padding: '6px 14px',
+            fontFamily: FONT_FAMILY,
+            fontSize: FONT_SIZE_NODE_LABEL,
+            color: COLOR_STATUS_ERROR,
+            cursor: 'pointer',
+            maxWidth: 360,
+            textAlign: 'center',
+          }}
+        >
+          {expandError}
+        </div>
       )}
 
       {/* C-28: description edit popover — blur saves, Escape cancels */}
@@ -1455,12 +1647,13 @@ function CanvasFlow({ ref, onNodeCountChange }: CanvasFlowProps): React.JSX.Elem
 interface CanvasProps {
   ref?: React.Ref<CanvasHandle>
   onNodeCountChange?: (count: number) => void
+  focusQuestion?: string
 }
 
-export function Canvas({ ref, onNodeCountChange }: CanvasProps): React.JSX.Element {
+export function Canvas({ ref, onNodeCountChange, focusQuestion }: CanvasProps): React.JSX.Element {
   return (
     <ReactFlowProvider>
-      <CanvasFlow ref={ref} onNodeCountChange={onNodeCountChange} />
+      <CanvasFlow ref={ref} onNodeCountChange={onNodeCountChange} focusQuestion={focusQuestion} />
     </ReactFlowProvider>
   )
 }

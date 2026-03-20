@@ -53,5 +53,7 @@ export interface ClaudeMapResponse {
 export interface ExpandNodeRequest {
   nodeId: string
   nodeLabel: string
+  nodeDescription?: string // A-10: included in prompt when non-empty
+  focusQuestion?: string // F-07: included in prompt when present
   existingNodes: ConceptNode[]
 }
