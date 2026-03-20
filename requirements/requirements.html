@@ -208,7 +208,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v3.2 &nbsp;·&nbsp; March 2026</span>
+    <span class="version-badge">v3.3 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -415,6 +415,22 @@
     </table>
   </section>
 
+  <!-- 4.12 Skill Distribution -->
+  <section>
+    <h3>4.12 Skill Distribution &nbsp;<span class="badge badge-core">NEW</span></h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td class="req-id">SK-01</td><td>The <code>/cmap</code> skill file must carry an independent version number in a comment header at the top of the file (e.g. <code>&lt;!-- version: 1.0 --&gt;</code>); this version is incremented whenever the skill content changes and is completely independent of the ConceptForge app version &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">SK-02</td><td>When the <code>/cmap</code> skill is invoked with <code>version</code> as the sole argument, it must read and report its own embedded version number; if network is available it must also fetch the latest version from the GitHub Pages manifest and tell the user whether they are up to date or behind &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">SK-03</td><td>A <code>skills/</code> directory in the repo contains <code>cmap.md</code> (the versioned skill file) and <code>manifest.json</code> (<code>{ "version": "x.y" }</code>); a dedicated GitHub Actions workflow deploys this directory to GitHub Pages on every push to <code>main</code> that touches <code>skills/</code>, independently of the fly.io deployment &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">SK-04</td><td>On application load, ConceptForge fetches the skills manifest from GitHub Pages and displays the available <code>/cmap</code> skill version inside the toolbar menu; if the fetch fails the version shows as "unavailable" without disrupting the UI &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">SK-05</td><td>Replace the current standalone settings button in the toolbar with a single menu button; the menu contains four actions: <strong>Save</strong>, <strong>Load</strong>, <strong>Settings</strong>, and <strong>Download cmap skill</strong> — the last item shows the available version number inline (e.g. "Download cmap skill v1.0") &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">SK-06</td><td>Selecting "Download cmap skill" from the menu triggers a download of <code>cmap.md</code> from GitHub Pages and displays a placement instruction panel telling the user the exact path to place the file: <code>~/.claude/commands/cmap.md</code> on macOS/Linux and <code>%USERPROFILE%\.claude\commands\cmap.md</code> on Windows &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
   <!-- 5. Nice to Have -->
   <section>
     <h2>5. Nice to Have <span class="badge badge-nice">Post-MVP</span></h2>
@@ -494,7 +510,7 @@
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v3.2 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v3.3 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>
