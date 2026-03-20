@@ -4,6 +4,7 @@ import {
   COLOR_NODE_BG,
   COLOR_NODE_BORDER,
   COLOR_NODE_GLOW,
+  COLOR_NODE_INFO_DOT,
   COLOR_NODE_SELECTED,
   COLOR_NODE_TEXT,
   FONT_FAMILY,
@@ -19,6 +20,7 @@ export type NodeData = {
   // C-18: sides that currently have at least one incoming edge — source-disabled
   // Computed in CanvasFlow from edge targetHandle fields; absent = no occupied sides
   occupiedSides?: string[]
+  description?: string // C-28: short freeform description
 }
 
 export type ConceptFlowNode = Node<NodeData>
@@ -47,6 +49,7 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(data.label)
   const [hovered, setHovered] = useState(false)
+  const [showTooltip, setShowTooltip] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const startEdit = useCallback((): void => {
@@ -185,6 +188,54 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
         />
       ) : (
         <span>{data.label}</span>
+      )}
+
+      {/* C-29: green dot indicator — shown only when node has a description */}
+      {data.description && (
+        <>
+          <div
+            onMouseEnter={(): void => setShowTooltip(true)}
+            onMouseLeave={(): void => setShowTooltip(false)}
+            style={{
+              position: 'absolute',
+              top: -4,
+              right: -4,
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              backgroundColor: COLOR_NODE_INFO_DOT,
+              pointerEvents: 'auto',
+              zIndex: 10,
+            }}
+            aria-label="This node has a description"
+          />
+          {/* C-30: description tooltip — appears above the node on dot hover */}
+          {showTooltip && (
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 'calc(100% + 10px)',
+                right: -4,
+                backgroundColor: COLOR_NODE_BG,
+                border: `1px solid ${COLOR_NODE_BORDER}`,
+                borderRadius: 4,
+                padding: '6px 10px',
+                color: COLOR_NODE_TEXT,
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_NODE_LABEL,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                maxWidth: 240,
+                pointerEvents: 'none',
+                zIndex: 9999,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+              }}
+              role="tooltip"
+            >
+              {data.description}
+            </div>
+          )}
+        </>
       )}
 
       {/* All handles hidden — pseudo-class input focus styles */}

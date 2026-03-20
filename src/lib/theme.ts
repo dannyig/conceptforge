@@ -51,6 +51,7 @@ export const COLOR_BUTTON_PRIMARY_TEXT = '#0d1117'
 export const COLOR_BUTTON_PRIMARY_HOVER_BG = '#ea6c0a'
 export const COLOR_BUTTON_GHOST_HOVER_BG = '#21262d'
 export const COLOR_STATUS_SUCCESS = '#3fb950'
+export const COLOR_NODE_INFO_DOT = '#22c55e' // C-29: green dot indicator for nodes with a description
 export const COLOR_STATUS_ERROR = '#f85149'
 export const COLOR_TEXT_MUTED = '#8b949e'
 export const SETTINGS_PANEL_WIDTH = '360px'

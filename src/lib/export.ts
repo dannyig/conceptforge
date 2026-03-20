@@ -55,6 +55,9 @@ function assertNode(val: unknown): ConceptNode {
   if (typeof val.position.y !== 'number') throw new Error('Invalid map file')
   const validTypes = new Set(['concept', 'question', 'source', 'insight', undefined])
   if (!validTypes.has(val.type as string | undefined)) throw new Error('Invalid map file')
+  // P-07: description is optional — accept string or absent; reject any other type
+  if (val.description !== undefined && typeof val.description !== 'string')
+    throw new Error('Invalid map file')
   return val as unknown as ConceptNode
 }
 
