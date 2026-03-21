@@ -79,6 +79,8 @@ export const COLOR_SUMMARY_LINK = '#f97316'
 export const COLOR_SUMMARY_LINK_HOVER = '#ea6c0a'
 export const SUMMARY_PANEL_WIDTH = 300
 export const TYPEWRITER_CHAR_DELAY_MS = 18
+// MiniMap bottom offset (TICKER_HEIGHT + 2) + minimap height (~152) + gap (8)
+export const SUMMARY_PANEL_BOTTOM = 188
 
 // Notes & Groups (G-01→G-10)
 // 10 dark colours that all yield near-white contrast text via the luminance formula

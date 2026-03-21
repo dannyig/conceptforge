@@ -10,10 +10,34 @@ import {
   COLOR_TEXT_MUTED,
   FONT_FAMILY,
   FONT_SIZE_SMALL,
+  SUMMARY_PANEL_BOTTOM,
   SUMMARY_PANEL_WIDTH,
   TRANSITION_FAST,
   TYPEWRITER_CHAR_DELAY_MS,
 } from '@/lib/theme'
+
+const MINIMAP_GAP = 8
+
+function usePanelBottom(): number {
+  const [bottom, setBottom] = useState(SUMMARY_PANEL_BOTTOM)
+
+  useEffect(() => {
+    const measure = (): void => {
+      const minimap = document.querySelector('.react-flow__minimap')
+      const canvas = minimap?.closest('.react-flow') as HTMLElement | null
+      if (!minimap || !canvas) return
+      const minimapRect = minimap.getBoundingClientRect()
+      const canvasRect = canvas.getBoundingClientRect()
+      setBottom(canvasRect.bottom - minimapRect.top + MINIMAP_GAP)
+    }
+
+    measure()
+    window.addEventListener('resize', measure)
+    return (): void => window.removeEventListener('resize', measure)
+  }, [])
+
+  return bottom
+}
 
 interface SummaryPanelProps {
   narrative: string
@@ -26,6 +50,7 @@ export function SummaryPanel({
   resources,
   onDismiss,
 }: SummaryPanelProps): React.JSX.Element {
+  const panelBottom = usePanelBottom()
   const [displayed, setDisplayed] = useState('')
   const [animDone, setAnimDone] = useState(false)
   const indexRef = useRef(0)
@@ -57,10 +82,10 @@ export function SummaryPanel({
       role="complementary"
       style={{
         position: 'absolute',
-        bottom: 16,
-        right: 16,
+        top: 64,
+        right: 8,
+        bottom: panelBottom,
         width: SUMMARY_PANEL_WIDTH,
-        maxHeight: 280,
         backgroundColor: COLOR_SUMMARY_BG,
         border: `1px solid ${COLOR_SUMMARY_BORDER}`,
         borderRadius: 8,
