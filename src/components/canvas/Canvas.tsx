@@ -90,6 +90,7 @@ type CanvasEdgeData = {
   branchingEdgeId?: string
   isStem?: boolean
   isBranch?: boolean
+  isHovered?: boolean // C-32: injected by computedEdges; not persisted
 }
 type CanvasFlowEdge = Edge<CanvasEdgeData>
 
@@ -226,17 +227,34 @@ function CanvasFlow({
     })
   }, [nodes, edges])
 
+  // C-32: track which edge the cursor is currently over for the orange-label hover cue.
+  const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null)
+
+  const onEdgeMouseEnter = useCallback((_event: React.MouseEvent, edge: CanvasFlowEdge): void => {
+    if (!edge.data?.isStem) setHoveredEdgeId(edge.id)
+  }, [])
+
+  const onEdgeMouseLeave = useCallback((): void => {
+    setHoveredEdgeId(null)
+  }, [])
+
+  // C-32: isHovered → orange label on hover.
   // C-33: only the selected edge's target endpoint is draggable for reconnection.
-  // C-32: the selected edge already shows an orange label (existing ConceptEdge behaviour),
-  //       so hovering near its endpoint naturally shows the orange label as a cue.
   // Branch stems are never reconnectable regardless of selection.
   const computedEdges = useMemo((): CanvasFlowEdge[] => {
     return edges.map(edge => {
       const reconnectable = !edge.data?.isStem && edge.selected ? ('target' as const) : false
-      if (edge.reconnectable === reconnectable) return edge
-      return { ...edge, reconnectable }
+      const isHovered = edge.id === hoveredEdgeId && !edge.data?.isStem
+      const reconnectableChanged = edge.reconnectable !== reconnectable
+      const hoverChanged = !!edge.data?.isHovered !== isHovered
+      if (!reconnectableChanged && !hoverChanged) return edge
+      return {
+        ...edge,
+        reconnectable,
+        data: hoverChanged ? { ...edge.data, isHovered } : edge.data,
+      }
     })
-  }, [edges])
+  }, [edges, hoveredEdgeId])
 
   const [contextMenu, setContextMenu] = useState<{
     edgeId: string
@@ -1065,6 +1083,8 @@ function CanvasFlow({
         onNodeContextMenu={onNodeContextMenu}
         onNodeDoubleClick={onNodeDoubleClick}
         onEdgeContextMenu={onEdgeContextMenu}
+        onEdgeMouseEnter={onEdgeMouseEnter}
+        onEdgeMouseLeave={onEdgeMouseLeave}
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
         defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}

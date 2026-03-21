@@ -11,8 +11,10 @@ export function BranchArrowEdge({
   targetY,
   markerEnd,
   selected,
+  data,
 }: EdgeProps): React.JSX.Element {
   const [edgePath] = getStraightPath({ sourceX, sourceY, targetX, targetY })
+  const isHovered = (data as { isHovered?: boolean } | undefined)?.isHovered
 
   return (
     <BaseEdge
@@ -20,7 +22,7 @@ export function BranchArrowEdge({
       path={edgePath}
       markerEnd={markerEnd}
       style={{
-        stroke: selected ? COLOR_EDGE_SELECTED : COLOR_EDGE,
+        stroke: selected || isHovered ? COLOR_EDGE_SELECTED : COLOR_EDGE,
         strokeWidth: 1.5,
       }}
     />
