@@ -1,5 +1,5 @@
 // Claude API client
-import type { ClaudeMapResponse, ExpandNodeRequest } from '@/types'
+import type { ClaudeMapResponse, ExpandNodeRequest, SummaryResource } from '@/types'
 
 const API_URL = 'https://api.anthropic.com/v1/messages'
 const MODEL = 'claude-sonnet-4-6'
@@ -9,6 +9,13 @@ export interface ConceptSuggestion {
   id: string
   label: string
   description: string
+}
+
+// A-18: result type wrapping Mode 2 suggestions with summary data
+export interface SuggestConceptsResult {
+  concepts: ConceptSuggestion[]
+  narrative: string
+  resources: SummaryResource[]
 }
 
 // A-12: Mode 1 — generate a full concept map (nodes + edges) from a focus question
@@ -22,6 +29,10 @@ export async function generateMap(prompt: string, apiKey: string): Promise<Claud
     `  ],\n` +
     `  "edges": [\n` +
     `    { "source": "1", "target": "2", "label": "relates to" }\n` +
+    `  ],\n` +
+    `  "narrative": "A short paragraph explaining the topic and why these concepts were chosen.",\n` +
+    `  "resources": [\n` +
+    `    { "label": "Wikipedia — Topic Name", "url": "https://en.wikipedia.org/wiki/Topic" }\n` +
     `  ]\n` +
     `}\n\n` +
     `Rules:\n` +
@@ -30,6 +41,8 @@ export async function generateMap(prompt: string, apiKey: string): Promise<Claud
     `- Keep node labels concise (1–4 words)\n` +
     `- Edge labels should be short relationship phrases (1–3 words)\n` +
     `- Every node should have at least one edge connecting it to another node\n` +
+    `- narrative: 2–4 sentences explaining the topic and why these specific concepts were selected\n` +
+    `- resources: 3–5 real, useful online resources related to the topic (Wikipedia, official docs, reputable reference sites)\n` +
     `- Do not include markdown fences or any text outside the JSON object`
 
   const res = await fetch(API_URL, {
@@ -71,11 +84,12 @@ export async function generateMap(prompt: string, apiKey: string): Promise<Claud
 }
 
 // A-13, A-14, A-15: Mode 2 — suggest concept nodes only (no edges), each with a description
+// A-17, A-18: also returns narrative and resources for the summary panel
 export async function suggestConcepts(
   prompt: string,
   existingLabels: string[],
   apiKey: string
-): Promise<ConceptSuggestion[]> {
+): Promise<SuggestConceptsResult> {
   const exclusion =
     existingLabels.length > 0
       ? `\n\nDo NOT suggest any of these concepts already on the map: ${existingLabels.join(', ')}`
@@ -87,6 +101,10 @@ export async function suggestConcepts(
     `{\n` +
     `  "concepts": [\n` +
     `    { "id": "1", "label": "Concept Name", "description": "A brief 1–2 sentence description of this concept and why it is relevant." }\n` +
+    `  ],\n` +
+    `  "narrative": "A short paragraph explaining the topic and why these concepts were suggested.",\n` +
+    `  "resources": [\n` +
+    `    { "label": "Wikipedia — Topic Name", "url": "https://en.wikipedia.org/wiki/Topic" }\n` +
     `  ]\n` +
     `}\n\n` +
     `Rules:\n` +
@@ -95,6 +113,8 @@ export async function suggestConcepts(
     `- Descriptions should be 1–2 sentences, informative but brief\n` +
     `- Node IDs must be unique strings ("1", "2", etc.)\n` +
     `- Do not include edges — nodes only\n` +
+    `- narrative: 2–4 sentences explaining the topic and why these specific concepts were suggested\n` +
+    `- resources: 3–5 real, useful online resources related to the topic (Wikipedia, official docs, reputable reference sites)\n` +
     `- Do not include markdown fences or any text outside the JSON object`
 
   const res = await fetch(API_URL, {
@@ -132,7 +152,7 @@ export async function suggestConcepts(
     throw new Error('Claude returned invalid JSON')
   }
 
-  return parseConceptSuggestions(parsed)
+  return parseConceptSuggestionsResult(parsed)
 }
 
 export async function expandNode(
@@ -242,10 +262,28 @@ export function parseClaudeResponse(raw: unknown): ClaudeMapResponse {
     }
   })
 
-  return { nodes, edges }
+  const narrative = typeof r.narrative === 'string' ? r.narrative : ''
+  const resources = parseSummaryResources(r.resources)
+
+  return {
+    nodes,
+    edges,
+    narrative: narrative || undefined,
+    resources: resources.length ? resources : undefined,
+  }
 }
 
-function parseConceptSuggestions(raw: unknown): ConceptSuggestion[] {
+function parseSummaryResources(raw: unknown): SummaryResource[] {
+  if (!Array.isArray(raw)) return []
+  return (raw as unknown[]).flatMap((item: unknown) => {
+    if (typeof item !== 'object' || item === null) return []
+    const r = item as Record<string, unknown>
+    if (typeof r.label !== 'string' || typeof r.url !== 'string') return []
+    return [{ label: r.label, url: r.url }]
+  })
+}
+
+function parseConceptSuggestionsResult(raw: unknown): SuggestConceptsResult {
   if (typeof raw !== 'object' || raw === null) {
     throw new Error('Invalid concept suggestions response: expected an object')
   }
@@ -253,7 +291,7 @@ function parseConceptSuggestions(raw: unknown): ConceptSuggestion[] {
   if (!Array.isArray(r.concepts)) {
     throw new Error('Invalid response: "concepts" must be an array')
   }
-  return (r.concepts as unknown[]).map((c: unknown, i: number) => {
+  const concepts = (r.concepts as unknown[]).map((c: unknown, i: number) => {
     if (typeof c !== 'object' || c === null) throw new Error(`Concept ${i}: not an object`)
     const concept = c as Record<string, unknown>
     if (typeof concept.id !== 'string' || !concept.id)
@@ -268,4 +306,7 @@ function parseConceptSuggestions(raw: unknown): ConceptSuggestion[] {
       description: concept.description,
     }
   })
+  const narrative = typeof r.narrative === 'string' ? r.narrative : ''
+  const resources = parseSummaryResources(r.resources)
+  return { concepts, narrative, resources }
 }

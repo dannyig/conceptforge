@@ -45,9 +45,16 @@ export interface MapData {
   focusQuestion?: string // F-05: persisted with the map; undefined when not set
 }
 
+export interface SummaryResource {
+  label: string
+  url: string
+}
+
 export interface ClaudeMapResponse {
   nodes: Array<{ id: string; label: string }>
   edges: Array<{ source: string; target: string; label?: string }>
+  narrative?: string
+  resources?: SummaryResource[]
 }
 
 export interface ExpandNodeRequest {
