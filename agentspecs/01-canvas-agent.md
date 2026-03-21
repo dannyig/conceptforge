@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-31, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
+**Trigger:** Human assigns requirement IDs C-01 → C-33, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -486,6 +486,25 @@ interface MapData {
 
 ---
 
+### Group 4l — Reconnect Disambiguation (C-32, C-33)
+
+- [ ] **C-32 — Hover highlight on reconnect zone:**
+  - In `ConceptEdge.tsx` and `BranchArrowEdge.tsx`, detect when the cursor hovers within the reconnect grab radius near the edge's target endpoint
+  - While hovered, apply the orange accent colour (`COLOR_EDGE_SELECTED`) to the edge label — the same visual as the selected state
+  - Remove the highlight when the cursor leaves the zone
+  - Use React Flow's `onReconnectStart` / `onReconnectEnd` callbacks on `<ReactFlow>`, or pointer-event handlers on the edge endpoint area, to drive this hover state
+
+- [ ] **C-33 — Selection gates reconnect draggability:**
+  - Only a selected edge's target endpoint is draggable for reconnection; set `reconnectable: false` on all unselected edges at render time (derive from the edge's `selected` prop)
+  - When the user clicks an edge path or its label, React Flow selects it (existing behaviour); that selection now also enables its reconnect drag
+  - When the user subsequently hovers near any target endpoint, the selected edge's label turns orange (C-32 hover highlight confirms the active edge)
+  - Clicking elsewhere on the canvas deselects all edges; all reconnect drags are disabled until a new edge is selected
+  - In `ConceptEdge.tsx` and `BranchArrowEdge.tsx`, read the `selected` prop and pass `reconnectable={selected ? 'target' : false}` on the edge or control it via `setEdges` in Canvas state
+
+**Commit:** `feat(C-32,C-33): edge reconnect disambiguation — hover highlight and selection-gated draggability`
+
+---
+
 ### Group 5 — UI Verification (Playwright MCP)
 
 Before committing Group 4, run the web design audit and the Playwright visual check:
@@ -568,4 +587,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.16 — March 2026 (added Group 4k: C-31 — edge target reconnection with snap-back)*
+*Canvas Agent Spec v1.17 — March 2026 (added Group 4l: C-32→C-33 — reconnect disambiguation: hover highlight and selection-gated draggability)*
