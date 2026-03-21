@@ -2,7 +2,7 @@
 
 **Agent:** AI Agent
 **Sequence:** 03 — runs after Canvas Agent and Settings Agent both complete
-**Trigger:** Human assigns requirement IDs A-01 → A-10
+**Trigger:** Human assigns requirement IDs A-01 → A-22
 **Branch:** `feature/A-01-map-generation`
 **Depends on:** Canvas Agent (01) and Settings Agent (02) both merged to main
 **Parallel with:** Persistence Agent (04)
@@ -149,7 +149,44 @@ Populate the stub at `src/lib/claude.ts`. This file is the single interface to t
 
 ---
 
-### Group 4 — UI Verification (Playwright MCP)
+### Group 4 — AI Summary Panel (A-16 → A-22)
+
+Extend the Mode 1 and Mode 2 API calls to request a narrative and resource links in the same response, then render the summary panel.
+
+- [ ] **Extend `generateMap` (Mode 1) and `suggestConcepts` (Mode 2) prompts** to instruct Claude to include a `narrative` string and a `resources` array (up to 5 items, each `{ label, url }`) in the JSON response alongside the existing fields
+
+- [ ] **Extend `parseClaudeResponse` / `parseConceptSuggestions`** in `src/lib/claude.ts` to extract and validate `narrative` (string) and `resources` (array of `{ label: string; url: string }`) — both required; throw if absent or malformed
+
+- [ ] **Create `src/components/ai/SummaryPanel.tsx`** (A-16, A-17, A-22):
+  - Semi-transparent panel overlaying the right edge of the canvas
+  - Vertically spans from just below the menu button to the viewport bottom
+  - Appears only after generation completes and content is on canvas — not during loading
+  - All colours from `theme.ts`; panel width at agent's discretion
+
+- [ ] **Typewriter animation** (A-19):
+  - Reveal the narrative text character by character at a natural human typing pace
+  - Resource links are hidden during animation; they appear below the narrative once animation completes
+
+- [ ] **Dismiss button** (A-20):
+  - Appears only once the typewriter animation completes
+  - Clicking it removes the panel; panel does not reappear until the next generation
+
+- [ ] **Scrollable content** (A-21):
+  - If narrative + links exceed the panel height, the content area scrolls independently
+
+- [ ] **Resource links** (A-18, A-22):
+  - Render each resource as a hyperlink using Claude's provided label and URL
+  - Open in a new tab with `rel="noopener noreferrer"`
+
+- [ ] **Wire into App.tsx**:
+  - Pass `narrative` and `resources` from the API response up to the parent
+  - Control panel visibility — show after map/nodes land, hide on dismiss
+
+**Commit:** `feat(A-16,A-17,A-18,A-19,A-20,A-21,A-22): AI summary panel with typewriter animation and resource links`
+
+---
+
+### Group 5 — UI Verification (Playwright MCP)
 
 Before committing Group 3, start the dev server and use Playwright MCP + Chrome to verify:
 
@@ -168,17 +205,28 @@ Log any issues as `/feedback` entries before committing.
 
 ## AI Output Contract
 
-The Claude API must return JSON in this exact shape. The agent must enforce this:
+All Claude API responses must include `narrative` (string) and `resources` (array of `{ label: string; url: string }`, max 5) in addition to their primary payload. The agent must enforce this in validation.
 
-```typescript
-// ClaudeMapResponse (from src/types/index.ts)
+**Mode 1 — Generate Map:**
+```json
 {
-  nodes: Array<{ id: string; label: string }>
-  edges: Array<{ source: string; target: string; label?: string }>
+  "nodes": [{ "id": "1", "label": "Main Concept" }],
+  "edges": [{ "source": "1", "target": "2", "label": "relates to" }],
+  "narrative": "Explanation of the topic and why these concepts were chosen.",
+  "resources": [{ "label": "Wikipedia — Topic", "url": "https://en.wikipedia.org/wiki/Topic" }]
 }
 ```
 
-The system prompt sent to Claude must specify this schema explicitly and instruct Claude to return only the JSON object — no markdown, no explanation, no code fences. If the model returns anything that does not parse to this shape, surface an error to the user.
+**Mode 2 — Suggest Concepts:**
+```json
+{
+  "concepts": [{ "id": "1", "label": "Concept", "description": "Brief description." }],
+  "narrative": "Explanation of the topic and why these concepts were suggested.",
+  "resources": [{ "label": "Wikipedia — Topic", "url": "https://en.wikipedia.org/wiki/Topic" }]
+}
+```
+
+The system prompt must specify these schemas explicitly and instruct Claude to return only the JSON object — no markdown, no explanation, no code fences. If the model returns anything that does not parse to this shape, surface an error to the user.
 
 ---
 
@@ -202,13 +250,13 @@ When done, the following must exist:
 src/
 ├── components/
 │   ├── ai/
-│   │   ├── FocusQuestionBar.tsx    ✓ persistent bar, editable, prominent styling
-│   │   └── PromptPanel.tsx         ✓ prompt input, loading, error states, F-07 context
+│   │   ├── FocusQuestionBar.tsx    ✓ persistent bar, editable, mode buttons, loading/error
+│   │   └── SummaryPanel.tsx        ✓ typewriter narrative, resource links, dismiss, scroll
 │   └── canvas/
 │       └── NodeContextMenu.tsx     ✓ right-click expand menu, F-07 context
 ├── lib/
-│   ├── claude.ts                   ✓ generateMap, expandNode, parseClaudeResponse
-│   └── graph.ts                    ✓ auto-layout helpers for node positioning
+│   ├── claude.ts                   ✓ generateMap, suggestConcepts, expandNode, parseClaudeResponse
+│   └── graph.ts                    ✓ auto-layout helpers, ringPositions
 ```
 
 ---
@@ -223,4 +271,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*AI Agent Spec v1.3 — March 2026 (added A-10: node description as expansion context in Group 3)*
+*AI Agent Spec v1.4 — March 2026 (added A-16–A-22: AI Summary Panel with typewriter animation, resource links, dismiss, scroll — Group 4)*
