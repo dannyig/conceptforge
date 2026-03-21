@@ -1108,6 +1108,8 @@ function CanvasFlow({
           maskColor={COLOR_MINIMAP_MASK}
           style={{ backgroundColor: COLOR_CANVAS_BG, bottom: TICKER_HEIGHT + 2 }}
           aria-label="Minimap"
+          pannable
+          zoomable
         />
       </ReactFlow>
 
