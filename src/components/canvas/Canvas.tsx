@@ -148,7 +148,6 @@ const EDGE_TYPES: Record<string, React.ComponentType<any>> = {
 const DEFAULT_EDGE_OPTIONS = {
   markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
   style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
-  reconnectable: 'target' as const,
 }
 
 export interface CanvasHandle {
@@ -226,6 +225,18 @@ function CanvasFlow({
       return { ...node, data: { ...node.data, occupiedSides: occupied } }
     })
   }, [nodes, edges])
+
+  // C-33: only the selected edge's target endpoint is draggable for reconnection.
+  // C-32: the selected edge already shows an orange label (existing ConceptEdge behaviour),
+  //       so hovering near its endpoint naturally shows the orange label as a cue.
+  // Branch stems are never reconnectable regardless of selection.
+  const computedEdges = useMemo((): CanvasFlowEdge[] => {
+    return edges.map(edge => {
+      const reconnectable = !edge.data?.isStem && edge.selected ? ('target' as const) : false
+      if (edge.reconnectable === reconnectable) return edge
+      return { ...edge, reconnectable }
+    })
+  }, [edges])
 
   const [contextMenu, setContextMenu] = useState<{
     edgeId: string
@@ -370,7 +381,6 @@ function CanvasFlow({
           data: { label: e.label, labelPosition: e.labelPosition },
           markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
           style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
-          reconnectable: 'target' as const,
         }))
         if (data.branchingEdges) {
           for (const be of data.branchingEdges) {
@@ -391,7 +401,6 @@ function CanvasFlow({
               target: hub,
               type: 'branchStem',
               data: { branchingEdgeId: be.id, isStem: true },
-              reconnectable: false,
             })
             for (const targetId of be.targets) {
               newEdges.push({
@@ -402,7 +411,6 @@ function CanvasFlow({
                 data: { branchingEdgeId: be.id, isBranch: true },
                 markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
                 style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
-                reconnectable: 'target' as const,
               })
             }
           }
@@ -489,7 +497,6 @@ function CanvasFlow({
           target: hub,
           type: 'branchStem',
           data: { branchingEdgeId: beId, isStem: true },
-          reconnectable: false,
         },
         {
           id: branchEdgeId(beId, edge.target),
@@ -500,7 +507,6 @@ function CanvasFlow({
           data: { branchingEdgeId: beId, isBranch: true },
           markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
           style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
-          reconnectable: 'target' as const,
         },
       ])
     },
@@ -533,7 +539,6 @@ function CanvasFlow({
             data: { branchingEdgeId: beId, isBranch: true },
             markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
             style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
-            reconnectable: 'target' as const,
           },
         ])
         return
@@ -599,7 +604,6 @@ function CanvasFlow({
             data: { branchingEdgeId: beId, isBranch: true },
             markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
             style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
-            reconnectable: 'target' as const,
           },
         ])
         return
@@ -629,7 +633,6 @@ function CanvasFlow({
             data: { label: '' },
             markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
             style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
-            reconnectable: 'target' as const,
           },
         ])
       }
@@ -718,7 +721,6 @@ function CanvasFlow({
                   data: { label: hubNode.data.label },
                   markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
                   style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
-                  reconnectable: 'target' as const,
                 },
               ])
               return
@@ -1051,7 +1053,7 @@ function CanvasFlow({
       `}</style>
       <ReactFlow
         nodes={enrichedNodes}
-        edges={edges}
+        edges={computedEdges}
         onNodesChange={handleNodesChange}
         onEdgesChange={handleEdgesChange}
         onConnect={onConnect}
