@@ -4,8 +4,135 @@ import type { ClaudeMapResponse, ExpandNodeRequest } from '@/types'
 const API_URL = 'https://api.anthropic.com/v1/messages'
 const MODEL = 'claude-sonnet-4-6'
 
-export async function generateMap(_prompt: string, _apiKey: string): Promise<ClaudeMapResponse> {
-  throw new Error('Not implemented — AI Agent will implement this (A-01 to A-05)')
+// Internal type for Mode 2 (A-13, A-15) concept suggestions
+export interface ConceptSuggestion {
+  id: string
+  label: string
+  description: string
+}
+
+// A-12: Mode 1 — generate a full concept map (nodes + edges) from a focus question
+export async function generateMap(prompt: string, apiKey: string): Promise<ClaudeMapResponse> {
+  const userPrompt =
+    `Create a concept map for the following topic or question:\n\n"${prompt}"\n\n` +
+    `Return ONLY valid JSON — no markdown, no explanation:\n` +
+    `{\n` +
+    `  "nodes": [\n` +
+    `    { "id": "1", "label": "Main Concept" }\n` +
+    `  ],\n` +
+    `  "edges": [\n` +
+    `    { "source": "1", "target": "2", "label": "relates to" }\n` +
+    `  ]\n` +
+    `}\n\n` +
+    `Rules:\n` +
+    `- Generate 6–12 nodes that form a well-connected concept map\n` +
+    `- Node IDs must be unique strings ("1", "2", "3", etc.)\n` +
+    `- Keep node labels concise (1–4 words)\n` +
+    `- Edge labels should be short relationship phrases (1–3 words)\n` +
+    `- Every node should have at least one edge connecting it to another node\n` +
+    `- Do not include markdown fences or any text outside the JSON object`
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  })
+
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`Claude API error ${res.status}: ${body}`)
+  }
+
+  const data = (await res.json()) as { content: Array<{ type: string; text: string }> }
+  const text = data.content.find(c => c.type === 'text')?.text
+  if (!text) throw new Error('Empty response from Claude')
+
+  let parsed: unknown
+  try {
+    const cleaned = text
+      .replace(/^```(?:json)?\n?/, '')
+      .replace(/\n?```$/, '')
+      .trim()
+    parsed = JSON.parse(cleaned)
+  } catch {
+    throw new Error('Claude returned invalid JSON')
+  }
+
+  return parseClaudeResponse(parsed)
+}
+
+// A-13, A-14, A-15: Mode 2 — suggest concept nodes only (no edges), each with a description
+export async function suggestConcepts(
+  prompt: string,
+  existingLabels: string[],
+  apiKey: string
+): Promise<ConceptSuggestion[]> {
+  const exclusion =
+    existingLabels.length > 0
+      ? `\n\nDo NOT suggest any of these concepts already on the map: ${existingLabels.join(', ')}`
+      : ''
+
+  const userPrompt =
+    `Suggest 6–10 key concepts related to the following topic or question:\n\n"${prompt}"${exclusion}\n\n` +
+    `Return ONLY valid JSON — no markdown, no explanation:\n` +
+    `{\n` +
+    `  "concepts": [\n` +
+    `    { "id": "1", "label": "Concept Name", "description": "A brief 1–2 sentence description of this concept and why it is relevant." }\n` +
+    `  ]\n` +
+    `}\n\n` +
+    `Rules:\n` +
+    `- Each concept must be a distinct, meaningful idea related to the topic\n` +
+    `- Keep labels concise (1–4 words)\n` +
+    `- Descriptions should be 1–2 sentences, informative but brief\n` +
+    `- Node IDs must be unique strings ("1", "2", etc.)\n` +
+    `- Do not include edges — nodes only\n` +
+    `- Do not include markdown fences or any text outside the JSON object`
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  })
+
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`Claude API error ${res.status}: ${body}`)
+  }
+
+  const data = (await res.json()) as { content: Array<{ type: string; text: string }> }
+  const text = data.content.find(c => c.type === 'text')?.text
+  if (!text) throw new Error('Empty response from Claude')
+
+  let parsed: unknown
+  try {
+    const cleaned = text
+      .replace(/^```(?:json)?\n?/, '')
+      .replace(/\n?```$/, '')
+      .trim()
+    parsed = JSON.parse(cleaned)
+  } catch {
+    throw new Error('Claude returned invalid JSON')
+  }
+
+  return parseConceptSuggestions(parsed)
 }
 
 export async function expandNode(
@@ -116,4 +243,29 @@ export function parseClaudeResponse(raw: unknown): ClaudeMapResponse {
   })
 
   return { nodes, edges }
+}
+
+function parseConceptSuggestions(raw: unknown): ConceptSuggestion[] {
+  if (typeof raw !== 'object' || raw === null) {
+    throw new Error('Invalid concept suggestions response: expected an object')
+  }
+  const r = raw as Record<string, unknown>
+  if (!Array.isArray(r.concepts)) {
+    throw new Error('Invalid response: "concepts" must be an array')
+  }
+  return (r.concepts as unknown[]).map((c: unknown, i: number) => {
+    if (typeof c !== 'object' || c === null) throw new Error(`Concept ${i}: not an object`)
+    const concept = c as Record<string, unknown>
+    if (typeof concept.id !== 'string' || !concept.id)
+      throw new Error(`Concept ${i}: "id" must be a non-empty string`)
+    if (typeof concept.label !== 'string' || !concept.label)
+      throw new Error(`Concept ${i}: "label" must be a non-empty string`)
+    if (typeof concept.description !== 'string')
+      throw new Error(`Concept ${i}: "description" must be a string`)
+    return {
+      id: concept.id,
+      label: concept.label,
+      description: concept.description,
+    }
+  })
 }

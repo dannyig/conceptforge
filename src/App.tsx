@@ -6,7 +6,9 @@ import { MissingKeyBanner } from '@/components/settings/MissingKeyBanner'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
 import { AppMenu } from '@/components/toolbar/AppMenu'
 import { validateMapData } from '@/lib/export'
-import { OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
+import { getApiKey, OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
+import { generateMap, suggestConcepts } from '@/lib/claude'
+import { autoLayout, ringPositions } from '@/lib/graph'
 
 export function App(): React.JSX.Element {
   const canvasRef = useRef<CanvasHandle>(null)
@@ -15,6 +17,8 @@ export function App(): React.JSX.Element {
   const [focusQuestion, setFocusQuestion] = useState('')
   const [nodeCount, setNodeCount] = useState(0)
   const [autoloadError, setAutoloadError] = useState<string | null>(null)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
 
   // P-04, P-05, P-06 — URL autoload via ?autoload=<base64> query parameter
   // Supports both plain base64-JSON (legacy) and deflate-compressed base64 (P-08)
@@ -71,11 +75,89 @@ export function App(): React.JSX.Element {
   const openSettings = useCallback((): void => setIsSettingsOpen(true), [])
   const closeSettings = useCallback((): void => setIsSettingsOpen(false), [])
   const dismissBanner = useCallback((): void => setShowMissingKeyBanner(false), [])
+  const dismissAiError = useCallback((): void => setAiError(null), [])
 
   const handleOpenSettingsFromBanner = useCallback((): void => {
     setShowMissingKeyBanner(false)
     setIsSettingsOpen(true)
   }, [])
+
+  // A-12: Mode 1 — generate full concept map (nodes + edges) from focus question
+  const handleGenerateMap = useCallback(async (): Promise<void> => {
+    const apiKey = getApiKey()
+    if (!apiKey) {
+      openSettings()
+      return
+    }
+    setIsGenerating(true)
+    setAiError(null)
+    try {
+      const response = await generateMap(focusQuestion, apiKey)
+      const laid = autoLayout(
+        response.nodes.map(n => ({ id: n.id, label: n.label, position: { x: 0, y: 0 } }))
+      )
+      const posMap = new Map(laid.map(n => [n.id, n.position]))
+      canvasRef.current?.setMapData({
+        nodes: response.nodes.map(n => ({
+          id: n.id,
+          label: n.label,
+          position: posMap.get(n.id) ?? { x: 0, y: 0 },
+        })),
+        edges: response.edges.map((e, i) => ({
+          id: `e-${i}`,
+          source: e.source,
+          target: e.target,
+          label: e.label,
+        })),
+        focusQuestion,
+      })
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'Map generation failed')
+    } finally {
+      setIsGenerating(false)
+    }
+  }, [focusQuestion, openSettings])
+
+  // A-13, A-14, A-15: Mode 2 — suggest concept nodes only, placed on outer ring
+  const handleSuggestConcepts = useCallback(async (): Promise<void> => {
+    const apiKey = getApiKey()
+    if (!apiKey) {
+      openSettings()
+      return
+    }
+    setIsGenerating(true)
+    setAiError(null)
+    try {
+      const currentData = canvasRef.current?.getMapData()
+      const existingNodes = currentData?.nodes ?? []
+      const existingLabels = existingNodes.map(n => n.label)
+
+      const suggestions = await suggestConcepts(focusQuestion, existingLabels, apiKey)
+
+      // A-14: filter concepts matching existing labels (case-insensitive)
+      const existingLower = new Set(existingLabels.map(l => l.toLowerCase()))
+      const novel = suggestions.filter(s => !existingLower.has(s.label.toLowerCase()))
+
+      if (novel.length === 0) return
+
+      // A-13: distribute new nodes in a ring around the outer canvas area
+      const positions = ringPositions(existingNodes, novel.length)
+
+      // A-15: each node carries its AI-generated description
+      canvasRef.current?.appendConceptNodes(
+        novel.map((s, i) => ({
+          id: `suggest-${crypto.randomUUID()}`,
+          label: s.label,
+          position: positions[i] ?? { x: i * 220, y: 0 },
+          description: s.description,
+        }))
+      )
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'Concept suggestion failed')
+    } finally {
+      setIsGenerating(false)
+    }
+  }, [focusQuestion, openSettings])
 
   return (
     <div
@@ -87,7 +169,19 @@ export function App(): React.JSX.Element {
         overflow: 'hidden',
       }}
     >
-      <FocusQuestionBar value={focusQuestion} onChange={setFocusQuestion} />
+      <FocusQuestionBar
+        value={focusQuestion}
+        onChange={setFocusQuestion}
+        onGenerateMap={(): void => {
+          void handleGenerateMap()
+        }}
+        onSuggestConcepts={(): void => {
+          void handleSuggestConcepts()
+        }}
+        isGenerating={isGenerating}
+        aiError={aiError}
+        onDismissError={dismissAiError}
+      />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
         <Canvas ref={canvasRef} onNodeCountChange={setNodeCount} focusQuestion={focusQuestion} />
         <AppMenu

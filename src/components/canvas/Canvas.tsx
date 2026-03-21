@@ -151,6 +151,7 @@ const DEFAULT_EDGE_OPTIONS = {
 export interface CanvasHandle {
   getMapData: () => MapData
   setMapData: (data: MapData) => void
+  appendConceptNodes: (nodes: ConceptNodeType[]) => void
 }
 
 interface CanvasFlowProps {
@@ -424,6 +425,23 @@ function CanvasFlow({
         setTimeout((): void => {
           fitView({ padding: 0.5, maxZoom: 0.85, duration: 0 })
         }, 50)
+      },
+
+      // A-13: append concept nodes (with descriptions) without replacing existing canvas content
+      appendConceptNodes: (newConceptNodes: ConceptNodeType[]): void => {
+        setNodes(nds => [
+          ...nds,
+          ...newConceptNodes.map(n => ({
+            id: n.id,
+            type: 'concept' as const,
+            position: n.position,
+            data: {
+              label: n.label,
+              conceptType: n.type,
+              description: n.description,
+            },
+          })),
+        ])
       },
     }),
     [setNodes, setEdges, fitView]
