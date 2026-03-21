@@ -56,17 +56,13 @@ export function SummaryPanel({
       aria-label="AI Summary Panel"
       role="complementary"
       style={{
-        position: 'absolute',
-        top: 68,
-        right: 8,
-        bottom: 12,
+        flexShrink: 0,
         width: SUMMARY_PANEL_WIDTH,
+        height: '100%',
         backgroundColor: COLOR_SUMMARY_BG,
-        border: `1px solid ${COLOR_SUMMARY_BORDER}`,
-        borderRadius: 8,
+        borderLeft: `1px solid ${COLOR_SUMMARY_BORDER}`,
         display: 'flex',
         flexDirection: 'column',
-        zIndex: 20,
       }}
     >
       <style>{`

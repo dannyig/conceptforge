@@ -206,22 +206,24 @@ export function App(): React.JSX.Element {
         aiError={aiError}
         onDismissError={dismissAiError}
       />
-      <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
-        <Canvas ref={canvasRef} onNodeCountChange={setNodeCount} focusQuestion={focusQuestion} />
-        <AppMenu
-          canvasRef={canvasRef}
-          hasNodes={nodeCount > 0}
-          onFocusQuestionLoad={setFocusQuestion}
-          onOpenSettings={openSettings}
-          autoloadError={autoloadError}
-        />
-        <SettingsPanel isOpen={isSettingsOpen} onClose={closeSettings} />
-        <MissingKeyBanner
-          isVisible={showMissingKeyBanner}
-          onOpenSettings={handleOpenSettingsFromBanner}
-          onDismiss={dismissBanner}
-        />
-        <HintTicker />
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
+          <Canvas ref={canvasRef} onNodeCountChange={setNodeCount} focusQuestion={focusQuestion} />
+          <AppMenu
+            canvasRef={canvasRef}
+            hasNodes={nodeCount > 0}
+            onFocusQuestionLoad={setFocusQuestion}
+            onOpenSettings={openSettings}
+            autoloadError={autoloadError}
+          />
+          <SettingsPanel isOpen={isSettingsOpen} onClose={closeSettings} />
+          <MissingKeyBanner
+            isVisible={showMissingKeyBanner}
+            onOpenSettings={handleOpenSettingsFromBanner}
+            onDismiss={dismissBanner}
+          />
+          <HintTicker />
+        </div>
         {summaryData !== null && (
           <SummaryPanel
             narrative={summaryData.narrative}
