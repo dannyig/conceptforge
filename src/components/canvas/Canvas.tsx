@@ -14,6 +14,7 @@ import {
   Controls,
   MiniMap,
   addEdge,
+  reconnectEdge,
   useEdgesState,
   useNodesState,
   useReactFlow,
@@ -147,6 +148,7 @@ const EDGE_TYPES: Record<string, React.ComponentType<any>> = {
 const DEFAULT_EDGE_OPTIONS = {
   markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
   style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+  reconnectable: 'target' as const,
 }
 
 export interface CanvasHandle {
@@ -368,6 +370,7 @@ function CanvasFlow({
           data: { label: e.label, labelPosition: e.labelPosition },
           markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
           style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+          reconnectable: 'target' as const,
         }))
         if (data.branchingEdges) {
           for (const be of data.branchingEdges) {
@@ -388,6 +391,7 @@ function CanvasFlow({
               target: hub,
               type: 'branchStem',
               data: { branchingEdgeId: be.id, isStem: true },
+              reconnectable: false,
             })
             for (const targetId of be.targets) {
               newEdges.push({
@@ -398,6 +402,7 @@ function CanvasFlow({
                 data: { branchingEdgeId: be.id, isBranch: true },
                 markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
                 style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+                reconnectable: 'target' as const,
               })
             }
           }
@@ -484,6 +489,7 @@ function CanvasFlow({
           target: hub,
           type: 'branchStem',
           data: { branchingEdgeId: beId, isStem: true },
+          reconnectable: false,
         },
         {
           id: branchEdgeId(beId, edge.target),
@@ -494,6 +500,7 @@ function CanvasFlow({
           data: { branchingEdgeId: beId, isBranch: true },
           markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
           style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+          reconnectable: 'target' as const,
         },
       ])
     },
@@ -526,6 +533,7 @@ function CanvasFlow({
             data: { branchingEdgeId: beId, isBranch: true },
             markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
             style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+            reconnectable: 'target' as const,
           },
         ])
         return
@@ -588,6 +596,7 @@ function CanvasFlow({
             data: { branchingEdgeId: beId, isBranch: true },
             markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
             style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+            reconnectable: 'target' as const,
           },
         ])
         return
@@ -617,11 +626,21 @@ function CanvasFlow({
             data: { label: '' },
             markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
             style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+            reconnectable: 'target' as const,
           },
         ])
       }
     },
     [screenToFlowPosition, setNodes, setEdges]
+  )
+
+  // ---------- C-31: reconnect target endpoint of an edge to a different node handle ----------
+
+  const onReconnect = useCallback(
+    (oldEdge: CanvasFlowEdge, newConnection: Connection): void => {
+      setEdges(eds => reconnectEdge(oldEdge, newConnection, eds))
+    },
+    [setEdges]
   )
 
   // ---------- handleNodesChange: hub deletion removes entire group (C-16) ----------
@@ -696,6 +715,7 @@ function CanvasFlow({
                   data: { label: hubNode.data.label },
                   markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
                   style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+                  reconnectable: 'target' as const,
                 },
               ])
               return
@@ -1033,6 +1053,7 @@ function CanvasFlow({
         onEdgesChange={handleEdgesChange}
         onConnect={onConnect}
         onConnectEnd={onConnectEnd}
+        onReconnect={onReconnect}
         onPaneClick={onPaneClick}
         onPaneContextMenu={onPaneContextMenu}
         onNodeClick={onNodeClick}
