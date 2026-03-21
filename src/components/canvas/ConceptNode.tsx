@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import ReactDOM from 'react-dom'
 import { Handle, Position, useReactFlow, type Node, type NodeProps } from '@xyflow/react'
 import {
   COLOR_NODE_BG,
@@ -50,6 +51,8 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
   const [draft, setDraft] = useState(data.label)
   const [hovered, setHovered] = useState(false)
   const [showTooltip, setShowTooltip] = useState(false)
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null)
+  const dotRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const startEdit = useCallback((): void => {
@@ -192,51 +195,62 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
 
       {/* C-29: green dot indicator — shown only when node has a description */}
       {data.description && (
-        <>
-          <div
-            onMouseEnter={(): void => setShowTooltip(true)}
-            onMouseLeave={(): void => setShowTooltip(false)}
-            style={{
-              position: 'absolute',
-              top: 4,
-              right: 4,
-              width: 5,
-              height: 5,
-              borderRadius: '50%',
-              backgroundColor: COLOR_NODE_INFO_DOT,
-              pointerEvents: 'auto',
-              zIndex: 10,
-            }}
-            aria-label="This node has a description"
-          />
-          {/* C-30: description tooltip — appears above the node on dot hover */}
-          {showTooltip && (
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 'calc(100% + 10px)',
-                right: -4,
-                backgroundColor: COLOR_NODE_BG,
-                border: `1px solid ${COLOR_NODE_BORDER}`,
-                borderRadius: 4,
-                padding: '6px 10px',
-                color: COLOR_NODE_TEXT,
-                fontFamily: FONT_FAMILY,
-                fontSize: FONT_SIZE_NODE_LABEL,
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-                maxWidth: 240,
-                pointerEvents: 'none',
-                zIndex: 9999,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-              }}
-              role="tooltip"
-            >
-              {data.description}
-            </div>
-          )}
-        </>
+        <div
+          ref={dotRef}
+          onMouseEnter={(): void => {
+            const rect = dotRef.current?.getBoundingClientRect()
+            if (rect) {
+              setTooltipPos({ x: rect.right, y: rect.top })
+            }
+            setShowTooltip(true)
+          }}
+          onMouseLeave={(): void => setShowTooltip(false)}
+          style={{
+            position: 'absolute',
+            top: 4,
+            right: 4,
+            width: 5,
+            height: 5,
+            borderRadius: '50%',
+            backgroundColor: COLOR_NODE_INFO_DOT,
+            pointerEvents: 'auto',
+            zIndex: 10,
+          }}
+          aria-label="This node has a description"
+        />
       )}
+
+      {/* C-30: description tooltip — portalled to document.body so it clears all canvas stacking contexts */}
+      {showTooltip &&
+        tooltipPos !== null &&
+        data.description &&
+        ReactDOM.createPortal(
+          <div
+            style={{
+              position: 'fixed',
+              top: tooltipPos.y,
+              left: tooltipPos.x + 8,
+              transform: 'translateY(-100%)',
+              backgroundColor: COLOR_NODE_BG,
+              border: `1px solid ${COLOR_NODE_BORDER}`,
+              borderRadius: 4,
+              padding: '6px 10px',
+              color: COLOR_NODE_TEXT,
+              fontFamily: FONT_FAMILY,
+              fontSize: FONT_SIZE_NODE_LABEL,
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              maxWidth: 260,
+              pointerEvents: 'none',
+              zIndex: 99999,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+            }}
+            role="tooltip"
+          >
+            {data.description}
+          </div>,
+          document.body
+        )}
 
       {/* All handles hidden — pseudo-class input focus styles */}
       <style>{`
