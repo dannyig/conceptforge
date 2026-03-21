@@ -72,6 +72,9 @@ export const TICKER_FONT_SIZE = '13px'
 export const TICKER_FADE_MS = 600 // fade in / fade out duration (ms)
 export const TICKER_READ_MS = 5500 // pause-to-read duration (ms)
 
+// Fit-to-view animation (A-25)
+export const FIT_VIEW_DURATION_MS = 400
+
 // Summary Panel (A-16 → A-22)
 export const COLOR_SUMMARY_BG = 'rgba(13,17,23,0.72)'
 export const COLOR_SUMMARY_BORDER = '#21262d'

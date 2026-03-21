@@ -25,7 +25,7 @@ export async function generateMap(prompt: string, apiKey: string): Promise<Claud
     `Return ONLY valid JSON — no markdown, no explanation:\n` +
     `{\n` +
     `  "nodes": [\n` +
-    `    { "id": "1", "label": "Main Concept" }\n` +
+    `    { "id": "1", "label": "Main Concept", "description": "A brief 1–2 sentence definition of this concept and why it is relevant." }\n` +
     `  ],\n` +
     `  "edges": [\n` +
     `    { "source": "1", "target": "2", "label": "relates to" }\n` +
@@ -39,6 +39,7 @@ export async function generateMap(prompt: string, apiKey: string): Promise<Claud
     `- Generate 6–12 nodes that form a well-connected concept map\n` +
     `- Node IDs must be unique strings ("1", "2", "3", etc.)\n` +
     `- Keep node labels concise (1–4 words)\n` +
+    `- Every node must include a "description" field: 1–2 sentences defining the concept and its relevance to the topic\n` +
     `- Edge labels should be short relationship phrases (1–3 words)\n` +
     `- Every node should have at least one edge connecting it to another node\n` +
     `- narrative: 2–4 sentences explaining the topic and why these specific concepts were selected\n` +
@@ -245,7 +246,11 @@ export function parseClaudeResponse(raw: unknown): ClaudeMapResponse {
       throw new Error(`Node ${i}: "id" must be a non-empty string`)
     if (typeof node.label !== 'string' || !node.label)
       throw new Error(`Node ${i}: "label" must be a non-empty string`)
-    return { id: node.id, label: node.label }
+    return {
+      id: node.id,
+      label: node.label,
+      description: typeof node.description === 'string' ? node.description : undefined,
+    }
   })
 
   const edges = (r.edges as unknown[]).map((e: unknown, i: number) => {

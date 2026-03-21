@@ -101,8 +101,10 @@ export function App(): React.JSX.Element {
     setSummaryData(null)
     try {
       const response = await generateMap(focusQuestion, apiKey)
+      // A-24: pass edges so autoLayout can use hierarchical BFS ordering
       const laid = autoLayout(
-        response.nodes.map(n => ({ id: n.id, label: n.label, position: { x: 0, y: 0 } }))
+        response.nodes.map(n => ({ id: n.id, label: n.label, position: { x: 0, y: 0 } })),
+        response.edges
       )
       const posMap = new Map(laid.map(n => [n.id, n.position]))
       canvasRef.current?.setMapData({
@@ -110,6 +112,7 @@ export function App(): React.JSX.Element {
           id: n.id,
           label: n.label,
           position: posMap.get(n.id) ?? { x: 0, y: 0 },
+          description: n.description, // A-23: pre-populate node description from AI
         })),
         edges: response.edges.map((e, i) => ({
           id: `e-${i}`,
