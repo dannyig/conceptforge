@@ -73,7 +73,7 @@ export const TICKER_FADE_MS = 600 // fade in / fade out duration (ms)
 export const TICKER_READ_MS = 5500 // pause-to-read duration (ms)
 
 // Summary Panel (A-16 → A-22)
-export const COLOR_SUMMARY_BG = 'rgba(13,17,23,0.88)'
+export const COLOR_SUMMARY_BG = 'rgba(13,17,23,0.72)'
 export const COLOR_SUMMARY_BORDER = '#21262d'
 export const COLOR_SUMMARY_LINK = '#f97316'
 export const COLOR_SUMMARY_LINK_HOVER = '#ea6c0a'

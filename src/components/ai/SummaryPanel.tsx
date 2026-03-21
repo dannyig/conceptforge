@@ -9,7 +9,6 @@ import {
   COLOR_SUMMARY_LINK_HOVER,
   COLOR_TEXT_MUTED,
   FONT_FAMILY,
-  FONT_SIZE_BASE,
   FONT_SIZE_SMALL,
   SUMMARY_PANEL_WIDTH,
   TRANSITION_FAST,
@@ -58,16 +57,16 @@ export function SummaryPanel({
       role="complementary"
       style={{
         position: 'absolute',
-        top: 56,
-        right: 0,
-        bottom: 0,
+        top: 68,
+        right: 8,
+        bottom: 12,
         width: SUMMARY_PANEL_WIDTH,
         backgroundColor: COLOR_SUMMARY_BG,
-        borderLeft: `1px solid ${COLOR_SUMMARY_BORDER}`,
+        border: `1px solid ${COLOR_SUMMARY_BORDER}`,
+        borderRadius: 8,
         display: 'flex',
         flexDirection: 'column',
         zIndex: 20,
-        backdropFilter: 'blur(4px)',
       }}
     >
       <style>{`
@@ -89,7 +88,7 @@ export function SummaryPanel({
         <span
           style={{
             fontFamily: FONT_FAMILY,
-            fontSize: FONT_SIZE_SMALL,
+            fontSize: '10px',
             fontWeight: '600',
             color: COLOR_TEXT_MUTED,
             letterSpacing: '0.06em',
@@ -116,7 +115,7 @@ export function SummaryPanel({
           style={{
             margin: 0,
             fontFamily: FONT_FAMILY,
-            fontSize: FONT_SIZE_BASE,
+            fontSize: FONT_SIZE_SMALL,
             lineHeight: '1.6',
             color: COLOR_NODE_TEXT,
           }}
@@ -144,7 +143,7 @@ export function SummaryPanel({
             <span
               style={{
                 fontFamily: FONT_FAMILY,
-                fontSize: FONT_SIZE_SMALL,
+                fontSize: '10px',
                 fontWeight: '600',
                 color: COLOR_TEXT_MUTED,
                 letterSpacing: '0.06em',
@@ -170,7 +169,7 @@ export function SummaryPanel({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="cf-summary-link"
-                    style={{ fontFamily: FONT_FAMILY, fontSize: FONT_SIZE_SMALL }}
+                    style={{ fontFamily: FONT_FAMILY, fontSize: '10px' }}
                   >
                     ↗ {res.label}
                   </a>
@@ -201,7 +200,7 @@ export function SummaryPanel({
               border: `1px solid ${COLOR_NODE_BORDER}`,
               borderRadius: 4,
               fontFamily: FONT_FAMILY,
-              fontSize: FONT_SIZE_SMALL,
+              fontSize: '10px',
               color: COLOR_TEXT_MUTED,
               cursor: 'pointer',
               transition: `background-color ${TRANSITION_FAST}`,
