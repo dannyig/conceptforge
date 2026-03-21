@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Canvas, type CanvasHandle } from '@/components/canvas/Canvas'
 import { HintTicker } from '@/components/canvas/HintTicker'
 import { FocusQuestionBar } from '@/components/ai/FocusQuestionBar'
+import { SummaryPanel } from '@/components/ai/SummaryPanel'
 import { MissingKeyBanner } from '@/components/settings/MissingKeyBanner'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
 import { AppMenu } from '@/components/toolbar/AppMenu'
@@ -9,6 +10,7 @@ import { validateMapData } from '@/lib/export'
 import { getApiKey, OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
 import { generateMap, suggestConcepts } from '@/lib/claude'
 import { autoLayout, ringPositions } from '@/lib/graph'
+import type { SummaryResource } from '@/types'
 
 export function App(): React.JSX.Element {
   const canvasRef = useRef<CanvasHandle>(null)
@@ -19,6 +21,10 @@ export function App(): React.JSX.Element {
   const [autoloadError, setAutoloadError] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
+  const [summaryData, setSummaryData] = useState<{
+    narrative: string
+    resources: SummaryResource[]
+  } | null>(null)
 
   // P-04, P-05, P-06 — URL autoload via ?autoload=<base64> query parameter
   // Supports both plain base64-JSON (legacy) and deflate-compressed base64 (P-08)
@@ -76,6 +82,7 @@ export function App(): React.JSX.Element {
   const closeSettings = useCallback((): void => setIsSettingsOpen(false), [])
   const dismissBanner = useCallback((): void => setShowMissingKeyBanner(false), [])
   const dismissAiError = useCallback((): void => setAiError(null), [])
+  const dismissSummary = useCallback((): void => setSummaryData(null), [])
 
   const handleOpenSettingsFromBanner = useCallback((): void => {
     setShowMissingKeyBanner(false)
@@ -91,6 +98,7 @@ export function App(): React.JSX.Element {
     }
     setIsGenerating(true)
     setAiError(null)
+    setSummaryData(null)
     try {
       const response = await generateMap(focusQuestion, apiKey)
       const laid = autoLayout(
@@ -111,6 +119,13 @@ export function App(): React.JSX.Element {
         })),
         focusQuestion,
       })
+      // A-16, A-18: show summary panel once map is rendered
+      if (response.narrative) {
+        setSummaryData({
+          narrative: response.narrative,
+          resources: response.resources ?? [],
+        })
+      }
     } catch (err) {
       setAiError(err instanceof Error ? err.message : 'Map generation failed')
     } finally {
@@ -127,16 +142,17 @@ export function App(): React.JSX.Element {
     }
     setIsGenerating(true)
     setAiError(null)
+    setSummaryData(null)
     try {
       const currentData = canvasRef.current?.getMapData()
       const existingNodes = currentData?.nodes ?? []
       const existingLabels = existingNodes.map(n => n.label)
 
-      const suggestions = await suggestConcepts(focusQuestion, existingLabels, apiKey)
+      const result = await suggestConcepts(focusQuestion, existingLabels, apiKey)
 
       // A-14: filter concepts matching existing labels (case-insensitive)
       const existingLower = new Set(existingLabels.map(l => l.toLowerCase()))
-      const novel = suggestions.filter(s => !existingLower.has(s.label.toLowerCase()))
+      const novel = result.concepts.filter(s => !existingLower.has(s.label.toLowerCase()))
 
       if (novel.length === 0) return
 
@@ -152,6 +168,14 @@ export function App(): React.JSX.Element {
           description: s.description,
         }))
       )
+
+      // A-17, A-18: show summary panel once concepts are placed
+      if (result.narrative) {
+        setSummaryData({
+          narrative: result.narrative,
+          resources: result.resources,
+        })
+      }
     } catch (err) {
       setAiError(err instanceof Error ? err.message : 'Concept suggestion failed')
     } finally {
@@ -198,6 +222,13 @@ export function App(): React.JSX.Element {
           onDismiss={dismissBanner}
         />
         <HintTicker />
+        {summaryData !== null && (
+          <SummaryPanel
+            narrative={summaryData.narrative}
+            resources={summaryData.resources}
+            onDismiss={dismissSummary}
+          />
+        )}
       </div>
     </div>
   )
