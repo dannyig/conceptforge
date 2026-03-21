@@ -51,7 +51,7 @@ export interface SummaryResource {
 }
 
 export interface ClaudeMapResponse {
-  nodes: Array<{ id: string; label: string }>
+  nodes: Array<{ id: string; label: string; description?: string }>
   edges: Array<{ source: string; target: string; label?: string }>
   narrative?: string
   resources?: SummaryResource[]

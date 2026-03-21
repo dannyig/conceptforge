@@ -61,6 +61,7 @@ import {
   FONT_WEIGHT_NODE_LABEL,
   COLOR_TEXT_MUTED,
   COLOR_STATUS_ERROR,
+  FIT_VIEW_DURATION_MS,
 } from '@/lib/theme'
 import { expandNode } from '@/lib/claude'
 import { getApiKey, OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
@@ -421,9 +422,9 @@ function CanvasFlow({
         }
         setNodes(newNodes)
         setEdges(newEdges)
-        // V-08: fit once after map load; setTimeout lets React flush the new nodes first
+        // V-08 / A-25: fit once after map load; setTimeout lets React flush the new nodes first
         setTimeout((): void => {
-          fitView({ padding: 0.5, maxZoom: 0.85, duration: 0 })
+          fitView({ padding: 0.15, maxZoom: 1, duration: FIT_VIEW_DURATION_MS })
         }, 50)
       },
 
@@ -442,6 +443,10 @@ function CanvasFlow({
             },
           })),
         ])
+        // A-25: fit to view after new nodes land
+        setTimeout((): void => {
+          fitView({ padding: 0.15, maxZoom: 1, duration: FIT_VIEW_DURATION_MS })
+        }, 50)
       },
     }),
     [setNodes, setEdges, fitView]
@@ -887,13 +892,17 @@ function CanvasFlow({
 
         setNodes(nds => [...nds, ...newFlowNodes])
         setEdges(eds => [...eds, ...newFlowEdges])
+        // A-25: fit to view after expanded nodes land
+        setTimeout((): void => {
+          fitView({ padding: 0.15, maxZoom: 1, duration: FIT_VIEW_DURATION_MS })
+        }, 50)
       } catch (err) {
         setExpandError(err instanceof Error ? err.message : 'Expansion failed')
       } finally {
         setExpandingNodeId(null)
       }
     },
-    [focusQuestion, setNodes, setEdges]
+    [focusQuestion, setNodes, setEdges, fitView]
   )
 
   const deleteNote = useCallback(
