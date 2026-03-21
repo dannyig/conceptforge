@@ -21,6 +21,7 @@ import {
 export type EdgeData = {
   label?: string
   labelPosition?: { x: number; y: number }
+  isHovered?: boolean // C-32: set by Canvas when cursor is over this edge
 }
 export type ConceptFlowEdge = Edge<EdgeData>
 
@@ -184,7 +185,7 @@ export function ConceptEdge({
               style={{
                 background: COLOR_NODE_BG,
                 borderRadius: 3,
-                color: selected ? COLOR_EDGE_SELECTED : COLOR_NODE_TEXT,
+                color: selected || data?.isHovered ? COLOR_EDGE_SELECTED : COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_EDGE_LABEL,
                 fontWeight: FONT_WEIGHT_NODE_LABEL,
