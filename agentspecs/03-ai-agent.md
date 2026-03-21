@@ -2,7 +2,7 @@
 
 **Agent:** AI Agent
 **Sequence:** 03 — runs after Canvas Agent and Settings Agent both complete
-**Trigger:** Human assigns requirement IDs A-01 → A-22
+**Trigger:** Human assigns requirement IDs A-01 → A-25
 **Branch:** `feature/A-01-map-generation`
 **Depends on:** Canvas Agent (01) and Settings Agent (02) both merged to main
 **Parallel with:** Persistence Agent (04)
@@ -186,7 +186,30 @@ Extend the Mode 1 and Mode 2 API calls to request a narrative and resource links
 
 ---
 
-### Group 5 — UI Verification (Playwright MCP)
+### Group 5 — Node Descriptions, Layout, and Fit-to-View (A-23 → A-25)
+
+- [ ] **A-23 — Mode 1 node descriptions:**
+  - Extend the `generateMap` prompt to instruct Claude to include a `description` field on every node in the response
+  - Update the `ClaudeMapResponse` type and `parseClaudeResponse` to extract `description?: string` from each node
+  - Map `description` onto the `ConceptNode.description` field before passing to the canvas so the node description tooltip (C-29) is pre-populated for every AI-generated node
+  - Mode 2 (`suggestConcepts`) already returns per-concept descriptions — no change required for that path
+
+- [ ] **A-24 — Non-overlapping layout after all AI actions:**
+  - Upgrade `autoLayout` in `src/lib/graph.ts` (or add a new layout helper) to guarantee that no two node bounding boxes overlap after positioning
+  - Apply this layout after Mode 1 map generation and after Mode 2 concept suggestion — both must produce a tidy, non-overlapping result
+  - Node labels must not overlap adjacent node bodies; treat each node as at minimum a 160 × 50 px bounding box when computing clearance
+  - Use a Dagre, ELK, or force-directed approach — whichever produces readable output; document the choice in a brief code comment
+
+- [ ] **A-25 — Automatic fit-to-view after all AI actions:**
+  - After Mode 1 map generation completes and canvas nodes are set, call `reactFlowInstance.fitView({ padding: 0.15, duration: 400 })` so the full map is immediately visible
+  - After Mode 2 concept suggestion appends new nodes, call the same `fitView` so newly placed nodes are not off-screen
+  - The duration must use a named constant from `theme.ts` (e.g. `FIT_VIEW_DURATION_MS = 400`)
+
+**Commit:** `feat(A-23,A-24,A-25): node descriptions in Mode 1, non-overlapping layout, auto fit-to-view`
+
+---
+
+### Group 6 — UI Verification (Playwright MCP)
 
 Before committing Group 3, start the dev server and use Playwright MCP + Chrome to verify:
 
@@ -210,7 +233,7 @@ All Claude API responses must include `narrative` (string) and `resources` (arra
 **Mode 1 — Generate Map:**
 ```json
 {
-  "nodes": [{ "id": "1", "label": "Main Concept" }],
+  "nodes": [{ "id": "1", "label": "Main Concept", "description": "A brief definition of the concept." }],
   "edges": [{ "source": "1", "target": "2", "label": "relates to" }],
   "narrative": "Explanation of the topic and why these concepts were chosen.",
   "resources": [{ "label": "Wikipedia — Topic", "url": "https://en.wikipedia.org/wiki/Topic" }]
@@ -271,4 +294,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*AI Agent Spec v1.4 — March 2026 (added A-16–A-22: AI Summary Panel with typewriter animation, resource links, dismiss, scroll — Group 4)*
+*AI Agent Spec v1.5 — March 2026 (added A-23–A-25: node descriptions in Mode 1, non-overlapping layout, auto fit-to-view — Group 5)*
