@@ -62,6 +62,8 @@
 | C-29 | When a node has a non-empty description, display a small green dot indicator inside the node boundary at the top-right corner, with a small margin from the node's border lines so it does not touch the edges; the dot must be smaller than the current size and must not obstruct the node label; when the description is absent or empty, the dot must not be shown |
 | C-30 | When the user hovers the cursor over a node's green info dot, display a read-only popover showing the description text; the popover disappears automatically when the cursor moves away from the dot |
 | C-31 | Allow the user to reconnect the target end of any edge by dragging it away from its current target node and dropping it onto a different node handle; if dropped on empty canvas or a non-handle area, the edge snaps back to its original target node; this applies to both single edges and to the individual branch arrows of a branching edge (the hub-to-target segments) |
+| C-32 | When the user hovers within the reconnect grab zone near the target endpoint of an edge, that edge's label turns orange to indicate it is the edge that would be grabbed if a reconnect drag is initiated; the label returns to its default colour when the cursor leaves the zone |
+| C-33 | Clicking an edge path or its label selects that edge, making only its target endpoint draggable for reconnection; when the user subsequently hovers near any target endpoint on the canvas, the last selected edge's label turns orange to confirm it is the active edge for reconnection; unselected edges' endpoints are not draggable; clicking elsewhere on the canvas deselects and restores normal behaviour |
 
 ### 4.2 AI — Map Generation
 
@@ -318,3 +320,5 @@
 *Version 3.8 — March 2026 — Added A-23 (Mode 1 node descriptions matching A-15 for Mode 2), A-24 (automatic non-overlapping layout after Mode 1, Mode 2, and Expand), A-25 (automatic fit-to-view after Mode 1, Mode 2, and Expand); updated Section 8 Mode 1 output contract to include `description` field on each node*
 
 *Version 3.9 — March 2026 — Added C-31 (edge target reconnection: drag target endpoint to re-attach to a different node handle; snap-back on empty canvas drop; applies to single edges and branching edge branch arrows)*
+
+*Version 4.0 — March 2026 — Added C-32 (hover-on-endpoint turns edge label orange to preview which edge would be grabbed); added C-33 (click to select an edge makes only its target endpoint draggable for reconnection; selected edge label turns orange on hover near any endpoint)*
