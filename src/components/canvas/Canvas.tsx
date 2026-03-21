@@ -566,6 +566,9 @@ function CanvasFlow({
       const fromNodeId = state.fromHandle?.nodeId
       const fromHandleId = state.fromHandle?.id ?? null
       if (!fromNodeId) return
+      // C-31: target handles have the "-t" suffix; if the drag originated from a
+      // target handle it is a reconnect drag — do not create a new node on empty drop.
+      if (fromHandleId?.endsWith('-t')) return
       const fromNode = nodesRef.current.find(n => n.id === fromNodeId)
       const clientX =
         'clientX' in event ? event.clientX : ((event as TouchEvent).touches[0]?.clientX ?? 0)
