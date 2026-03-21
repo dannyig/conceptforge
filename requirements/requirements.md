@@ -61,6 +61,7 @@
 | C-28 | Add an "Edit Info" action to the node right-click context menu; selecting it opens a popover panel positioned near the node containing a short freeform text input pre-filled with any existing description; clicking outside the popover saves the current text (including empty, which clears the description) |
 | C-29 | When a node has a non-empty description, display a small green dot indicator inside the node boundary at the top-right corner, with a small margin from the node's border lines so it does not touch the edges; the dot must be smaller than the current size and must not obstruct the node label; when the description is absent or empty, the dot must not be shown |
 | C-30 | When the user hovers the cursor over a node's green info dot, display a read-only popover showing the description text; the popover disappears automatically when the cursor moves away from the dot |
+| C-31 | Allow the user to reconnect the target end of any edge by dragging it away from its current target node and dropping it onto a different node handle; if dropped on empty canvas or a non-handle area, the edge snaps back to its original target node; this applies to both single edges and to the individual branch arrows of a branching edge (the hub-to-target segments) |
 
 ### 4.2 AI — Map Generation
 
@@ -315,3 +316,5 @@
 *Version 3.7 — March 2026 — Added A-16 through A-22 (AI Summary Panel: typewriter narrative, resource links, semi-transparent sidebar, dismiss on complete); extended Section 8 AI Output Contract for Mode 1 and Mode 2 to include `narrative` and `resources` fields*
 
 *Version 3.8 — March 2026 — Added A-23 (Mode 1 node descriptions matching A-15 for Mode 2), A-24 (automatic non-overlapping layout after Mode 1, Mode 2, and Expand), A-25 (automatic fit-to-view after Mode 1, Mode 2, and Expand); updated Section 8 Mode 1 output contract to include `description` field on each node*
+
+*Version 3.9 — March 2026 — Added C-31 (edge target reconnection: drag target endpoint to re-attach to a different node handle; snap-back on empty canvas drop; applies to single edges and branching edge branch arrows)*

@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-30, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
+**Trigger:** Human assigns requirement IDs C-01 → C-31, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -471,6 +471,21 @@ interface MapData {
 
 ---
 
+### Group 4k — Edge Target Reconnection (C-31)
+
+- [ ] **C-31 — Reconnectable target endpoint:**
+  - Enable target-end reconnection on `<ReactFlow>` using the `reconnectable` prop (set to `"target"` or equivalent React Flow v12 API) so only the target handle of each edge can be dragged
+  - When the user drags the target endpoint away from its current target node:
+    - If dropped on a valid node handle: update the edge's `target` (and `targetHandle`) in state via `setEdges`
+    - If dropped on empty canvas or a non-handle area: snap back — leave the edge unchanged (React Flow's default `reconnectable` snap-back behaviour handles this; confirm it works)
+  - **Branching edge branch arrows:** apply the same `reconnectable="target"` behaviour to the individual hub→target RF edges that make up each branch arrow; when a branch arrow target is changed, update the corresponding entry in the `BranchingEdge.targets` array in state
+  - Source end is never draggable — do not enable source reconnection
+  - The reconnect interaction must not interfere with edge selection or deletion
+
+**Commit:** `feat(C-31): edge target reconnection with snap-back on empty canvas drop`
+
+---
+
 ### Group 5 — UI Verification (Playwright MCP)
 
 Before committing Group 4, run the web design audit and the Playwright visual check:
@@ -553,4 +568,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Canvas Agent Spec v1.15 — March 2026 (added Group 4j: C-28→C-30 — node descriptions with Edit Info popover, green dot indicator, and hover tooltip)*
+*Canvas Agent Spec v1.16 — March 2026 (added Group 4k: C-31 — edge target reconnection with snap-back)*
