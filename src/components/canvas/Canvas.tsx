@@ -238,12 +238,16 @@ function CanvasFlow({
     setHoveredEdgeId(null)
   }, [])
 
-  // C-32: isHovered → orange label on hover.
-  // C-33: only the selected edge's target endpoint is draggable for reconnection.
-  // Branch stems are never reconnectable regardless of selection.
+  // C-31/C-32/C-33: non-stem edges are always reconnectable at their target endpoint.
+  // Gating reconnectable on edge.selected caused a React Flow timing bug: the reconnect
+  // handle is initialised on mouseenter, so changing reconnectable while the cursor is
+  // already over the edge meant the handle never appeared for that hover session.
+  // The C-32 orange-label hover cue is sufficient to tell the user which edge they are
+  // about to grab; C-33 click-to-select still provides a visual confirmation (label stays
+  // orange) but no longer gates the physical draggability.
   const computedEdges = useMemo((): CanvasFlowEdge[] => {
     return edges.map(edge => {
-      const reconnectable = !edge.data?.isStem && edge.selected ? ('target' as const) : false
+      const reconnectable = !edge.data?.isStem ? ('target' as const) : false
       const isHovered = edge.id === hoveredEdgeId && !edge.data?.isStem
       const reconnectableChanged = edge.reconnectable !== reconnectable
       const hoverChanged = !!edge.data?.isHovered !== isHovered
