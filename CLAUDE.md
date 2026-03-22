@@ -716,10 +716,23 @@ GitHub Actions `deploy.yml` triggers on every push to `main`:
 
 **Agents must not run `flyctl deploy` manually** unless explicitly instructed by the human. Deployment is always triggered by merging to `main`.
 
-### Manual deploy (emergency only)
+### Manual deploy — fallback when GitHub Actions is unavailable
+
+When GitHub Actions is disabled or suspended, use the documented fallback script.
+The script enforces the same gate as CI: must be on `main`, clean working tree,
+pulled from `origin/main`, lint + typecheck + tests all green, then build and deploy.
+
 ```bash
-flyctl deploy --remote-only   # requires FLY_API_TOKEN set in shell environment
+export FLY_API_TOKEN=<your-token>
+./scripts/manual-deploy.sh
 ```
+
+**Rules:**
+- Only run from the `main` branch after a PR has been merged
+- `FLY_API_TOKEN` must be exported in the shell before running
+- The script aborts on any failure — do not bypass or re-run individual steps manually
+- `flyctl` must be installed locally (`brew install flyctl` / `curl -L https://fly.io/install.sh | sh`)
+- Never run `flyctl deploy` directly — always go through `manual-deploy.sh` so the quality gate is enforced
 
 ---
 
