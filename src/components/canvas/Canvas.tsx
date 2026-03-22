@@ -589,9 +589,11 @@ function CanvasFlow({
       const fromNodeId = state.fromHandle?.nodeId
       const fromHandleId = state.fromHandle?.id ?? null
       if (!fromNodeId) return
-      // C-31: target handles have the "-t" suffix; if the drag originated from a
-      // target handle it is a reconnect drag — do not create a new node on empty drop.
-      if (fromHandleId?.endsWith('-t')) return
+      // C-31: suppress new-node creation when a reconnect drag ends on empty canvas.
+      // Primary guard: reconnectInProgressRef is set by onReconnectStart and cleared
+      // by onReconnectEnd — more reliable than inspecting handle IDs.
+      // Secondary guard: target handles end in "-t"; keep as belt-and-suspenders.
+      if (reconnectInProgressRef.current || fromHandleId?.endsWith('-t')) return
       const fromNode = nodesRef.current.find(n => n.id === fromNodeId)
       const clientX =
         'clientX' in event ? event.clientX : ((event as TouchEvent).touches[0]?.clientX ?? 0)
@@ -659,6 +661,19 @@ function CanvasFlow({
   )
 
   // ---------- C-31: reconnect target endpoint of an edge to a different node handle ----------
+
+  // Ref tracks whether a reconnect drag is in progress so onConnectEnd can skip
+  // new-node creation. The "-t" handle-ID guard alone is unreliable because
+  // fromHandle.id can be null during a reconnect drag.
+  const reconnectInProgressRef = useRef(false)
+
+  const onReconnectStart = useCallback((): void => {
+    reconnectInProgressRef.current = true
+  }, [])
+
+  const onReconnectEndCb = useCallback((): void => {
+    reconnectInProgressRef.current = false
+  }, [])
 
   const onReconnect = useCallback(
     (oldEdge: CanvasFlowEdge, newConnection: Connection): void => {
@@ -1077,6 +1092,8 @@ function CanvasFlow({
         onConnect={onConnect}
         onConnectEnd={onConnectEnd}
         onReconnect={onReconnect}
+        onReconnectStart={onReconnectStart}
+        onReconnectEnd={onReconnectEndCb}
         onPaneClick={onPaneClick}
         onPaneContextMenu={onPaneContextMenu}
         onNodeClick={onNodeClick}
