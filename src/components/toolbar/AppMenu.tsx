@@ -26,6 +26,7 @@ const SKILL_DOWNLOAD_URL = 'https://dannyig.github.io/conceptforge/cmap.md'
 interface AppMenuProps {
   canvasRef: React.RefObject<CanvasHandle | null>
   hasNodes: boolean
+  focusQuestion: string
   onFocusQuestionLoad: (q: string) => void
   onOpenSettings: () => void
   autoloadError?: string | null
@@ -130,6 +131,7 @@ const MENU_ITEM_STYLE: React.CSSProperties = {
 export function AppMenu({
   canvasRef,
   hasNodes,
+  focusQuestion,
   onFocusQuestionLoad,
   onOpenSettings,
   autoloadError = null,
@@ -185,8 +187,8 @@ export function AppMenu({
     if (!data) return
     setError(null)
     setMenuOpen(false)
-    saveMapToJson(data)
-  }, [canvasRef])
+    saveMapToJson({ ...data, focusQuestion: focusQuestion || undefined })
+  }, [canvasRef, focusQuestion])
 
   const handleLoad = useCallback(async (): Promise<void> => {
     setError(null)

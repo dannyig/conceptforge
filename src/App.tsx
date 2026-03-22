@@ -214,6 +214,7 @@ export function App(): React.JSX.Element {
         <AppMenu
           canvasRef={canvasRef}
           hasNodes={nodeCount > 0}
+          focusQuestion={focusQuestion}
           onFocusQuestionLoad={setFocusQuestion}
           onOpenSettings={openSettings}
           autoloadError={autoloadError}
