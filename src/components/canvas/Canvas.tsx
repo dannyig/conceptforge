@@ -254,12 +254,18 @@ function CanvasFlow({
       const reconnectable = !edge.data?.isStem ? ('target' as const) : false
       // Suppress hover cue when a click-selection is active (C-33 takes precedence over C-32).
       const isHovered = edge.id === hoveredEdgeId && !edge.data?.isStem && !hasClickSelectedEdge
+      // Selected non-stem edges get a larger orange arrowhead to mark the reconnect endpoint.
+      const markerEnd =
+        edge.selected && !edge.data?.isStem
+          ? { type: MarkerType.ArrowClosed, color: COLOR_EDGE_SELECTED, width: 22, height: 22 }
+          : { type: MarkerType.ArrowClosed, color: COLOR_EDGE }
       const reconnectableChanged = edge.reconnectable !== reconnectable
       const hoverChanged = !!edge.data?.isHovered !== isHovered
       if (!reconnectableChanged && !hoverChanged) return edge
       return {
         ...edge,
         reconnectable,
+        markerEnd,
         data: hoverChanged ? { ...edge.data, isHovered } : edge.data,
       }
     })
@@ -1092,6 +1098,7 @@ function CanvasFlow({
         .react-flow__node-note.react-flow__node-dragging { z-index: -1 !important; }
         .react-flow__selection { border: 1px solid rgba(249,115,22,0.5) !important; background: rgba(249,115,22,0.05) !important; box-shadow: none !important; }
         .react-flow__edge:not(.selected) .react-flow__edgeupdater-target { pointer-events: none !important; opacity: 0 !important; }
+        .react-flow__edge.selected .react-flow__edgeupdater-target { transform-box: fill-box; transform-origin: center; transform: scale(2.5); }
         @media (prefers-reduced-motion: reduce) { .react-flow__edge-path, .react-flow__controls-button { transition: none; } }
       `}</style>
       <ReactFlow
