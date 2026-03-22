@@ -242,13 +242,18 @@ function CanvasFlow({
   // Gating reconnectable on edge.selected caused a React Flow timing bug: the reconnect
   // handle is initialised on mouseenter, so changing reconnectable while the cursor is
   // already over the edge meant the handle never appeared for that hover session.
-  // The C-32 orange-label hover cue is sufficient to tell the user which edge they are
-  // about to grab; C-33 click-to-select still provides a visual confirmation (label stays
-  // orange) but no longer gates the physical draggability.
+  // C-32 hover cue (orange label) is suppressed while a C-33 click-selection is active —
+  // when an edge is click-selected it is the sole orange edge until click-on-canvas or Escape.
+  const hasClickSelectedEdge = useMemo(
+    () => edges.some(e => e.selected === true && !e.data?.isStem),
+    [edges]
+  )
+
   const computedEdges = useMemo((): CanvasFlowEdge[] => {
     return edges.map(edge => {
       const reconnectable = !edge.data?.isStem ? ('target' as const) : false
-      const isHovered = edge.id === hoveredEdgeId && !edge.data?.isStem
+      // Suppress hover cue when a click-selection is active (C-33 takes precedence over C-32).
+      const isHovered = edge.id === hoveredEdgeId && !edge.data?.isStem && !hasClickSelectedEdge
       const reconnectableChanged = edge.reconnectable !== reconnectable
       const hoverChanged = !!edge.data?.isHovered !== isHovered
       if (!reconnectableChanged && !hoverChanged) return edge
@@ -258,7 +263,7 @@ function CanvasFlow({
         data: hoverChanged ? { ...edge.data, isHovered } : edge.data,
       }
     })
-  }, [edges, hoveredEdgeId])
+  }, [edges, hasClickSelectedEdge, hoveredEdgeId])
 
   const [contextMenu, setContextMenu] = useState<{
     edgeId: string
