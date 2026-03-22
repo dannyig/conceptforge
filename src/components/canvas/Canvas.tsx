@@ -1091,6 +1091,7 @@ function CanvasFlow({
         .react-flow__node-note { z-index: -1 !important; }
         .react-flow__node-note.react-flow__node-dragging { z-index: -1 !important; }
         .react-flow__selection { border: 1px solid rgba(249,115,22,0.5) !important; background: rgba(249,115,22,0.05) !important; box-shadow: none !important; }
+        .react-flow__edge:not(.selected) .react-flow__edgeupdater-target { pointer-events: none !important; opacity: 0 !important; }
         @media (prefers-reduced-motion: reduce) { .react-flow__edge-path, .react-flow__controls-button { transition: none; } }
       `}</style>
       <ReactFlow
