@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.claude
+.playwright-mcp
+tests/e2e/screenshots
+*.png
+*.tsbuildinfo
+*.js.map
