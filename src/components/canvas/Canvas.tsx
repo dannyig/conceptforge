@@ -146,8 +146,21 @@ const EDGE_TYPES: Record<string, React.ComponentType<any>> = {
   branchStem: BranchStemEdge,
   branchArrow: BranchArrowEdge,
 }
+const MARKER_END_DEFAULT = {
+  type: MarkerType.ArrowClosed,
+  color: COLOR_EDGE,
+  width: 14,
+  height: 14,
+}
+const MARKER_END_SELECTED = {
+  type: MarkerType.ArrowClosed,
+  color: COLOR_EDGE_SELECTED,
+  width: 22,
+  height: 22,
+}
+
 const DEFAULT_EDGE_OPTIONS = {
-  markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
+  markerEnd: MARKER_END_DEFAULT,
   style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
 }
 
@@ -256,9 +269,7 @@ function CanvasFlow({
       const isHovered = edge.id === hoveredEdgeId && !edge.data?.isStem && !hasClickSelectedEdge
       // Selected non-stem edges get a larger orange arrowhead to mark the reconnect endpoint.
       const markerEnd =
-        edge.selected && !edge.data?.isStem
-          ? { type: MarkerType.ArrowClosed, color: COLOR_EDGE_SELECTED, width: 22, height: 22 }
-          : { type: MarkerType.ArrowClosed, color: COLOR_EDGE }
+        edge.selected && !edge.data?.isStem ? MARKER_END_SELECTED : MARKER_END_DEFAULT
       const reconnectableChanged = edge.reconnectable !== reconnectable
       const hoverChanged = !!edge.data?.isHovered !== isHovered
       if (!reconnectableChanged && !hoverChanged) return edge
@@ -412,7 +423,7 @@ function CanvasFlow({
           sourceHandle: e.sourceHandle ?? null,
           targetHandle: e.targetHandle ?? null,
           data: { label: e.label, labelPosition: e.labelPosition },
-          markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
+          markerEnd: MARKER_END_DEFAULT,
           style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
         }))
         if (data.branchingEdges) {
@@ -442,7 +453,7 @@ function CanvasFlow({
                 target: targetId,
                 type: 'branchArrow',
                 data: { branchingEdgeId: be.id, isBranch: true },
-                markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
+                markerEnd: MARKER_END_DEFAULT,
                 style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
               })
             }
@@ -538,7 +549,7 @@ function CanvasFlow({
           targetHandle: edge.targetHandle ?? null,
           type: 'branchArrow',
           data: { branchingEdgeId: beId, isBranch: true },
-          markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
+          markerEnd: MARKER_END_DEFAULT,
           style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
         },
       ])
@@ -570,7 +581,7 @@ function CanvasFlow({
             target: targetId,
             type: 'branchArrow',
             data: { branchingEdgeId: beId, isBranch: true },
-            markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
+            markerEnd: MARKER_END_DEFAULT,
             style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
           },
         ])
@@ -582,7 +593,7 @@ function CanvasFlow({
             ...params,
             id: crypto.randomUUID(),
             data: { label: '' },
-            markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
+            markerEnd: MARKER_END_DEFAULT,
             style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
           },
           eds
@@ -637,7 +648,7 @@ function CanvasFlow({
             target: newNodeId,
             type: 'branchArrow',
             data: { branchingEdgeId: beId, isBranch: true },
-            markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
+            markerEnd: MARKER_END_DEFAULT,
             style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
           },
         ])
@@ -666,7 +677,7 @@ function CanvasFlow({
             targetHandle: pickTargetHandle(fromNode.position, position),
             type: 'default',
             data: { label: '' },
-            markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
+            markerEnd: MARKER_END_DEFAULT,
             style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
           },
         ])
@@ -692,7 +703,12 @@ function CanvasFlow({
 
   const onReconnect = useCallback(
     (oldEdge: CanvasFlowEdge, newConnection: Connection): void => {
-      setEdges(eds => reconnectEdge(oldEdge, newConnection, eds))
+      setEdges(eds => {
+        // Use the stored edge (not the computed one) so injected markerEnd/isHovered don't
+        // get baked into persistent state when reconnectEdge spreads oldEdge as its base.
+        const storedEdge = eds.find(e => e.id === oldEdge.id) ?? oldEdge
+        return reconnectEdge(storedEdge, newConnection, eds)
+      })
     },
     [setEdges]
   )
@@ -767,7 +783,7 @@ function CanvasFlow({
                   targetHandle: lastBranch.targetHandle ?? null,
                   type: 'default',
                   data: { label: hubNode.data.label },
-                  markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
+                  markerEnd: MARKER_END_DEFAULT,
                   style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
                 },
               ])
@@ -959,7 +975,7 @@ function CanvasFlow({
             target: idMap.get(e.target) ?? e.target,
             type: 'concept' as const,
             data: { label: e.label },
-            markerEnd: { type: MarkerType.ArrowClosed, color: COLOR_EDGE },
+            markerEnd: MARKER_END_DEFAULT,
             style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
           }))
 
