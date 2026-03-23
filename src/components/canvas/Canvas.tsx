@@ -133,6 +133,22 @@ function branchEdgeId(beId: string, targetId: string): string {
   return `branch-${beId}-${targetId}`
 }
 
+// Arrow direction vectors — used for keyboard navigation (C-34–C-38)
+const ARROW_DIRS: Record<string, { dx: number; dy: number }> = {
+  ArrowRight: { dx: 1, dy: 0 },
+  ArrowLeft: { dx: -1, dy: 0 },
+  ArrowDown: { dx: 0, dy: 1 },
+  ArrowUp: { dx: 0, dy: -1 },
+}
+// Degrees to which a neighbour can deviate from the arrow axis and still be "in that direction"
+const NUDGE_STEP = 2 // px — matches React Flow's default keyboard nudge (C-38)
+
+// Smallest angular distance between two angles (result in [0, π])
+function angleDiff(a: number, b: number): number {
+  const d = Math.abs(a - b) % (Math.PI * 2)
+  return d > Math.PI ? Math.PI * 2 - d : d
+}
+
 // Stable type-map references — must live outside the component to avoid RF re-renders
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const NODE_TYPES: Record<string, React.ComponentType<any>> = {
@@ -1084,6 +1100,141 @@ function CanvasFlow({
     }
   }, [selectionMode])
 
+  // C-34–C-38: keyboard navigation and nudge
+  useEffect((): (() => void) => {
+    const handler = (e: KeyboardEvent): void => {
+      const dir = ARROW_DIRS[e.key]
+      if (!dir) return
+      // Do not intercept arrow keys while an input/textarea is focused (node label editing etc.)
+      const tag = (e.target as HTMLElement).tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return
+
+      const ns = nodesRef.current
+      const es = edgesRef.current
+      const conceptNodes = ns.filter(n => n.type === 'concept')
+      const regularEdges = es.filter(ed => !ed.data?.isStem && !ed.data?.isBranch)
+      const selectedConcepts = conceptNodes.filter(n => n.selected)
+      const selectedEdges = regularEdges.filter(ed => ed.selected)
+      const totalSelected = ns.filter(n => n.selected).length + es.filter(ed => ed.selected).length
+
+      // C-38: Ctrl/Cmd+Arrow → nudge selected concept node(s)
+      if (e.ctrlKey || e.metaKey) {
+        if (selectedConcepts.length === 0) return
+        e.preventDefault()
+        setNodes(prev =>
+          prev.map(n =>
+            n.selected && n.type === 'concept'
+              ? {
+                  ...n,
+                  position: {
+                    x: n.position.x + dir.dx * NUDGE_STEP,
+                    y: n.position.y + dir.dy * NUDGE_STEP,
+                  },
+                }
+              : n
+          )
+        )
+        return
+      }
+
+      // Alt+Arrow: C-37 — navigate to the outgoing edge whose target is most in that direction
+      if (e.altKey) {
+        e.preventDefault()
+        const dirAngle = Math.atan2(dir.dy, dir.dx)
+
+        // Determine pivot node for edge search
+        let pivotId: string | null = null
+        if (selectedConcepts.length === 1 && selectedEdges.length === 0) {
+          pivotId = selectedConcepts[0].id
+        } else if (selectedEdges.length === 1 && selectedConcepts.length === 0) {
+          pivotId = selectedEdges[0].source
+        } else {
+          // Nothing or multi selected: pick random edge
+          if (regularEdges.length === 0) return
+          const pick = regularEdges[Math.floor(Math.random() * regularEdges.length)]
+          setEdges(prev => prev.map(ed => ({ ...ed, selected: ed.id === pick.id })))
+          setNodes(prev => prev.map(n => ({ ...n, selected: false })))
+          return
+        }
+
+        const pivotNode = conceptNodes.find(n => n.id === pivotId)
+        if (!pivotNode) return
+        const outgoing = regularEdges.filter(ed => ed.source === pivotId)
+        if (outgoing.length === 0) return
+
+        let bestEdgeId: string | null = null
+        let bestAngle = Infinity
+        for (const edge of outgoing) {
+          const tgt = conceptNodes.find(n => n.id === edge.target)
+          if (!tgt) continue
+          const dx = tgt.position.x - pivotNode.position.x
+          const dy = tgt.position.y - pivotNode.position.y
+          if (dx * dir.dx + dy * dir.dy <= 0) continue // wrong half-plane
+          const diff = angleDiff(Math.atan2(dy, dx), dirAngle)
+          if (diff < bestAngle) {
+            bestAngle = diff
+            bestEdgeId = edge.id
+          }
+        }
+        if (bestEdgeId !== null) {
+          setEdges(prev => prev.map(ed => ({ ...ed, selected: ed.id === bestEdgeId })))
+          setNodes(prev => prev.map(n => ({ ...n, selected: false })))
+        }
+        return
+      }
+
+      // Plain arrow keys: C-34, C-35, C-36
+
+      // C-36: single edge selected → no-op
+      if (selectedEdges.length === 1 && selectedConcepts.length === 0) {
+        e.preventDefault()
+        return
+      }
+
+      // C-35: nothing selected or multi-selection → pick random concept node
+      if (totalSelected === 0 || totalSelected > 1) {
+        e.preventDefault()
+        if (conceptNodes.length === 0) return
+        const pick = conceptNodes[Math.floor(Math.random() * conceptNodes.length)]
+        setNodes(prev => prev.map(n => ({ ...n, selected: n.id === pick.id })))
+        setEdges(prev => prev.map(ed => ({ ...ed, selected: false })))
+        return
+      }
+
+      // C-34: single concept node selected → navigate to graph neighbour
+      if (selectedConcepts.length === 1) {
+        e.preventDefault()
+        const current = selectedConcepts[0]
+        const outgoing = regularEdges.filter(ed => ed.source === current.id)
+        if (outgoing.length === 0) return
+        const dirAngle = Math.atan2(dir.dy, dir.dx)
+
+        let bestNodeId: string | null = null
+        let bestAngle = Infinity
+        for (const edge of outgoing) {
+          const tgt = conceptNodes.find(n => n.id === edge.target)
+          if (!tgt) continue
+          const dx = tgt.position.x - current.position.x
+          const dy = tgt.position.y - current.position.y
+          if (dx * dir.dx + dy * dir.dy <= 0) continue // wrong half-plane
+          const diff = angleDiff(Math.atan2(dy, dx), dirAngle)
+          if (diff < bestAngle) {
+            bestAngle = diff
+            bestNodeId = tgt.id
+          }
+        }
+        if (bestNodeId !== null) {
+          setNodes(prev => prev.map(n => ({ ...n, selected: n.id === bestNodeId })))
+          setEdges(prev => prev.map(ed => ({ ...ed, selected: false })))
+        }
+      }
+    }
+
+    // Use capture phase so our handler fires before React Flow's internal listeners
+    window.addEventListener('keydown', handler, true)
+    return (): void => window.removeEventListener('keydown', handler, true)
+  }, [setNodes, setEdges])
+
   // Use nodes (render-cycle state) so colour/size highlights update live while menu is open
   const noteMenuNode = noteMenu ? nodes.find(n => n.id === noteMenu.nodeId) : null
   const noteMenuCurrentColor = noteMenuNode?.data.backgroundColor ?? NOTE_DEFAULT_COLOR
@@ -1140,6 +1291,7 @@ function CanvasFlow({
         defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
         defaultViewport={{ x: 0, y: 0, zoom: 0.85 }}
         deleteKeyCode={['Backspace', 'Delete']}
+        disableKeyboardA11y={true}
         selectionOnDrag={selectionMode && !spacePanning}
         panOnDrag={!selectionMode || spacePanning}
         style={{ backgroundColor: COLOR_CANVAS_BG }}
