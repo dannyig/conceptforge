@@ -1137,7 +1137,7 @@ function CanvasFlow({
         return
       }
 
-      // Alt+Arrow: C-37 — navigate to the outgoing edge whose target is most in that direction
+      // Alt+Arrow: C-37 — navigate to the connected edge whose other endpoint is most in that direction
       if (e.altKey) {
         e.preventDefault()
         const dirAngle = Math.atan2(dir.dy, dir.dx)
@@ -1159,16 +1159,19 @@ function CanvasFlow({
 
         const pivotNode = conceptNodes.find(n => n.id === pivotId)
         if (!pivotNode) return
-        const outgoing = regularEdges.filter(ed => ed.source === pivotId)
-        if (outgoing.length === 0) return
+        // All edges touching this node — outgoing (source) or incoming (target)
+        const connected = regularEdges.filter(ed => ed.source === pivotId || ed.target === pivotId)
+        if (connected.length === 0) return
 
         let bestEdgeId: string | null = null
         let bestAngle = Infinity
-        for (const edge of outgoing) {
-          const tgt = conceptNodes.find(n => n.id === edge.target)
-          if (!tgt) continue
-          const dx = tgt.position.x - pivotNode.position.x
-          const dy = tgt.position.y - pivotNode.position.y
+        for (const edge of connected) {
+          // Other endpoint: if we are the source, it's the target; if we are the target, it's the source
+          const otherId = edge.source === pivotId ? edge.target : edge.source
+          const other = conceptNodes.find(n => n.id === otherId)
+          if (!other) continue
+          const dx = other.position.x - pivotNode.position.x
+          const dy = other.position.y - pivotNode.position.y
           if (dx * dir.dx + dy * dir.dy <= 0) continue // wrong half-plane
           const diff = angleDiff(Math.atan2(dy, dx), dirAngle)
           if (diff < bestAngle) {
@@ -1201,18 +1204,22 @@ function CanvasFlow({
         return
       }
 
-      // C-34: single concept node selected → navigate to graph neighbour
+      // C-34: single concept node selected → navigate to graph neighbour (any connected edge)
       if (selectedConcepts.length === 1) {
         e.preventDefault()
         const current = selectedConcepts[0]
-        const outgoing = regularEdges.filter(ed => ed.source === current.id)
-        if (outgoing.length === 0) return
+        // Include both outgoing (source) and incoming (target) edges
+        const connected = regularEdges.filter(
+          ed => ed.source === current.id || ed.target === current.id
+        )
+        if (connected.length === 0) return
         const dirAngle = Math.atan2(dir.dy, dir.dx)
 
         let bestNodeId: string | null = null
         let bestAngle = Infinity
-        for (const edge of outgoing) {
-          const tgt = conceptNodes.find(n => n.id === edge.target)
+        for (const edge of connected) {
+          const otherId = edge.source === current.id ? edge.target : edge.source
+          const tgt = conceptNodes.find(n => n.id === otherId)
           if (!tgt) continue
           const dx = tgt.position.x - current.position.x
           const dy = tgt.position.y - current.position.y
