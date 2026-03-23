@@ -1103,11 +1103,66 @@ function CanvasFlow({
   // C-34–C-38: keyboard navigation and nudge
   useEffect((): (() => void) => {
     const handler = (e: KeyboardEvent): void => {
-      const dir = ARROW_DIRS[e.key]
-      if (!dir) return
-      // Do not intercept arrow keys while an input/textarea is focused (node label editing etc.)
+      // Do not intercept while an input/textarea is focused (node label editing etc.)
       const tag = (e.target as HTMLElement).tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA') return
+
+      // Tab / Shift+Tab: cycle all concept nodes in spatial order (reading order: y then x)
+      // Alt+Tab / Alt+Shift+Tab: cycle all edges in spatial order (by midpoint y then x)
+      if (e.key === 'Tab') {
+        const ns = nodesRef.current
+        const es = edgesRef.current
+        const conceptNodes = ns.filter(n => n.type === 'concept')
+        const regularEdges = es.filter(ed => !ed.data?.isStem && !ed.data?.isBranch)
+
+        if (e.altKey) {
+          // Alt+Tab / Alt+Shift+Tab: cycle edges
+          if (regularEdges.length === 0) return
+          e.preventDefault()
+          const sorted = [...regularEdges].sort((a, b) => {
+            const aNode = conceptNodes.find(n => n.id === a.source)
+            const bNode = conceptNodes.find(n => n.id === b.source)
+            const ay = aNode?.position.y ?? 0
+            const by = bNode?.position.y ?? 0
+            if (Math.abs(ay - by) > 20) return ay - by
+            return (aNode?.position.x ?? 0) - (bNode?.position.x ?? 0)
+          })
+          const currentIdx = sorted.findIndex(ed => ed.selected)
+          const step = e.shiftKey ? -1 : 1
+          const nextIdx =
+            currentIdx === -1
+              ? step === 1
+                ? 0
+                : sorted.length - 1
+              : (currentIdx + step + sorted.length) % sorted.length
+          const nextId = sorted[nextIdx].id
+          setEdges(prev => prev.map(ed => ({ ...ed, selected: ed.id === nextId })))
+          setNodes(prev => prev.map(n => ({ ...n, selected: false })))
+        } else {
+          // Tab / Shift+Tab: cycle concept nodes
+          if (conceptNodes.length === 0) return
+          e.preventDefault()
+          const sorted = [...conceptNodes].sort((a, b) => {
+            if (Math.abs(a.position.y - b.position.y) > 20) return a.position.y - b.position.y
+            return a.position.x - b.position.x
+          })
+          const currentIdx = sorted.findIndex(n => n.selected)
+          const step = e.shiftKey ? -1 : 1
+          const nextIdx =
+            currentIdx === -1
+              ? step === 1
+                ? 0
+                : sorted.length - 1
+              : (currentIdx + step + sorted.length) % sorted.length
+          const nextId = sorted[nextIdx].id
+          setNodes(prev => prev.map(n => ({ ...n, selected: n.id === nextId })))
+          setEdges(prev => prev.map(ed => ({ ...ed, selected: false })))
+        }
+        return
+      }
+
+      const dir = ARROW_DIRS[e.key]
+      if (!dir) return
 
       const ns = nodesRef.current
       const es = edgesRef.current
