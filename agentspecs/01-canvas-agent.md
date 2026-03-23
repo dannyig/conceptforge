@@ -516,8 +516,8 @@ interface MapData {
 
 - [ ] **C-34 — Arrow keys navigate node-to-node:**
   - In `Canvas.tsx`, attach a `keydown` listener (or use React Flow's `onKeyDown` prop) that intercepts plain arrow keys when exactly one node is selected
-  - For each arrow direction, find all nodes reachable from the selected node via a direct edge (graph neighbours only — not spatial proximity)
-  - Among neighbours in that direction, select the one with the smallest angular deviation from the arrow's axis (e.g. for Right: `Math.atan2(dy, dx)` closest to 0°); ties broken by shortest distance
+  - For each arrow direction, find all nodes connected to the selected node via any direct edge — both outgoing (selected node is source) and incoming (selected node is target); do not use spatial proximity
+  - Among connected neighbours in that direction, select the one with the smallest angular deviation from the arrow's axis (e.g. for Right: `Math.atan2(dy, dx)` closest to 0°); ties broken by shortest distance
   - Call `setNodes` to deselect the current node and select the neighbour
   - If no neighbour exists in that direction, do nothing
 
@@ -529,8 +529,8 @@ interface MapData {
   - When exactly one edge is selected and a plain arrow key is pressed (no modifier), consume the event (`event.preventDefault()`) and do nothing further
 
 - [ ] **C-37 — Alt+Arrow navigates to edges:**
-  - When Alt+Arrow is pressed and a single node is selected, identify all outgoing edges from that node; select the edge whose target node is most directly in the arrow's direction (smallest angular deviation); deselect the node and select the edge via `setEdges`
-  - When Alt+Arrow is pressed and a single edge is selected, treat the edge's source node as the pivot; apply the same directional selection logic across all outgoing edges from that source node; select the winning edge
+  - When Alt+Arrow is pressed and a single node is selected, identify all edges connected to that node (both incoming and outgoing); select the edge whose other endpoint (source if incoming, target if outgoing) is most directly in the arrow's direction (smallest angular deviation); deselect the node and select the edge via `setEdges`
+  - When Alt+Arrow is pressed and a single edge is selected, treat the edge's source node as the pivot; apply the same directional selection logic across all edges connected to that source node (incoming and outgoing); select the winning edge
   - If no edge exists in that direction, do nothing
   - If nothing is selected, select a random edge and stop (no navigation on that keypress)
 
