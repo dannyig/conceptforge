@@ -208,7 +208,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v4.0 &nbsp;·&nbsp; March 2026</span>
+    <span class="version-badge">v4.1 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -282,7 +282,12 @@
         <tr><td class="req-id">C-30</td><td>When the user hovers the cursor over a node's green info dot, display a read-only popover showing the description text; the popover disappears automatically when the cursor moves away from the dot &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">C-31</td><td>Allow the user to reconnect the target end of any edge by dragging it away from its current target node and dropping it onto a different node handle; if dropped on empty canvas or a non-handle area, the edge snaps back to its original target node; this applies to both single edges and to the individual branch arrows of a branching edge (the hub-to-target segments) &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">C-32</td><td>When the user hovers within the reconnect grab zone near the target endpoint of an edge, that edge's label turns orange to indicate it is the edge that would be grabbed if a reconnect drag is initiated; the label returns to its default colour when the cursor leaves the zone &nbsp;<span class="badge badge-core">NEW</span></td></tr>
-        <tr><td class="req-id">C-33</td><td>Clicking an edge path or its label selects that edge, making only its target endpoint draggable for reconnection; when the user subsequently hovers near any target endpoint on the canvas, the last selected edge's label turns orange to confirm it is the active edge for reconnection; unselected edges' endpoints are not draggable; clicking elsewhere on the canvas deselects and restores normal behaviour &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">C-33</td><td>Clicking an edge path or its label selects that edge, making only its target endpoint draggable for reconnection; when the user subsequently hovers near any target endpoint on the canvas, the last selected edge's label turns orange to confirm it is the active edge for reconnection; unselected edges' endpoints are not draggable; clicking elsewhere on the canvas deselects and restores normal behaviour</td></tr>
+        <tr><td class="req-id">C-34</td><td>When a single node is selected and an arrow key is pressed without any modifier, select the connected neighbour node whose position is most directly in that direction (smallest angular deviation from the arrow's axis); if the selected node has no connected neighbour in that direction, do nothing &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">C-35</td><td>When nothing is selected and an arrow key is pressed (with or without Alt modifier), first select a random node on the canvas and take no further navigation action for that keypress; when multiple items are selected and an arrow key is pressed without modifiers, cancel the current selection and select a random node &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">C-36</td><td>When a single edge is selected and an arrow key is pressed without any modifier, do nothing &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">C-37</td><td>When Alt+Arrow is pressed and a single node is selected, select the outgoing edge from that node whose target is most directly in the arrow's direction; when Alt+Arrow is pressed and a single edge is selected, select the outgoing edge from that edge's source node whose target is most directly in the arrow's direction; if no matching edge exists in that direction, do nothing; if nothing is selected, first select a random edge &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">C-38</td><td>Remap keyboard nudge: Ctrl+Arrow moves the currently selected node or edge by the canvas default nudge increment; plain arrow keys no longer move canvas items &nbsp;<span class="badge badge-core">NEW</span></td></tr>
       </tbody>
     </table>
 
@@ -554,7 +559,7 @@
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v4.0 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v4.1 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>
