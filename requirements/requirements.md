@@ -64,6 +64,11 @@
 | C-31 | Allow the user to reconnect the target end of any edge by dragging it away from its current target node and dropping it onto a different node handle; if dropped on empty canvas or a non-handle area, the edge snaps back to its original target node; this applies to both single edges and to the individual branch arrows of a branching edge (the hub-to-target segments) |
 | C-32 | When the user hovers within the reconnect grab zone near the target endpoint of an edge, that edge's label turns orange to indicate it is the edge that would be grabbed if a reconnect drag is initiated; the label returns to its default colour when the cursor leaves the zone |
 | C-33 | Clicking an edge path or its label selects that edge, making only its target endpoint draggable for reconnection; when the user subsequently hovers near any target endpoint on the canvas, the last selected edge's label turns orange to confirm it is the active edge for reconnection; unselected edges' endpoints are not draggable; clicking elsewhere on the canvas deselects and restores normal behaviour |
+| C-34 | When a single node is selected and an arrow key is pressed without any modifier, select the connected neighbour node whose position is most directly in that direction (smallest angular deviation from the arrow's axis); if the selected node has no connected neighbour in that direction, do nothing |
+| C-35 | When nothing is selected and an arrow key is pressed (with or without Alt modifier), first select a random node on the canvas and take no further navigation action for that keypress; when multiple items are selected and an arrow key is pressed without modifiers, cancel the current selection and select a random node |
+| C-36 | When a single edge is selected and an arrow key is pressed without any modifier, do nothing |
+| C-37 | When Alt+Arrow is pressed and a single node is selected, select the outgoing edge from that node whose target is most directly in the arrow's direction; when Alt+Arrow is pressed and a single edge is selected, select the outgoing edge from that edge's source node whose target is most directly in the arrow's direction; if no matching edge exists in that direction, do nothing; if nothing is selected, first select a random edge |
+| C-38 | Remap keyboard nudge: Ctrl+Arrow moves the currently selected node or edge by the canvas default nudge increment; plain arrow keys no longer move canvas items |
 
 ### 4.2 AI — Map Generation
 
@@ -322,3 +327,5 @@
 *Version 3.9 — March 2026 — Added C-31 (edge target reconnection: drag target endpoint to re-attach to a different node handle; snap-back on empty canvas drop; applies to single edges and branching edge branch arrows)*
 
 *Version 4.0 — March 2026 — Added C-32 (hover-on-endpoint turns edge label orange to preview which edge would be grabbed); added C-33 (click to select an edge makes only its target endpoint draggable for reconnection; selected edge label turns orange on hover near any endpoint)*
+
+*Version 4.1 — March 2026 — Added C-34 through C-38 (keyboard navigation: arrow keys navigate node-to-node by graph topology; Alt+Arrow navigates to edges; Ctrl+Arrow moves items; remaps existing plain-arrow nudge to Ctrl+Arrow)*

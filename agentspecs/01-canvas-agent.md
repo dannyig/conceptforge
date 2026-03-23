@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-33, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
+**Trigger:** Human assigns requirement IDs C-01 → C-38, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -502,6 +502,39 @@ interface MapData {
   - In `ConceptEdge.tsx` and `BranchArrowEdge.tsx`, read the `selected` prop and pass `reconnectable={selected ? 'target' : false}` on the edge or control it via `setEdges` in Canvas state
 
 **Commit:** `feat(C-32,C-33): edge reconnect disambiguation — hover highlight and selection-gated draggability`
+
+---
+
+### Group 4m — Keyboard Navigation (C-34 → C-38)
+
+> **Key remapping note:** C-38 changes existing React Flow default behaviour — plain arrow keys currently nudge selected nodes. This must be explicitly disabled before the new navigation bindings are wired up.
+
+- [ ] **C-38 — Remap nudge to Ctrl+Arrow:**
+  - Disable React Flow's built-in arrow-key nudge by setting `disableKeyboardA11y={false}` and overriding via a `keydown` handler, or by using React Flow's `nodesDraggable` / `elementsSelectable` options alongside a custom `onKeyDown` on the canvas wrapper
+  - Implement Ctrl+Arrow to move the selected node or edge by the React Flow default nudge step (typically 2px); use `event.ctrlKey` (or `event.metaKey` for Mac parity) to gate this branch
+  - Ensure Delete/Backspace for deletion is unaffected
+
+- [ ] **C-34 — Arrow keys navigate node-to-node:**
+  - In `Canvas.tsx`, attach a `keydown` listener (or use React Flow's `onKeyDown` prop) that intercepts plain arrow keys when exactly one node is selected
+  - For each arrow direction, find all nodes reachable from the selected node via a direct edge (graph neighbours only — not spatial proximity)
+  - Among neighbours in that direction, select the one with the smallest angular deviation from the arrow's axis (e.g. for Right: `Math.atan2(dy, dx)` closest to 0°); ties broken by shortest distance
+  - Call `setNodes` to deselect the current node and select the neighbour
+  - If no neighbour exists in that direction, do nothing
+
+- [ ] **C-35 — No/multi selection initial pick:**
+  - When no items are selected and any arrow key is pressed (plain or Alt+Arrow), select a random node (`Math.random()` index into the nodes array) and stop — do not navigate on that keypress
+  - When multiple items are currently selected and a plain arrow key is pressed, clear the selection via `setNodes` and select a random node (same random-pick behaviour)
+
+- [ ] **C-36 — Edge selected + plain arrow = no-op:**
+  - When exactly one edge is selected and a plain arrow key is pressed (no modifier), consume the event (`event.preventDefault()`) and do nothing further
+
+- [ ] **C-37 — Alt+Arrow navigates to edges:**
+  - When Alt+Arrow is pressed and a single node is selected, identify all outgoing edges from that node; select the edge whose target node is most directly in the arrow's direction (smallest angular deviation); deselect the node and select the edge via `setEdges`
+  - When Alt+Arrow is pressed and a single edge is selected, treat the edge's source node as the pivot; apply the same directional selection logic across all outgoing edges from that source node; select the winning edge
+  - If no edge exists in that direction, do nothing
+  - If nothing is selected, select a random edge and stop (no navigation on that keypress)
+
+**Commit:** `feat(C-34–C-38): keyboard navigation — arrow keys navigate nodes, Alt+Arrow edges, Ctrl+Arrow moves`
 
 ---
 
