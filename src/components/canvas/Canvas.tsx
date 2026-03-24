@@ -1356,6 +1356,7 @@ function CanvasFlow({
         defaultViewport={{ x: 0, y: 0, zoom: 0.85 }}
         deleteKeyCode={['Backspace', 'Delete']}
         disableKeyboardA11y={true}
+        proOptions={{ hideAttribution: true }}
         selectionOnDrag={selectionMode && !spacePanning}
         panOnDrag={!selectionMode || spacePanning}
         style={{ backgroundColor: COLOR_CANVAS_BG }}

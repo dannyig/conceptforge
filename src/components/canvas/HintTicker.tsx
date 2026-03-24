@@ -203,18 +203,7 @@ function AiAssistIndicator({
         zIndex: 11,
       }}
     >
-      <span
-        aria-hidden="true"
-        style={{
-          width: 5,
-          height: 5,
-          borderRadius: '50%',
-          backgroundColor: enabled ? COLOR_NODE_SELECTED : COLOR_TICKER_TEXT,
-          flexShrink: 0,
-          transition: `background-color ${TRANSITION_FAST}`,
-        }}
-      />
-      AI
+      {`AI Assist ${enabled ? 'ON' : 'OFF'}`}
     </div>
   )
 }
