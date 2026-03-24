@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-38, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
+**Trigger:** Human assigns requirement IDs C-01 → C-39, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -536,6 +536,22 @@ interface MapData {
   - If nothing is selected, select a random edge and stop (no navigation on that keypress)
 
 **Commit:** `feat(C-34–C-38): keyboard navigation — arrow keys navigate nodes, Alt+Arrow edges, Ctrl+Arrow moves`
+
+---
+
+### Group 4n — Handle and Viewport Fixes (C-18 update, C-39)
+
+- [ ] **C-18 — Remove handle source restriction:**
+  - In `Canvas.tsx`, remove the `occupiedSides` logic that prevents a handle with incoming edges from being used as an edge source
+  - Remove the `occupiedSides` field from `CanvasNodeData` and from the `enrichedNodes` memo that computes it
+  - In `ConceptNode.tsx`, remove any code that reads `occupiedSides` to disable source handles; all four handles must always be draggable as an edge source
+
+- [ ] **C-39 — No viewport zoom on label edit:**
+  - In `Canvas.tsx` (or wherever inline edit mode is entered), ensure that entering edit mode on a node does not call `fitView`, `zoomIn`, `zoomTo`, or any React Flow method that changes the viewport
+  - If React Flow's double-click handler is triggering a zoom, suppress it: call `event.preventDefault()` or `event.stopPropagation()` on the `onNodeDoubleClick` handler before entering edit mode
+  - Verify that the viewport zoom level and position are identical before and after entering and exiting edit mode
+
+**Commit:** `feat(C-18,C-39): handles usable as source and target simultaneously; no viewport zoom on label edit`
 
 ---
 

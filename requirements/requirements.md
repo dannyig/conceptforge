@@ -48,7 +48,7 @@
 | C-15 | Allow target nodes of a branching edge to be freely positioned anywhere on the canvas; branch arrows must update dynamically to follow the current node positions |
 | C-16 | Deleting the edge segment between the source node and the label hub, or selecting and deleting the label hub itself, removes the entire branching edge (all branch arrows) while leaving all target nodes on the canvas; deleting an individual branch arrow (between the label hub and a target node) removes only that branch |
 | C-17 | Allow the user to reposition a branching edge label hub by dragging it; branch arrows must update dynamically to reflect the new label position |
-| C-18 | Each node exposes four handles — one per side (top, right, bottom, left) — all visually hidden (opacity 0) at all times. Any handle with no incoming edge may be used to start an outgoing edge. Any handle may receive one or more incoming edges. A handle that has at least one incoming edge attached to it is not available as a source. |
+| C-18 | Each node exposes four handles — one per side (top, right, bottom, left) — all visually hidden (opacity 0) at all times. Any handle may be used to start an outgoing edge regardless of how many incoming edges it already has. Any handle may receive one or more incoming edges. |
 | C-19 | When the user drags an edge from any node handle and releases it on an empty area of the canvas, automatically create a new node at the drop position, connect it to the source node, and immediately place the new node in inline edit mode with a blank label — identical behaviour to double-clicking empty canvas to create a node |
 | C-20 | When a single (non-branching) edge has a label, render the label as a draggable waypoint; the user may drag it freely to any position on the canvas to reposition it |
 | C-21 | When a single edge label has been repositioned from its default midpoint, render the edge as two straight directed segments — source node → label (no arrowhead) and label → target node (with arrowhead) — both segments updating dynamically as the source node, target node, or label waypoint position changes |
@@ -69,6 +69,7 @@
 | C-36 | When a single edge is selected and an arrow key is pressed without any modifier, do nothing |
 | C-37 | When Alt+Arrow is pressed and a single node is selected, select the edge connected to that node (incoming or outgoing) whose other endpoint is most directly in the arrow's direction; when Alt+Arrow is pressed and a single edge is selected, use that edge's source node as the pivot and select the edge connected to it (incoming or outgoing) whose other endpoint is most directly in the arrow's direction; if no matching edge exists in that direction, do nothing; if nothing is selected, first select a random edge |
 | C-38 | Remap keyboard nudge: Ctrl+Arrow moves the currently selected node or edge by the canvas default nudge increment; plain arrow keys no longer move canvas items |
+| C-39 | When the user enters or exits inline label edit mode on a concept node (via double-click, Enter, or F2), the canvas viewport must not zoom or scroll; the current position and zoom level must remain unchanged throughout the edit interaction |
 
 ### 4.2 AI — Map Generation
 
@@ -344,3 +345,5 @@
 *Version 4.3 — March 2026 — Added K-05 through K-08 (AI Assist toggle: off by default, auto-enables on key save, auto-disables on key removal, persisted to localStorage, dims and disables AI controls when off)*
 
 *Version 4.4 — March 2026 — Added A-26 through A-30 (AI Node Chat: Chat item in node context menu, chat panel replacing summary panel, concept and focus question context, scrollable message history)*
+
+*Version 4.5 — March 2026 — Updated C-18: handles may now be used as both edge source and edge target simultaneously (removed restriction that a handle with incoming edges cannot be a source); Added C-39: viewport must not zoom or scroll when entering or exiting inline label edit mode*
