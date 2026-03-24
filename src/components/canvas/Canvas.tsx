@@ -1328,6 +1328,7 @@ function CanvasFlow({
         edgeTypes={EDGE_TYPES}
         defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
         defaultViewport={{ x: 0, y: 0, zoom: 0.85 }}
+        zoomOnDoubleClick={false}
         deleteKeyCode={['Backspace', 'Delete']}
         disableKeyboardA11y={true}
         proOptions={{ hideAttribution: true }}

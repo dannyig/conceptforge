@@ -140,7 +140,11 @@ export function ConceptEdge({
       <EdgeLabelRenderer>
         <div
           className="nodrag nopan"
-          onDoubleClick={startEdit}
+          onDoubleClick={(e: React.MouseEvent): void => {
+            // C-39: prevent React Flow pane zoom on edge label double-click
+            e.stopPropagation()
+            startEdit()
+          }}
           onMouseDown={label && !editing ? onLabelMouseDown : undefined}
           style={{
             position: 'absolute',
