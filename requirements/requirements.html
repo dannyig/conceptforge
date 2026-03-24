@@ -208,7 +208,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v4.2 &nbsp;·&nbsp; March 2026</span>
+    <span class="version-badge">v4.3 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -331,6 +331,10 @@
         <tr><td class="req-id">K-02</td><td>Store the API key in localStorage only — never transmitted to any server</td></tr>
         <tr><td class="req-id">K-03</td><td>Prompt the user to enter their key if an AI action is triggered without one</td></tr>
         <tr><td class="req-id">K-04</td><td>Allow the user to clear/update their stored API key</td></tr>
+        <tr><td class="req-id">K-05</td><td>Display an "AI Assist" toggle switch in the Settings panel, positioned below the API key input field; the toggle defaults to off on first use &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">K-06</td><td>Automatically enable the AI Assist toggle when the user saves an API key; automatically disable it when the API key is removed or cleared &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">K-07</td><td>Persist the AI Assist toggle state to <code>localStorage</code>; on page load, if no API key is stored, the toggle is always off regardless of the persisted value &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">K-08</td><td>When AI Assist is off, dim all AI-triggered controls and make them non-interactive (reduced opacity, pointer events disabled); affected controls: Generate Map button, Suggest Concepts button, and the Expand action in the node right-click context menu &nbsp;<span class="badge badge-core">NEW</span></td></tr>
       </tbody>
     </table>
 
@@ -559,7 +563,7 @@
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v4.2 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v4.3 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>

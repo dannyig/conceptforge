@@ -106,6 +106,10 @@
 | K-02 | Store the API key in localStorage only — never transmitted to any server |
 | K-03 | Prompt the user to enter their key if an AI action is triggered without one |
 | K-04 | Allow the user to clear/update their stored API key |
+| K-05 | Display an "AI Assist" toggle switch in the Settings panel, positioned below the API key input field; the toggle defaults to off on first use |
+| K-06 | Automatically enable the AI Assist toggle when the user saves an API key; automatically disable it when the API key is removed or cleared |
+| K-07 | Persist the AI Assist toggle state to `localStorage`; on page load, if no API key is stored, the toggle is always off regardless of the persisted value |
+| K-08 | When AI Assist is off, dim all AI-triggered controls and make them non-interactive (reduced opacity, pointer events disabled); affected controls: Generate Map button, Suggest Concepts button, and the Expand action in the node right-click context menu |
 
 ### 4.5 Persistence — Export & Import
 
@@ -331,3 +335,5 @@
 *Version 4.1 — March 2026 — Added C-34 through C-38 (keyboard navigation: arrow keys navigate node-to-node by graph topology; Alt+Arrow navigates to edges; Ctrl+Arrow moves items; remaps existing plain-arrow nudge to Ctrl+Arrow)*
 
 *Version 4.2 — March 2026 — Refined C-34 and C-37: navigation now considers all connected edges (incoming and outgoing), not outgoing-only*
+
+*Version 4.3 — March 2026 — Added K-05 through K-08 (AI Assist toggle: off by default, auto-enables on key save, auto-disables on key removal, persisted to localStorage, dims and disables AI controls when off)*
