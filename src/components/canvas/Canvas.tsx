@@ -190,6 +190,7 @@ interface CanvasFlowProps {
   ref?: React.Ref<CanvasHandle>
   onNodeCountChange?: (count: number) => void
   focusQuestion?: string
+  aiAssistEnabled?: boolean
 }
 
 // Fan-position new nodes in an arc below/around the source node (A-07)
@@ -212,6 +213,7 @@ function CanvasFlow({
   ref,
   onNodeCountChange,
   focusQuestion = '',
+  aiAssistEnabled = true,
 }: CanvasFlowProps): React.JSX.Element {
   const { screenToFlowPosition, fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasFlowNode>([])
@@ -1467,7 +1469,7 @@ function CanvasFlow({
           >
             <button
               role="menuitem"
-              disabled={expandingNodeId !== null}
+              disabled={expandingNodeId !== null || !aiAssistEnabled}
               onClick={(): void => {
                 const nodeId = nodeMenu.nodeId
                 setNodeMenu(null)
@@ -1483,12 +1485,13 @@ function CanvasFlow({
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_NODE_LABEL,
                 textAlign: 'left',
-                cursor: expandingNodeId !== null ? 'not-allowed' : 'pointer',
-                opacity: expandingNodeId !== null ? 0.4 : 1,
-                transition: `background ${TRANSITION_FAST}`,
+                cursor: expandingNodeId !== null || !aiAssistEnabled ? 'not-allowed' : 'pointer',
+                opacity: !aiAssistEnabled ? 0.35 : expandingNodeId !== null ? 0.4 : 1,
+                pointerEvents: !aiAssistEnabled ? 'none' : 'auto',
+                transition: `background ${TRANSITION_FAST}, opacity ${TRANSITION_FAST}`,
               }}
               onMouseEnter={(e): void => {
-                if (expandingNodeId === null)
+                if (expandingNodeId === null && aiAssistEnabled)
                   (e.currentTarget as HTMLButtonElement).style.background = '#21262d'
               }}
               onMouseLeave={(e): void => {
@@ -1987,12 +1990,23 @@ interface CanvasProps {
   ref?: React.Ref<CanvasHandle>
   onNodeCountChange?: (count: number) => void
   focusQuestion?: string
+  aiAssistEnabled?: boolean
 }
 
-export function Canvas({ ref, onNodeCountChange, focusQuestion }: CanvasProps): React.JSX.Element {
+export function Canvas({
+  ref,
+  onNodeCountChange,
+  focusQuestion,
+  aiAssistEnabled = true,
+}: CanvasProps): React.JSX.Element {
   return (
     <ReactFlowProvider>
-      <CanvasFlow ref={ref} onNodeCountChange={onNodeCountChange} focusQuestion={focusQuestion} />
+      <CanvasFlow
+        ref={ref}
+        onNodeCountChange={onNodeCountChange}
+        focusQuestion={focusQuestion}
+        aiAssistEnabled={aiAssistEnabled}
+      />
     </ReactFlowProvider>
   )
 }
