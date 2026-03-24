@@ -436,6 +436,7 @@ Include the `package.json` change in your final commit on the feature branch. Th
 - PRs require CI green — no manual overrides
 - Squash or merge commit — no rebase merges (keep history readable)
 - Delete branch after merge
+- **Agents must never run `gh pr merge` or any equivalent merge command.** After pushing the branch and opening the PR with `gh pr create`, the agent's job is complete. The human reviews and merges the PR. This applies to all agents including the Requirements Agent and Improvement Agent.
 
 ---
 
@@ -504,10 +505,12 @@ Also references the devmethod/devmethod.md for the full delivery sequence and MV
    **8a. Branch check:** run `git branch --show-current` — output must NOT be `main`. If it is, switch to the feature branch and re-stage before continuing.
    **8b. Align with main:** run `git fetch origin main && git merge origin/main --no-edit`. Resolve any conflicts. Re-run `pnpm lint && pnpm typecheck && pnpm test`. The branch must be zero commits behind `origin/main` before committing and raising a PR.
 9. Agent commits with a Conventional Commit referencing the requirement ID
-10. CI pipeline runs automatically on push — lint, typecheck, unit tests, E2E
-11. On CI green, merge to `main` triggers auto-deploy to fly.io via `deploy.yml`
-12. Human reviews deployed app at `https://conceptforge.fly.dev`
-13. Human triggers `/improve` or QA Agent to process feedback and write full test coverage
+10. Agent pushes branch and opens PR with `gh pr create` — **agent stops here**
+11. Human reviews the PR and merges it — agents must never run `gh pr merge`
+12. CI pipeline runs automatically on push — lint, typecheck, unit tests, E2E
+13. On CI green, merge to `main` triggers auto-deploy to fly.io via `deploy.yml`
+14. Human reviews deployed app at `https://conceptforge.fly.dev`
+15. Human triggers `/improve` or QA Agent to process feedback and write full test coverage
 
 Full delivery sequence and MVP agent ordering: `devmethod/devmethod.md`.
 
