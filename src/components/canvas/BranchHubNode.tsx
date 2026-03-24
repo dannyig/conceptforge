@@ -12,9 +12,26 @@ import {
   TRANSITION_FAST,
 } from '@/lib/theme'
 
-// BranchHubNode renders the shared relationship label hub for a branching edge (C-11).
-// The hub is a draggable React Flow node — React Flow handles position/drag natively (C-17).
-// Target handle (top) receives the stem edge; source handle (bottom) sends branch arrows (C-12).
+// C-11: all handles distributed around the full hub boundary.
+// Source handles (outgoing branch arrows) are hidden by default and revealed on hover (C-12).
+// Target handles (incoming stem) are always hidden — stems are connected programmatically.
+const HUB_HANDLE_SIZE = 8
+const HUB_FLUSH = HUB_HANDLE_SIZE / 2
+
+const HUB_SIDES = [
+  { position: Position.Top, id: 'hub-top', flushStyle: { top: HUB_FLUSH } },
+  { position: Position.Right, id: 'hub-right', flushStyle: { right: HUB_FLUSH } },
+  { position: Position.Bottom, id: 'hub-bottom', flushStyle: { bottom: HUB_FLUSH } },
+  { position: Position.Left, id: 'hub-left', flushStyle: { left: HUB_FLUSH } },
+] as const
+
+const HUB_HANDLE_BASE: React.CSSProperties = {
+  width: HUB_HANDLE_SIZE,
+  height: HUB_HANDLE_SIZE,
+}
+
+// BranchHubNode renders the shared relationship label hub for a branching edge (C-11, C-12, C-17).
+// The hub is a draggable React Flow node — React Flow handles position/drag natively.
 export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React.JSX.Element {
   const data = rawData as { label: string; branchingEdgeId: string }
   const { setNodes, setEdges } = useReactFlow()
@@ -60,32 +77,40 @@ export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React
     [confirmEdit, cancelEdit]
   )
 
-  const HANDLE_STYLE: React.CSSProperties = {
-    background: COLOR_HANDLE,
-    border: `1px solid ${COLOR_HANDLE}`,
-    width: 10,
-    height: 10,
-    transition: `background ${TRANSITION_FAST}`,
-  }
-
   return (
     <>
-      {/* Stem connects here — hidden per C-11.
-          React Flow Position.Top uses handleBCR.top (not center) as the edge endpoint.
-          With transform:translate(-50%,-50%) the handle visual-top = CSS top − height/2.
-          Setting top=5 makes visual-top=0 → handle.y=0 → edge terminates at box border. */}
-      <Handle
-        type="target"
-        position={Position.Top}
-        style={{ ...HANDLE_STYLE, opacity: 0, pointerEvents: 'none', top: 5 }}
-      />
+      {/* C-11: four handle pairs per side — target handles always hidden (stem is programmatic),
+          source handles hidden by default and revealed on hub hover (C-12). */}
+      {HUB_SIDES.map(({ position, id: side, flushStyle }) => (
+        <React.Fragment key={side}>
+          <Handle
+            id={`${side}-t`}
+            type="target"
+            position={position}
+            style={{ ...HUB_HANDLE_BASE, ...flushStyle, opacity: 0, pointerEvents: 'none' }}
+          />
+          <Handle
+            id={`${side}-s`}
+            type="source"
+            position={position}
+            className="hub-source-handle"
+            style={{
+              ...HUB_HANDLE_BASE,
+              ...flushStyle,
+              background: COLOR_HANDLE,
+              border: `1px solid ${COLOR_HANDLE}`,
+            }}
+            aria-label={`Drag to add a branch target (${side.replace('hub-', '')})`}
+          />
+        </React.Fragment>
+      ))}
 
       <div
         onDoubleClick={startEdit}
         style={{
           background: COLOR_NODE_BG,
           borderRadius: 3,
-          padding: '1px 6px 10px',
+          padding: '2px 6px',
           fontFamily: FONT_FAMILY,
           fontSize: FONT_SIZE_EDGE_LABEL,
           fontWeight: FONT_WEIGHT_NODE_LABEL,
@@ -125,22 +150,16 @@ export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React
         )}
       </div>
 
-      {/* Branch arrows connect from here — grey at rest, highlights on hover */}
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        style={HANDLE_STYLE}
-        aria-label="Drag to add a branch target"
-      />
       <style>{`
-        .react-flow__node-branchHub .react-flow__handle:hover {
-          background-color: ${COLOR_HANDLE_HOVER} !important;
-        }
-        .react-flow__node-branchHub input:focus-visible {
-          outline: 1px solid ${COLOR_EDGE_SELECTED}; outline-offset: 2px; border-radius: 2px;
-        }
+        /* Target handles: always hidden (stems connect programmatically) */
+        .react-flow__node-branchHub .react-flow__handle-target { opacity: 0 !important; pointer-events: none !important; }
+        /* Source handles: hidden by default, revealed when hub is hovered (C-12) */
+        .react-flow__node-branchHub .hub-source-handle { opacity: 0; transition: opacity ${TRANSITION_FAST}, background-color ${TRANSITION_FAST}; }
+        .react-flow__node-branchHub:hover .hub-source-handle { opacity: 1 !important; }
+        .react-flow__node-branchHub .hub-source-handle:hover { background-color: ${COLOR_HANDLE_HOVER} !important; }
+        .react-flow__node-branchHub input:focus-visible { outline: 1px solid ${COLOR_EDGE_SELECTED}; outline-offset: 2px; border-radius: 2px; }
         @media (prefers-reduced-motion: reduce) {
-          .react-flow__node-branchHub .react-flow__handle { transition: none !important; }
+          .react-flow__node-branchHub .hub-source-handle { transition: none !important; }
         }
       `}</style>
     </>
