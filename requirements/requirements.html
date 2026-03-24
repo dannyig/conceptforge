@@ -208,7 +208,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v4.5 &nbsp;·&nbsp; March 2026</span>
+    <span class="version-badge">v4.6 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -260,13 +260,13 @@
         <tr><td class="req-id">C-08</td><td>Display edge label captions on the canvas at all times for all edges that have a label (AI-generated and manually drawn)</td></tr>
         <tr><td class="req-id">C-09</td><td>Allow users to set or edit an edge label caption by double-clicking the edge, using the same inline edit interaction as node label editing</td></tr>
         <tr><td class="req-id">C-10</td><td>Allow the user to convert an existing labelled single edge into a branching edge via a right-click context action on the edge label ("Branch") &nbsp;<span class="badge badge-core">NEW</span></td></tr>
-        <tr><td class="req-id">C-11</td><td>Render a branching edge as a single line from the source node terminating at a shared label hub, with individual directional arrows fanning out from the bottom of the label hub to each target node; the hub's top handle (receiving the stem) must be visually hidden; the hub's bottom handle (outgoing to targets) must render in the default grey handle colour at rest and only highlight on hover — it must not remain orange after a connection is made &nbsp;<span class="badge badge-core">UPDATED</span></td></tr>
-        <tr><td class="req-id">C-12</td><td>Allow the user to add an adjacent target to a branching edge by dragging from the label hub to an existing node on the canvas, or to an empty canvas area to create and connect a new node &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">C-11</td><td>Render a branching edge as a single line from the source node terminating at a shared label hub, with individual directional arrows from the label hub to each target node. The hub exposes handles distributed around its full boundary — all visually hidden at all times (opacity 0). The stem edge attaches to the hub side nearest the source node; each branch arrow attaches to the hub side nearest its target node. Both attachment points update dynamically as the source node, hub, or target node positions change. &nbsp;<span class="badge badge-core">UPDATED</span></td></tr>
+        <tr><td class="req-id">C-12</td><td>Allow the user to add an adjacent target to a branching edge by hovering near the label hub boundary until a connection handle becomes visible, then dragging from that handle to an existing node on the canvas or to an empty canvas area to create and connect a new node. &nbsp;<span class="badge badge-core">UPDATED</span></td></tr>
         <tr><td class="req-id">C-13</td><td>Store branching edges in the JSON map data as a distinct structure: one source node ID, one label string, and an ordered list of target node IDs &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">C-14</td><td>When all but one target is removed from a branching edge, automatically convert it back to a plain single edge &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">C-15</td><td>Allow target nodes of a branching edge to be freely positioned anywhere on the canvas; branch arrows must update dynamically to follow the current node positions &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">C-16</td><td>Deleting the edge segment between the source node and the label hub, or selecting and deleting the label hub itself, removes the entire branching edge (all branch arrows) while leaving all target nodes on the canvas; deleting an individual branch arrow (between the label hub and a target node) removes only that branch &nbsp;<span class="badge badge-core">NEW</span></td></tr>
-        <tr><td class="req-id">C-17</td><td>Allow the user to reposition a branching edge label hub by dragging it; branch arrows must update dynamically to reflect the new label position &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">C-17</td><td>Allow the user to reposition a branching edge label hub by dragging it; the stem edge and all branch arrows must update dynamically to reflect the new hub position, each re-attaching to the hub side nearest their respective source or target node. &nbsp;<span class="badge badge-core">UPDATED</span></td></tr>
         <tr><td class="req-id">C-18</td><td>Each node exposes four handles — one per side (top, right, bottom, left) — all visually hidden (opacity 0) at all times. Any handle may be used to start an outgoing edge regardless of how many incoming edges it already has. Any handle may receive one or more incoming edges. &nbsp;<span class="badge badge-core">UPDATED</span></td></tr>
         <tr><td class="req-id">C-19</td><td>When the user drags an edge from any node handle and releases it on an empty area of the canvas, automatically create a new node at the drop position, connect it to the source node, and immediately place the new node in inline edit mode with a blank label — identical behaviour to double-clicking empty canvas to create a node &nbsp;<span class="badge badge-core">UPDATED</span></td></tr>
         <tr><td class="req-id">C-20</td><td>When a single (non-branching) edge has a label, render the label as a draggable waypoint; the user may drag it freely to any position on the canvas to reposition it &nbsp;<span class="badge badge-core">NEW</span></td></tr>
@@ -569,7 +569,7 @@
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v4.5 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v4.6 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>
