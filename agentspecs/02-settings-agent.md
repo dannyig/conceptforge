@@ -2,7 +2,7 @@
 
 **Agent:** Settings Agent
 **Sequence:** 02 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs K-01 → K-04
+**Trigger:** Human assigns requirement IDs K-01 → K-08
 **Branch:** `feature/K-01-api-key-settings`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Canvas Agent (01)
@@ -100,9 +100,32 @@ Complete all items below in order. Commit after each group.
 
 ---
 
-### Group 4 — UI Verification (Playwright MCP)
+### Group 4 — AI Assist Toggle (K-05, K-06, K-07, K-08)
 
-Before committing Group 3, start the dev server and use Playwright MCP + Chrome to verify:
+- [ ] Add an "AI Assist" toggle switch to `SettingsPanel.tsx`, below the API key input field (K-05)
+  - Default state: off on first use (no localStorage entry present)
+  - Labelled clearly: "AI Assist"
+- [ ] Persist the toggle state to `localStorage` under `conceptforge:ai-assist` (K-07)
+  - On page load: if no API key is stored, force toggle to off regardless of persisted value
+- [ ] Auto-enable the toggle when the user saves an API key; auto-disable when the key is cleared (K-06)
+  - Wire this logic into the existing `setApiKey` / `clearApiKey` calls in `apiKey.ts`
+- [ ] Expose the AI Assist state via `useApiKey.ts` (or a new `useAiAssist.ts` hook):
+  ```typescript
+  aiAssistEnabled: boolean
+  ```
+- [ ] When `aiAssistEnabled` is false, apply to AI-triggered controls (K-08):
+  - Generate Map button: `opacity: 0.35`, `pointerEvents: 'none'`
+  - Suggest Concepts button: `opacity: 0.35`, `pointerEvents: 'none'`
+  - Expand node context menu item: `opacity: 0.35`, `pointerEvents: 'none'`
+  - The focus question bar input and all canvas interactions remain fully active
+
+**Commit:** `feat(K-05,K-06,K-07,K-08): AI Assist toggle in settings with key-linked automation and control dimming`
+
+---
+
+### Group 5 — UI Verification (Playwright MCP)
+
+Before committing Group 4, start the dev server and use Playwright MCP + Chrome to verify:
 
 - [ ] Settings trigger button is visible and clickable
 - [ ] Settings panel opens on trigger click and closes on Save/Cancel
@@ -110,6 +133,12 @@ Before committing Group 3, start the dev server and use Playwright MCP + Chrome 
 - [ ] Clicking Clear — panel returns to `No key stored` state
 - [ ] Key value is never visible in plain text in the DOM or browser console
 - [ ] Opening the app with a key already stored — settings shows `Key saved` immediately
+- [ ] AI Assist toggle is visible in Settings panel below the API key field
+- [ ] Toggle is off by default when no key is stored; cannot be switched on without a key
+- [ ] Saving a key automatically switches the toggle on; clearing the key switches it off
+- [ ] When toggle is off: Generate Map, Suggest Concepts, and Expand are visually dimmed and unclickable
+- [ ] When toggle is on: all three controls are fully interactive
+- [ ] Toggle state persists across page reloads (when key is present)
 - [ ] No errors in browser console
 
 Log any visual or interaction issues found as `/feedback` entries before committing.
@@ -167,4 +196,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Settings Agent Spec v1.1 — March 2026 (wired web-design-guidelines and vercel-react-best-practices skills)*
+*Settings Agent Spec v1.2 — March 2026 (added Group 4: AI Assist toggle K-05–K-08)*
