@@ -1,10 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
+  AI_ASSIST_CHANGED_EVENT,
+  API_KEY_CHANGED_EVENT,
   clearApiKey,
+  getAiAssist,
   getApiKey,
   isValidApiKeyFormat,
+  setAiAssist,
   setApiKey,
-  API_KEY_CHANGED_EVENT,
 } from '@/lib/apiKey'
 import {
   COLOR_BUTTON_GHOST_HOVER_BG,
@@ -15,6 +18,7 @@ import {
   COLOR_INPUT_BORDER,
   COLOR_INPUT_FOCUS_BORDER,
   COLOR_NODE_BORDER,
+  COLOR_NODE_SELECTED,
   COLOR_NODE_TEXT,
   COLOR_PANEL_BG,
   COLOR_PANEL_OVERLAY,
@@ -41,14 +45,22 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
   const [draft, setDraft] = useState('')
   const [status, setStatus] = useState<KeyStatus>(() => (getApiKey() ? 'saved' : 'empty'))
   const [errorMsg, setErrorMsg] = useState('')
+  const [aiAssist, setAiAssistLocal] = useState<boolean>(() => getAiAssist())
   const inputRef = useRef<HTMLInputElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
 
   // Sync status when key changes externally (e.g. cleared from another hook)
   useEffect((): (() => void) => {
-    const sync = (): void => setStatus(getApiKey() ? 'saved' : 'empty')
-    window.addEventListener(API_KEY_CHANGED_EVENT, sync)
-    return (): void => window.removeEventListener(API_KEY_CHANGED_EVENT, sync)
+    const syncKey = (): void => setStatus(getApiKey() ? 'saved' : 'empty')
+    const syncAssist = (): void => setAiAssistLocal(getAiAssist())
+    window.addEventListener(API_KEY_CHANGED_EVENT, syncKey)
+    window.addEventListener(API_KEY_CHANGED_EVENT, syncAssist)
+    window.addEventListener(AI_ASSIST_CHANGED_EVENT, syncAssist)
+    return (): void => {
+      window.removeEventListener(API_KEY_CHANGED_EVENT, syncKey)
+      window.removeEventListener(API_KEY_CHANGED_EVENT, syncAssist)
+      window.removeEventListener(AI_ASSIST_CHANGED_EVENT, syncAssist)
+    }
   }, [])
 
   // Focus management — move focus into panel on open, restore on close
@@ -331,6 +343,80 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
             <span style={{ color: COLOR_NODE_TEXT }}>api.anthropic.com</span>. It never touches any
             server.
           </p>
+
+          {/* Divider */}
+          <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
+
+          {/* K-05: AI Assist toggle */}
+          <div>
+            <span
+              style={{
+                fontSize: FONT_SIZE_SMALL,
+                color: COLOR_TEXT_MUTED,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                fontWeight: '600',
+              }}
+            >
+              AI Assist
+            </span>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+            }}
+          >
+            <span
+              style={{
+                fontSize: FONT_SIZE_SMALL,
+                color: hasStoredKey ? COLOR_NODE_TEXT : COLOR_TEXT_MUTED,
+                lineHeight: 1.5,
+              }}
+            >
+              {aiAssist ? 'AI features enabled' : 'AI features disabled'}
+            </span>
+            <button
+              role="switch"
+              aria-checked={aiAssist}
+              aria-label="Toggle AI Assist"
+              disabled={!hasStoredKey}
+              onClick={(): void => {
+                if (!hasStoredKey) return
+                const next = !aiAssist
+                setAiAssist(next)
+              }}
+              style={{
+                flexShrink: 0,
+                position: 'relative',
+                width: 40,
+                height: 22,
+                borderRadius: 11,
+                border: 'none',
+                backgroundColor: aiAssist ? COLOR_NODE_SELECTED : COLOR_INPUT_BORDER,
+                cursor: hasStoredKey ? 'pointer' : 'not-allowed',
+                opacity: hasStoredKey ? 1 : 0.4,
+                transition: `background-color ${TRANSITION_NORMAL}`,
+                padding: 0,
+              }}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  top: 3,
+                  left: aiAssist ? 21 : 3,
+                  width: 16,
+                  height: 16,
+                  borderRadius: '50%',
+                  backgroundColor: '#ffffff',
+                  transition: `left ${TRANSITION_NORMAL}`,
+                }}
+              />
+            </button>
+          </div>
         </div>
       </div>
     </>

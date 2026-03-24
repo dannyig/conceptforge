@@ -25,6 +25,7 @@ interface FocusQuestionBarProps {
   isGenerating?: boolean
   aiError?: string | null
   onDismissError?: () => void
+  aiAssistEnabled?: boolean
 }
 
 export function FocusQuestionBar({
@@ -35,6 +36,7 @@ export function FocusQuestionBar({
   isGenerating = false,
   aiError = null,
   onDismissError,
+  aiAssistEnabled = true,
 }: FocusQuestionBarProps): React.JSX.Element {
   const inputRef = useRef<HTMLInputElement>(null)
   // Snapshot of the committed value at focus time — used to revert on Escape
@@ -80,6 +82,7 @@ export function FocusQuestionBar({
   const showButtons =
     hasQuestion && (onGenerateMap !== undefined || onSuggestConcepts !== undefined)
 
+  const aiDisabled = !aiAssistEnabled
   const btnBase: React.CSSProperties = {
     flexShrink: 0,
     display: 'flex',
@@ -91,8 +94,9 @@ export function FocusQuestionBar({
     fontFamily: FONT_FAMILY,
     fontSize: FONT_SIZE_SMALL,
     fontWeight: '500',
-    cursor: isGenerating ? 'not-allowed' : 'pointer',
-    opacity: isGenerating ? 0.5 : 1,
+    cursor: isGenerating || aiDisabled ? 'not-allowed' : 'pointer',
+    opacity: aiDisabled ? 0.35 : isGenerating ? 0.5 : 1,
+    pointerEvents: aiDisabled ? 'none' : 'auto',
     transition: `background-color ${TRANSITION_FAST}, opacity ${TRANSITION_FAST}`,
   }
 

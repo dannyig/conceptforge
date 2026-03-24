@@ -8,12 +8,14 @@ import { SettingsPanel } from '@/components/settings/SettingsPanel'
 import { AppMenu } from '@/components/toolbar/AppMenu'
 import { validateMapData } from '@/lib/export'
 import { getApiKey, OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
+import { useApiKey } from '@/hooks/useApiKey'
 import { generateMap, suggestConcepts } from '@/lib/claude'
 import { autoLayout, ringPositions } from '@/lib/graph'
 import type { SummaryResource } from '@/types'
 
 export function App(): React.JSX.Element {
   const canvasRef = useRef<CanvasHandle>(null)
+  const { aiAssistEnabled } = useApiKey()
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [showMissingKeyBanner, setShowMissingKeyBanner] = useState(false)
   const [focusQuestion, setFocusQuestion] = useState('')
@@ -208,9 +210,15 @@ export function App(): React.JSX.Element {
         isGenerating={isGenerating}
         aiError={aiError}
         onDismissError={dismissAiError}
+        aiAssistEnabled={aiAssistEnabled}
       />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
-        <Canvas ref={canvasRef} onNodeCountChange={setNodeCount} focusQuestion={focusQuestion} />
+        <Canvas
+          ref={canvasRef}
+          onNodeCountChange={setNodeCount}
+          focusQuestion={focusQuestion}
+          aiAssistEnabled={aiAssistEnabled}
+        />
         <AppMenu
           canvasRef={canvasRef}
           hasNodes={nodeCount > 0}
