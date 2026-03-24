@@ -120,6 +120,32 @@ function pickSourceHandle(
   return dy >= 0 ? 'bottom' : 'top'
 }
 
+// C-11/C-17: nearest-side target handle on the hub for an incoming stem edge.
+function pickHubTargetHandle(
+  source: { x: number; y: number },
+  hub: { x: number; y: number }
+): string {
+  const dx = hub.x - source.x
+  const dy = hub.y - source.y
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    return dx >= 0 ? 'hub-left-t' : 'hub-right-t'
+  }
+  return dy >= 0 ? 'hub-top-t' : 'hub-bottom-t'
+}
+
+// C-11/C-17: nearest-side source handle on the hub for an outgoing branch arrow.
+function pickHubSourceHandle(
+  hub: { x: number; y: number },
+  target: { x: number; y: number }
+): string {
+  const dx = target.x - hub.x
+  const dy = target.y - hub.y
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    return dx >= 0 ? 'hub-right-s' : 'hub-left-s'
+  }
+  return dy >= 0 ? 'hub-bottom-s' : 'hub-top-s'
+}
+
 // ID helpers — pure functions at module scope
 function hubNodeId(beId: string): string {
   return `hub-${beId}`
@@ -262,6 +288,36 @@ function CanvasFlow({
       // Selected non-stem edges get a larger orange arrowhead to mark the reconnect endpoint.
       const markerEnd =
         edge.selected && !edge.data?.isStem ? MARKER_END_SELECTED : MARKER_END_DEFAULT
+
+      // C-11/C-17: dynamically route stem and branch arrow edges to the nearest hub boundary
+      // side so attachment updates as nodes and the hub are repositioned.
+      if (edge.data?.isStem) {
+        const srcNode = nodes.find(n => n.id === edge.source)
+        const hubNode = nodes.find(n => n.id === edge.target)
+        if (srcNode && hubNode) {
+          return {
+            ...edge,
+            reconnectable,
+            markerEnd,
+            targetHandle: pickHubTargetHandle(srcNode.position, hubNode.position),
+            data: { ...edge.data, isHovered },
+          }
+        }
+      }
+      if (edge.data?.isBranch) {
+        const hubNode = nodes.find(n => n.id === edge.source)
+        const tgtNode = nodes.find(n => n.id === edge.target)
+        if (hubNode && tgtNode) {
+          return {
+            ...edge,
+            reconnectable,
+            markerEnd,
+            sourceHandle: pickHubSourceHandle(hubNode.position, tgtNode.position),
+            data: { ...edge.data, isHovered },
+          }
+        }
+      }
+
       const reconnectableChanged = edge.reconnectable !== reconnectable
       const hoverChanged = !!edge.data?.isHovered !== isHovered
       if (!reconnectableChanged && !hoverChanged) return edge
@@ -272,7 +328,7 @@ function CanvasFlow({
         data: hoverChanged ? { ...edge.data, isHovered } : edge.data,
       }
     })
-  }, [edges, hasClickSelectedEdge, hoveredEdgeId])
+  }, [edges, hasClickSelectedEdge, hoveredEdgeId, nodes])
 
   const [contextMenu, setContextMenu] = useState<{
     edgeId: string
