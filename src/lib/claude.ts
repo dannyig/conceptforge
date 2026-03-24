@@ -230,6 +230,66 @@ export async function expandNode(
   return parseClaudeResponse(parsed)
 }
 
+// A-29: chat message type for AI Node Chat
+export interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+// A-29: conversational chat about a concept node
+export async function chatNode(
+  nodeLabel: string,
+  nodeDescription: string | undefined,
+  focusQuestion: string | undefined,
+  history: ChatMessage[],
+  userMessage: string,
+  apiKey: string
+): Promise<string> {
+  let systemPrompt = `You are a knowledgeable assistant helping the user explore and understand the concept "${nodeLabel}" in depth.`
+
+  if (nodeDescription) {
+    systemPrompt += `\n\nContext about this concept: ${nodeDescription}`
+  }
+
+  if (focusQuestion) {
+    systemPrompt += `\n\nThe user is exploring this concept in the context of the following focus question: "${focusQuestion}"`
+  }
+
+  systemPrompt +=
+    "\n\nBe concise and informative. Answer the user's questions about this concept directly."
+
+  const messages = [
+    ...history.map(m => ({ role: m.role, content: m.content })),
+    { role: 'user' as const, content: userMessage },
+  ]
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages,
+    }),
+  })
+
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`Claude API error ${res.status}: ${body}`)
+  }
+
+  const data = (await res.json()) as { content: Array<{ type: string; text: string }> }
+  const text = data.content.find(c => c.type === 'text')?.text
+  if (!text) throw new Error('Empty response from Claude')
+  return text
+}
+
 export function parseClaudeResponse(raw: unknown): ClaudeMapResponse {
   if (typeof raw !== 'object' || raw === null) {
     throw new Error('Invalid Claude response: expected an object')

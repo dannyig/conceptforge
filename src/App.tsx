@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Canvas, type CanvasHandle } from '@/components/canvas/Canvas'
 import { HintTicker } from '@/components/canvas/HintTicker'
 import { FocusQuestionBar } from '@/components/ai/FocusQuestionBar'
+import { ChatPanel } from '@/components/ai/ChatPanel'
 import { SummaryPanel } from '@/components/ai/SummaryPanel'
 import { MissingKeyBanner } from '@/components/settings/MissingKeyBanner'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
@@ -26,6 +27,11 @@ export function App(): React.JSX.Element {
   const [summaryData, setSummaryData] = useState<{
     narrative: string
     resources: SummaryResource[]
+  } | null>(null)
+  const [chatNodeInfo, setChatNodeInfo] = useState<{
+    nodeId: string
+    nodeLabel: string
+    nodeDescription?: string
   } | null>(null)
 
   // P-04, P-05, P-06 — URL autoload via ?autoload=<base64> query parameter
@@ -85,6 +91,16 @@ export function App(): React.JSX.Element {
   const dismissBanner = useCallback((): void => setShowMissingKeyBanner(false), [])
   const dismissAiError = useCallback((): void => setAiError(null), [])
   const dismissSummary = useCallback((): void => setSummaryData(null), [])
+  const dismissChat = useCallback((): void => setChatNodeInfo(null), [])
+
+  // A-26, A-27: open Chat panel — dismiss Summary Panel first (mutual exclusion)
+  const handleChatNode = useCallback(
+    (nodeId: string, nodeLabel: string, nodeDescription?: string): void => {
+      setSummaryData(null)
+      setChatNodeInfo({ nodeId, nodeLabel, nodeDescription })
+    },
+    []
+  )
 
   const handleOpenSettingsFromBanner = useCallback((): void => {
     setShowMissingKeyBanner(false)
@@ -101,6 +117,7 @@ export function App(): React.JSX.Element {
     setIsGenerating(true)
     setAiError(null)
     setSummaryData(null)
+    setChatNodeInfo(null)
     try {
       const response = await generateMap(focusQuestion, apiKey)
       // A-24: pass edges so autoLayout can use hierarchical BFS ordering
@@ -148,6 +165,7 @@ export function App(): React.JSX.Element {
     setIsGenerating(true)
     setAiError(null)
     setSummaryData(null)
+    setChatNodeInfo(null)
     try {
       const currentData = canvasRef.current?.getMapData()
       const existingNodes = currentData?.nodes ?? []
@@ -218,6 +236,7 @@ export function App(): React.JSX.Element {
           onNodeCountChange={setNodeCount}
           focusQuestion={focusQuestion}
           aiAssistEnabled={aiAssistEnabled}
+          onChatNode={handleChatNode}
         />
         <AppMenu
           canvasRef={canvasRef}
@@ -239,6 +258,15 @@ export function App(): React.JSX.Element {
             narrative={summaryData.narrative}
             resources={summaryData.resources}
             onDismiss={dismissSummary}
+          />
+        )}
+        {chatNodeInfo !== null && (
+          <ChatPanel
+            nodeId={chatNodeInfo.nodeId}
+            nodeLabel={chatNodeInfo.nodeLabel}
+            nodeDescription={chatNodeInfo.nodeDescription}
+            focusQuestion={focusQuestion}
+            onDismiss={dismissChat}
           />
         )}
       </div>
