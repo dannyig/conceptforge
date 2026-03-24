@@ -208,7 +208,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v4.6 &nbsp;·&nbsp; March 2026</span>
+    <span class="version-badge">v4.7 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -325,7 +325,9 @@
         <tr><td class="req-id">A-27</td><td>Selecting "Chat" opens the AI Chat panel; if the Summary Panel is currently visible, dismiss it and replace it with the Chat panel; both panels cannot be visible at the same time &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">A-28</td><td>Style and position the Chat panel identically to the Summary Panel (A-16, A-22); display a heading identifying the concept being discussed (the node's label) &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">A-29</td><td>The Chat panel contains a scrollable message history area and a text input at the bottom; the user types a message and submits it (Enter key or a send button); the AI responds inline; every AI request includes the node's label, its description (if present), and the current focus question as context &nbsp;<span class="badge badge-core">NEW</span></td></tr>
-        <tr><td class="req-id">A-30</td><td>Message history persists while the Chat panel is open; history is cleared when the panel is dismissed or when Chat is opened for a different node &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">A-30</td><td>Message history persists while the Chat panel is open; history is cleared when the panel is dismissed or when Chat is opened for a different node</td></tr>
+        <tr><td class="req-id">A-31</td><td>Each AI response message in the Chat panel must display a persistent icon button (reading view); clicking the button opens a reading panel showing only that message's content — no other messages are included &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">A-32</td><td>The reading panel is centred in the viewport, sized at 70% of viewport width and 70% of viewport height; it renders the AI message content as markdown (bold, headings, bullet lists, code blocks); it contains an explicit dismiss button and also closes when the user clicks outside the panel boundary &nbsp;<span class="badge badge-core">NEW</span></td></tr>
       </tbody>
     </table>
 
