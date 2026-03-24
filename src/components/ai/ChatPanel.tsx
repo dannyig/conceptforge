@@ -19,6 +19,7 @@ import {
 } from '@/lib/theme'
 import { chatNode, type ChatMessage } from '@/lib/claude'
 import { getApiKey } from '@/lib/apiKey'
+import { ChatReadingPanel } from './ChatReadingPanel'
 
 const MINIMAP_GAP = 8
 
@@ -63,6 +64,7 @@ export function ChatPanel({
   const [draft, setDraft] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [readingContent, setReadingContent] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   // Stable ref so handleSubmit never closes over stale history
   const historyRef = useRef(history)
@@ -148,6 +150,8 @@ export function ChatPanel({
         .cf-chat-dismiss:focus-visible { outline: 2px solid ${COLOR_SUMMARY_LINK}; outline-offset: 2px; }
         .cf-chat-send:hover:not(:disabled) { background-color: #ea6c0a !important; }
         .cf-chat-send:focus-visible { outline: 2px solid ${COLOR_SUMMARY_LINK}; outline-offset: 2px; }
+        .cf-chat-read:hover { background-color: #21262d !important; }
+        .cf-chat-read:focus-visible { outline: 2px solid ${COLOR_SUMMARY_LINK}; outline-offset: 2px; }
       `}</style>
 
       {/* Header */}
@@ -226,27 +230,105 @@ export function ChatPanel({
           </p>
         )}
 
-        {history.map((msg, i) => (
-          <div
-            key={i}
-            style={{
-              alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-              maxWidth: '92%',
-              backgroundColor: msg.role === 'user' ? 'rgba(249,115,22,0.12)' : '#1c2128',
-              border: `1px solid ${msg.role === 'user' ? 'rgba(249,115,22,0.25)' : COLOR_NODE_BORDER}`,
-              borderRadius: 6,
-              padding: '6px 10px',
-              fontFamily: FONT_FAMILY,
-              fontSize: FONT_SIZE_SMALL,
-              color: COLOR_NODE_TEXT,
-              lineHeight: '1.55',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
-            }}
-          >
-            {msg.content}
-          </div>
-        ))}
+        {history.map((msg, i) =>
+          msg.role === 'user' ? (
+            <div
+              key={i}
+              style={{
+                alignSelf: 'flex-end',
+                maxWidth: '92%',
+                backgroundColor: 'rgba(249,115,22,0.12)',
+                border: '1px solid rgba(249,115,22,0.25)',
+                borderRadius: 6,
+                padding: '6px 10px',
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_SMALL,
+                color: COLOR_NODE_TEXT,
+                lineHeight: '1.55',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+              }}
+            >
+              {msg.content}
+            </div>
+          ) : (
+            /* A-31: AI response with persistent reading view button */
+            <div
+              key={i}
+              style={{
+                alignSelf: 'flex-start',
+                maxWidth: '92%',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#1c2128',
+                  border: `1px solid ${COLOR_NODE_BORDER}`,
+                  borderRadius: 6,
+                  padding: '6px 10px',
+                  fontFamily: FONT_FAMILY,
+                  fontSize: FONT_SIZE_SMALL,
+                  color: COLOR_NODE_TEXT,
+                  lineHeight: '1.55',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                }}
+              >
+                {msg.content}
+              </div>
+              <button
+                className="cf-chat-read"
+                onClick={(): void => setReadingContent(msg.content)}
+                aria-label="Open reading view for this response"
+                title="Reading view"
+                style={{
+                  alignSelf: 'flex-end',
+                  marginTop: 3,
+                  padding: '2px 5px',
+                  background: 'transparent',
+                  border: `1px solid ${COLOR_NODE_BORDER}`,
+                  borderRadius: 3,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 3,
+                  transition: `background-color ${TRANSITION_FAST}`,
+                }}
+              >
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                  <path
+                    d="M6 1h3v3"
+                    stroke="#8b949e"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path d="M9 1L5.5 4.5" stroke="#8b949e" strokeWidth="1.2" strokeLinecap="round" />
+                  <path
+                    d="M4 9H1V6"
+                    stroke="#8b949e"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path d="M1 9L4.5 5.5" stroke="#8b949e" strokeWidth="1.2" strokeLinecap="round" />
+                </svg>
+                <span
+                  style={{
+                    fontFamily: FONT_FAMILY,
+                    fontSize: '9px',
+                    color: COLOR_TEXT_MUTED,
+                    lineHeight: 1,
+                  }}
+                >
+                  Read
+                </span>
+              </button>
+            </div>
+          )
+        )}
 
         {isLoading && (
           <div
@@ -277,6 +359,14 @@ export function ChatPanel({
           </div>
         )}
       </div>
+
+      {/* A-32: reading view panel — rendered into document.body via portal */}
+      {readingContent !== null && (
+        <ChatReadingPanel
+          content={readingContent}
+          onDismiss={(): void => setReadingContent(null)}
+        />
+      )}
 
       {/* Input area — pinned to bottom — A-29 */}
       <div
