@@ -73,8 +73,6 @@ type CanvasNodeData = {
   conceptType?: 'concept' | 'question' | 'source' | 'insight'
   branchingEdgeId?: string
   autoEdit?: boolean
-  // C-18: sides with ≥1 incoming edge — injected by enrichedNodes memo; not persisted
-  occupiedSides?: string[]
   // G-01→G-10: note-specific fields (only present when type === 'note')
   backgroundColor?: string
   text?: string
@@ -233,32 +231,6 @@ function CanvasFlow({
   useEffect((): void => {
     onNodeCountChange?.(nodes.filter(n => n.type === 'concept').length)
   }, [nodes, onNodeCountChange])
-
-  // C-18: derive which sides of each concept node have incoming edges so source
-  // handles on those sides can be disabled. Target handle IDs follow the
-  // "{side}-t" convention set in ConceptNode.tsx.
-  const VALID_SIDES = new Set(['top', 'right', 'bottom', 'left'])
-  const enrichedNodes = useMemo((): CanvasFlowNode[] => {
-    const occupiedMap = new Map<string, Set<string>>()
-    for (const edge of edges) {
-      if (!edge.target || !edge.targetHandle) continue
-      const side = edge.targetHandle.replace(/-t$/, '')
-      if (!VALID_SIDES.has(side)) continue
-      if (!occupiedMap.has(edge.target)) occupiedMap.set(edge.target, new Set())
-      occupiedMap.get(edge.target)!.add(side)
-    }
-    return nodes.map(node => {
-      // Only concept nodes need occupiedSides — skip hub and note nodes
-      if (node.type !== 'concept') return node
-      const occupied = [...(occupiedMap.get(node.id) ?? [])]
-      const current = node.data.occupiedSides ?? []
-      // Skip update if set is identical — avoids unnecessary re-renders
-      if (current.length === occupied.length && occupied.every(s => current.includes(s))) {
-        return node
-      }
-      return { ...node, data: { ...node.data, occupiedSides: occupied } }
-    })
-  }, [nodes, edges])
 
   // C-32: track which edge the cursor is currently over for the orange-label hover cue.
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null)
@@ -1335,7 +1307,7 @@ function CanvasFlow({
         @media (prefers-reduced-motion: reduce) { .react-flow__edge-path, .react-flow__controls-button { transition: none; } }
       `}</style>
       <ReactFlow
-        nodes={enrichedNodes}
+        nodes={nodes}
         edges={computedEdges}
         onNodesChange={handleNodesChange}
         onEdgesChange={handleEdgesChange}
