@@ -2,7 +2,7 @@
 
 **Agent:** AI Agent
 **Sequence:** 03 — runs after Canvas Agent and Settings Agent both complete
-**Trigger:** Human assigns requirement IDs A-01 → A-25
+**Trigger:** Human assigns requirement IDs A-01 → A-30
 **Branch:** `feature/A-01-map-generation`
 **Depends on:** Canvas Agent (01) and Settings Agent (02) both merged to main
 **Parallel with:** Persistence Agent (04)
@@ -210,9 +210,34 @@ Extend the Mode 1 and Mode 2 API calls to request a narrative and resource links
 
 ---
 
-### Group 6 — UI Verification (Playwright MCP)
+### Group 6 — AI Node Chat (A-26 → A-30)
 
-Before committing Group 3, start the dev server and use Playwright MCP + Chrome to verify:
+- [ ] Add "Chat" button to the concept node right-click context menu (A-26)
+  - Always visible; dimmed (`opacity: 0.35`, `pointerEvents: 'none'`) when AI Assist is off — same pattern as Expand (K-08)
+- [ ] Wire "Chat" to open a Chat panel in `App.tsx` (A-27)
+  - If Summary Panel is visible, dismiss it before showing Chat panel
+  - Both panels share a single slot — never shown simultaneously
+- [ ] Create `src/components/ai/ChatPanel.tsx` (A-28)
+  - Styled and positioned identically to `SummaryPanel.tsx` (same width, position, background, border, z-index)
+  - Header shows the node label as the chat heading (e.g. "Chat — Photosynthesis")
+  - Dismiss button closes the panel
+- [ ] Implement chat interaction (A-29)
+  - Scrollable message history area (user messages right-aligned, AI responses left-aligned)
+  - Text input pinned to the bottom of the panel; submit on Enter or send button
+  - On submit: call Claude API with a conversational prompt including node label, node description (if present), and focus question as system context
+  - Show a loading indicator while awaiting AI response
+  - AI response appended to history on completion; error shown inline on failure
+- [ ] Implement history lifecycle (A-30)
+  - History persists while the panel is open
+  - History is cleared when: (a) panel is dismissed, (b) Chat is opened for a different node
+
+**Commit:** `feat(A-26,A-27,A-28,A-29,A-30): AI Node Chat panel`
+
+---
+
+### Group 7 — UI Verification (Playwright MCP)
+
+Before committing Group 6, start the dev server and use Playwright MCP + Chrome to verify:
 
 - [ ] Prompt panel is visible and accessible
 - [ ] Submitting a prompt with a valid API key stored → loading state appears, then nodes render on canvas
@@ -222,6 +247,13 @@ Before committing Group 3, start the dev server and use Playwright MCP + Chrome 
 - [ ] Clicking "Expand" → new child nodes appear connected to the expanded node
 - [ ] Re-expanding the same node → no duplicate nodes added
 - [ ] No errors in browser console during normal operation
+- [ ] Right-clicking a node → "Chat" item visible in context menu
+- [ ] "Chat" dimmed and non-interactive when AI Assist is off
+- [ ] Clicking "Chat" → Chat panel opens with correct node label heading
+- [ ] If Summary Panel is open when "Chat" is clicked → Summary Panel dismissed, Chat Panel appears
+- [ ] Typing a message and submitting → loading indicator shown, AI response appended to history
+- [ ] Dismissing Chat panel → history cleared; reopening shows empty chat
+- [ ] Opening Chat on a different node → history cleared, new heading shown
 
 Log any issues as `/feedback` entries before committing.
 
@@ -295,4 +327,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*AI Agent Spec v1.5 — March 2026 (added A-23–A-25: node descriptions in Mode 1, non-overlapping layout, auto fit-to-view — Group 5)*
+*AI Agent Spec v1.6 — March 2026 (added A-26–A-30: AI Node Chat panel — Group 6)*

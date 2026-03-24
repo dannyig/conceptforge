@@ -208,7 +208,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v4.3 &nbsp;·&nbsp; March 2026</span>
+    <span class="version-badge">v4.4 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -320,6 +320,11 @@
         <tr><td class="req-id">A-08</td><td>Append generated child nodes and edges to the existing map</td></tr>
         <tr><td class="req-id">A-09</td><td>Prevent duplicate nodes from being added on repeated expansions</td></tr>
         <tr><td class="req-id">A-10</td><td>When expanding a node that has a non-empty description (C-28), include the description as additional context in the AI prompt alongside the node label &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">A-26</td><td>Add a "Chat" item to the concept node right-click context menu; the item is always visible; when AI Assist is off it is dimmed and non-interactive, matching the availability behaviour of Expand (K-08) &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">A-27</td><td>Selecting "Chat" opens the AI Chat panel; if the Summary Panel is currently visible, dismiss it and replace it with the Chat panel; both panels cannot be visible at the same time &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">A-28</td><td>Style and position the Chat panel identically to the Summary Panel (A-16, A-22); display a heading identifying the concept being discussed (the node's label) &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">A-29</td><td>The Chat panel contains a scrollable message history area and a text input at the bottom; the user types a message and submits it (Enter key or a send button); the AI responds inline; every AI request includes the node's label, its description (if present), and the current focus question as context &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">A-30</td><td>Message history persists while the Chat panel is open; history is cleared when the panel is dismissed or when Chat is opened for a different node &nbsp;<span class="badge badge-core">NEW</span></td></tr>
       </tbody>
     </table>
 
@@ -563,7 +568,7 @@
   </section>
 
   <footer>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v4.3 &nbsp;·&nbsp; March 2026
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v4.4 &nbsp;·&nbsp; March 2026
   </footer>
 
 </div>
