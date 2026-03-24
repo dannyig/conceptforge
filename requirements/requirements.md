@@ -97,6 +97,11 @@
 | A-08 | Append generated child nodes and edges to the existing map |
 | A-09 | Prevent duplicate nodes from being added on repeated expansions |
 | A-10 | When expanding a node that has a non-empty description (C-28), include the description as additional context in the AI prompt alongside the node label |
+| A-26 | Add a "Chat" item to the concept node right-click context menu; the item is always visible; when AI Assist is off it is dimmed and non-interactive, matching the availability behaviour of Expand (K-08) |
+| A-27 | Selecting "Chat" opens the AI Chat panel; if the Summary Panel is currently visible, dismiss it and replace it with the Chat panel; both panels cannot be visible at the same time |
+| A-28 | Style and position the Chat panel identically to the Summary Panel (A-16, A-22); display a heading identifying the concept being discussed (the node's label) |
+| A-29 | The Chat panel contains a scrollable message history area and a text input at the bottom; the user types a message and submits it (Enter key or a send button); the AI responds inline; every AI request includes the node's label, its description (if present), and the current focus question as context |
+| A-30 | Message history persists while the Chat panel is open; history is cleared when the panel is dismissed or when Chat is opened for a different node |
 
 ### 4.4 API Key Management
 
@@ -337,3 +342,5 @@
 *Version 4.2 — March 2026 — Refined C-34 and C-37: navigation now considers all connected edges (incoming and outgoing), not outgoing-only*
 
 *Version 4.3 — March 2026 — Added K-05 through K-08 (AI Assist toggle: off by default, auto-enables on key save, auto-disables on key removal, persisted to localStorage, dims and disables AI controls when off)*
+
+*Version 4.4 — March 2026 — Added A-26 through A-30 (AI Node Chat: Chat item in node context menu, chat panel replacing summary panel, concept and focus question context, scrollable message history)*
