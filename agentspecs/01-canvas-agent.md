@@ -220,18 +220,17 @@ interface MapData {
   - The original `ConceptEdge` is removed from `edges`; the new `BranchingEdge` is added to `branchingEdges`
 - [ ] Create `src/components/canvas/BranchingEdge.tsx` — custom component that renders (C-11):
   - A single line from the source node to the label hub (rendered as a draggable, styled element)
-  - Individual directional arrows fanning out from the bottom of the label hub to each target node
+  - Individual directional arrows from the label hub to each target node
   - Label hub styled consistently with edge labels in `ConceptEdge` (same font `FONT_SIZE_EDGE_LABEL`, background, colours)
-  - Hub top handle (receiving the stem) must be visually hidden
-  - Hub bottom handle (outgoing to targets) must use `COLOR_HANDLE` at rest — must not remain orange after a connection is made
+  - Hub exposes handles distributed around its full boundary — all visually hidden (opacity 0) at all times; no visible bottom handle
+  - Stem edge attaches to the hub side nearest the source node; each branch arrow attaches to the hub side nearest its target node; both recompute dynamically on position change (C-11)
 - [ ] Label hub double-click → inline label edit (same pattern as C-09 — Enter/blur confirms, Escape cancels) (C-09 parity)
-- [ ] Drag from label hub to an existing node → adds that node to `targets` (C-12)
-- [ ] Drag from label hub to empty canvas area → creates a new node and adds it to `targets` (C-12)
+- [ ] User hovers near hub boundary → connection handle becomes visible; drag from handle to existing node adds it to `targets`; drag to empty canvas creates and connects a new node (C-12)
 - [ ] When `targets.length` drops to 1 (via branch deletion), auto-convert back to a `ConceptEdge` (C-14)
 - [ ] Deleting the source→hub segment or the hub itself removes the entire `BranchingEdge` from state; all target nodes remain on canvas (C-16)
 - [ ] Deleting an individual hub→target arrow removes only that target from `targets` (C-16)
 - [ ] Target nodes may be dragged freely; branch arrows update to follow (C-15)
-- [ ] Label hub is draggable — updates `labelPosition` in state; all arrows redraw (C-17)
+- [ ] Label hub is draggable — updates `labelPosition` in state; stem edge and all branch arrows redraw, each re-attaching to the hub side nearest their respective source or target node (C-17)
 - [ ] Register `BranchingEdge` state alongside `edges` in `Canvas.tsx`; expose via `CanvasHandle.getMapData()` and restore via `CanvasHandle.setMapData()`
 
 **Commit:** `feat(C-10–C-17): branching edges with fan-out rendering, hub drag, and partial delete`
