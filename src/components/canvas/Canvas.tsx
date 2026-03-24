@@ -191,6 +191,7 @@ interface CanvasFlowProps {
   onNodeCountChange?: (count: number) => void
   focusQuestion?: string
   aiAssistEnabled?: boolean
+  onChatNode?: (nodeId: string, nodeLabel: string, nodeDescription?: string) => void
 }
 
 // Fan-position new nodes in an arc below/around the source node (A-07)
@@ -214,6 +215,7 @@ function CanvasFlow({
   onNodeCountChange,
   focusQuestion = '',
   aiAssistEnabled = true,
+  onChatNode,
 }: CanvasFlowProps): React.JSX.Element {
   const { screenToFlowPosition, fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasFlowNode>([])
@@ -1503,6 +1505,43 @@ function CanvasFlow({
               Expand
             </button>
             <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
+            {/* A-26: Chat — always visible; dimmed when AI Assist off */}
+            <button
+              role="menuitem"
+              disabled={!aiAssistEnabled}
+              onClick={(): void => {
+                const node = nodesRef.current.find(n => n.id === nodeMenu.nodeId)
+                if (!node) return
+                setNodeMenu(null)
+                onChatNode?.(node.id, node.data.label, node.data.description)
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 16px',
+                background: 'none',
+                border: 'none',
+                color: COLOR_NODE_TEXT,
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_NODE_LABEL,
+                textAlign: 'left',
+                cursor: !aiAssistEnabled ? 'not-allowed' : 'pointer',
+                opacity: !aiAssistEnabled ? 0.35 : 1,
+                pointerEvents: !aiAssistEnabled ? 'none' : 'auto',
+                transition: `background ${TRANSITION_FAST}, opacity ${TRANSITION_FAST}`,
+              }}
+              onMouseEnter={(e): void => {
+                if (aiAssistEnabled)
+                  (e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+              }}
+              onMouseLeave={(e): void => {
+                ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
+              }}
+              aria-label="Chat with AI about this node"
+            >
+              Chat
+            </button>
+            <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
             <button
               role="menuitem"
               onClick={(): void => {
@@ -1992,6 +2031,7 @@ interface CanvasProps {
   onNodeCountChange?: (count: number) => void
   focusQuestion?: string
   aiAssistEnabled?: boolean
+  onChatNode?: (nodeId: string, nodeLabel: string, nodeDescription?: string) => void
 }
 
 export function Canvas({
@@ -1999,6 +2039,7 @@ export function Canvas({
   onNodeCountChange,
   focusQuestion,
   aiAssistEnabled = true,
+  onChatNode,
 }: CanvasProps): React.JSX.Element {
   return (
     <ReactFlowProvider>
@@ -2007,6 +2048,7 @@ export function Canvas({
         onNodeCountChange={onNodeCountChange}
         focusQuestion={focusQuestion}
         aiAssistEnabled={aiAssistEnabled}
+        onChatNode={onChatNode}
       />
     </ReactFlowProvider>
   )
