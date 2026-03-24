@@ -50,12 +50,14 @@ function renderInline(text: string, baseKey: string): React.ReactNode[] {
   return result
 }
 
-// Renders block-level markdown: code fences, headings, lists, paragraphs
+// Renders block-level markdown using a line-by-line state machine.
+// This correctly handles Claude responses that mix intro text with lists on
+// consecutive lines (no double-newline separator between them).
 function renderMarkdown(text: string): React.ReactNode[] {
   const result: React.ReactNode[] = []
   let key = 0
 
-  // Split out fenced code blocks first so their content is not processed further
+  // Extract fenced code blocks first so their content is never processed as markdown
   const codeBlockRe = /```(?:[^\n]*)?\n?([\s\S]*?)```/g
   const segments: Array<{ type: 'text' | 'code'; content: string }> = []
   let last = 0
@@ -82,6 +84,22 @@ function renderMarkdown(text: string): React.ReactNode[] {
     margin: 0,
   }
 
+  const liStyle: React.CSSProperties = {
+    fontFamily: FONT_FAMILY,
+    fontSize: FONT_SIZE_BASE,
+    color: COLOR_NODE_TEXT,
+    lineHeight: '1.75',
+    marginBottom: 3,
+  }
+
+  const pStyle: React.CSSProperties = {
+    fontFamily: FONT_FAMILY,
+    fontSize: FONT_SIZE_BASE,
+    color: COLOR_NODE_TEXT,
+    lineHeight: '1.8',
+    margin: '6px 0',
+  }
+
   for (const seg of segments) {
     if (seg.type === 'code') {
       result.push(
@@ -92,14 +110,62 @@ function renderMarkdown(text: string): React.ReactNode[] {
       continue
     }
 
-    const blocks = seg.content.split(/\n{2,}/).filter(b => b.trim())
-    for (const block of blocks) {
-      const lines = block.split('\n').filter(l => l.length > 0)
-      if (!lines.length) continue
+    // Line-by-line state machine — handles mixed content on consecutive lines
+    type State = 'idle' | 'paragraph' | 'ul' | 'ol'
+    let state: State = 'idle'
+    let paraLines: string[] = []
+    let listItems: string[] = []
 
-      // Headings
-      const h3 = lines[0].match(/^### (.+)/)
+    const flush = (): void => {
+      if (state === 'paragraph' && paraLines.length > 0) {
+        const combined = paraLines.join(' ').trim()
+        if (combined) {
+          result.push(
+            <p key={key++} style={pStyle}>
+              {renderInline(combined, `p-${key}`)}
+            </p>
+          )
+        }
+        paraLines = []
+      } else if (state === 'ul' && listItems.length > 0) {
+        const items = listItems.slice()
+        result.push(
+          <ul key={key++} style={{ margin: '6px 0', paddingLeft: 22 }}>
+            {items.map((item, j) => (
+              <li key={j} style={liStyle}>
+                {renderInline(item, `ul-${key}-${j}`)}
+              </li>
+            ))}
+          </ul>
+        )
+        listItems = []
+      } else if (state === 'ol' && listItems.length > 0) {
+        const items = listItems.slice()
+        result.push(
+          <ol key={key++} style={{ margin: '6px 0', paddingLeft: 22 }}>
+            {items.map((item, j) => (
+              <li key={j} style={liStyle}>
+                {renderInline(item, `ol-${key}-${j}`)}
+              </li>
+            ))}
+          </ol>
+        )
+        listItems = []
+      }
+      state = 'idle'
+    }
+
+    for (const line of seg.content.split('\n')) {
+      // Blank line always flushes the current block
+      if (!line.trim()) {
+        flush()
+        continue
+      }
+
+      // Headings — always flush first
+      const h3 = line.match(/^### (.+)/)
       if (h3) {
+        flush()
         result.push(
           <h3
             key={key++}
@@ -116,8 +182,9 @@ function renderMarkdown(text: string): React.ReactNode[] {
         )
         continue
       }
-      const h2 = lines[0].match(/^## (.+)/)
+      const h2 = line.match(/^## (.+)/)
       if (h2) {
+        flush()
         result.push(
           <h2
             key={key++}
@@ -134,8 +201,9 @@ function renderMarkdown(text: string): React.ReactNode[] {
         )
         continue
       }
-      const h1 = lines[0].match(/^# (.+)/)
+      const h1 = line.match(/^# (.+)/)
       if (h1) {
+        flush()
         result.push(
           <h1
             key={key++}
@@ -153,68 +221,37 @@ function renderMarkdown(text: string): React.ReactNode[] {
         continue
       }
 
-      // Unordered list
-      if (lines.every(l => /^[\s]*[-*]\s/.test(l))) {
-        result.push(
-          <ul key={key++} style={{ margin: '6px 0', paddingLeft: 22 }}>
-            {lines.map((l, j) => (
-              <li
-                key={j}
-                style={{
-                  fontFamily: FONT_FAMILY,
-                  fontSize: FONT_SIZE_BASE,
-                  color: COLOR_NODE_TEXT,
-                  lineHeight: '1.75',
-                  marginBottom: 3,
-                }}
-              >
-                {renderInline(l.replace(/^[\s]*[-*]\s/, ''), `ul-${key}-${j}`)}
-              </li>
-            ))}
-          </ul>
-        )
+      // Unordered list item
+      const ulMatch = line.match(/^[ \t]*[-*]\s+(.+)/)
+      if (ulMatch) {
+        if (state !== 'ul') {
+          flush()
+          state = 'ul'
+        }
+        listItems.push(ulMatch[1])
         continue
       }
 
-      // Ordered list
-      if (lines.every(l => /^[\s]*\d+\.\s/.test(l))) {
-        result.push(
-          <ol key={key++} style={{ margin: '6px 0', paddingLeft: 22 }}>
-            {lines.map((l, j) => (
-              <li
-                key={j}
-                style={{
-                  fontFamily: FONT_FAMILY,
-                  fontSize: FONT_SIZE_BASE,
-                  color: COLOR_NODE_TEXT,
-                  lineHeight: '1.75',
-                  marginBottom: 3,
-                }}
-              >
-                {renderInline(l.replace(/^[\s]*\d+\.\s/, ''), `ol-${key}-${j}`)}
-              </li>
-            ))}
-          </ol>
-        )
+      // Ordered list item
+      const olMatch = line.match(/^[ \t]*\d+\.\s+(.+)/)
+      if (olMatch) {
+        if (state !== 'ol') {
+          flush()
+          state = 'ol'
+        }
+        listItems.push(olMatch[1])
         continue
       }
 
-      // Paragraph
-      result.push(
-        <p
-          key={key++}
-          style={{
-            fontFamily: FONT_FAMILY,
-            fontSize: FONT_SIZE_BASE,
-            color: COLOR_NODE_TEXT,
-            lineHeight: '1.8',
-            margin: '6px 0',
-          }}
-        >
-          {renderInline(block.replace(/\n/g, ' '), `p-${key}`)}
-        </p>
-      )
+      // Plain text — accumulate as paragraph
+      if (state !== 'paragraph') {
+        flush()
+        state = 'paragraph'
+      }
+      paraLines.push(line)
     }
+
+    flush() // emit any remaining buffered content
   }
 
   return result
