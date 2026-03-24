@@ -233,7 +233,7 @@ export function App(): React.JSX.Element {
           onOpenSettings={handleOpenSettingsFromBanner}
           onDismiss={dismissBanner}
         />
-        <HintTicker />
+        <HintTicker aiAssistEnabled={aiAssistEnabled} />
         {summaryData !== null && (
           <SummaryPanel
             narrative={summaryData.narrative}

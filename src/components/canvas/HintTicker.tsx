@@ -42,7 +42,11 @@ const HINTS: readonly string[] = [
 //   fading-out — opacity 1 → 0 over TICKER_FADE_MS; then advance index
 type Phase = 'idle' | 'fading-in' | 'reading' | 'fading-out'
 
-export function HintTicker(): React.JSX.Element {
+interface HintTickerProps {
+  aiAssistEnabled?: boolean
+}
+
+export function HintTicker({ aiAssistEnabled = false }: HintTickerProps): React.JSX.Element {
   const [visible, setVisible] = useState(true)
   const [index, setIndex] = useState(0)
   const [phase, setPhase] = useState<Phase>('idle')
@@ -160,7 +164,58 @@ export function HintTicker(): React.JSX.Element {
       )}
 
       <TipsToggle visible={visible} onToggle={(): void => setVisible(v => !v)} />
+      <AiAssistIndicator enabled={aiAssistEnabled} tickerVisible={visible} />
     </>
+  )
+}
+
+function AiAssistIndicator({
+  enabled,
+  tickerVisible,
+}: {
+  enabled: boolean
+  tickerVisible: boolean
+}): React.JSX.Element {
+  return (
+    <div
+      aria-label={enabled ? 'AI Assist on' : 'AI Assist off'}
+      style={{
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        height: TICKER_HEIGHT,
+        padding: '0 10px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 5,
+        borderLeft: `1px solid ${COLOR_TICKER_BORDER}`,
+        borderTop: tickerVisible ? `1px solid ${COLOR_TICKER_BORDER}` : 'none',
+        fontFamily: FONT_FAMILY,
+        fontSize: TICKER_FONT_SIZE,
+        fontWeight: 600,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        color: enabled ? COLOR_NODE_SELECTED : COLOR_TICKER_TEXT,
+        opacity: enabled ? 1 : 0.35,
+        pointerEvents: 'none',
+        userSelect: 'none',
+        transition: `color ${TRANSITION_FAST}, opacity ${TRANSITION_FAST}`,
+        zIndex: 11,
+      }}
+    >
+      <span
+        aria-hidden="true"
+        style={{
+          width: 5,
+          height: 5,
+          borderRadius: '50%',
+          backgroundColor: enabled ? COLOR_NODE_SELECTED : COLOR_TICKER_TEXT,
+          flexShrink: 0,
+          transition: `background-color ${TRANSITION_FAST}`,
+        }}
+      />
+      AI
+    </div>
   )
 }
 
