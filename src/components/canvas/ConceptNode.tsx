@@ -18,9 +18,6 @@ export type NodeData = {
   label: string
   conceptType?: 'concept' | 'question' | 'source' | 'insight'
   autoEdit?: boolean
-  // C-18: sides that currently have at least one incoming edge — source-disabled
-  // Computed in CanvasFlow from edge targetHandle fields; absent = no occupied sides
-  occupiedSides?: string[]
   description?: string // C-28: short freeform description
 }
 
@@ -115,7 +112,11 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
 
   return (
     <div
-      onDoubleClick={startEdit}
+      onDoubleClick={(e: React.MouseEvent): void => {
+        // C-39: stop propagation so React Flow's pane zoom handler does not fire
+        e.stopPropagation()
+        startEdit()
+      }}
       onKeyDown={onNodeKeyDown}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -140,9 +141,8 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
     >
       {/*
        * C-18: four handle pairs (source + target per side), all visually hidden.
-       * Target handles always accept incoming edges.
-       * Source handles are disabled (isConnectable=false) when the same side
-       * already has at least one incoming edge attached.
+       * Both source and target handles on every side are always connectable —
+       * a handle may have incoming and outgoing edges simultaneously (C-18 update).
        * Source handles are rendered after target handles so they sit on top
        * in the DOM — React Flow's connection state machine handles priority
        * correctly (source active when idle, target active when dragging).
@@ -160,7 +160,6 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
             id={side}
             type="source"
             position={position}
-            isConnectable={!data.occupiedSides?.includes(side)}
             style={{ ...HANDLE_STYLE_BASE, ...flushStyle }}
             aria-label={`Connect from node (${side})`}
           />
