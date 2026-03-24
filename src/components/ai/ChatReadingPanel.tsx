@@ -110,11 +110,22 @@ function renderMarkdown(text: string): React.ReactNode[] {
       continue
     }
 
-    // Line-by-line state machine — handles mixed content on consecutive lines
-    type State = 'idle' | 'paragraph' | 'ul' | 'ol'
+    // Line-by-line state machine — handles mixed content on consecutive lines,
+    // including tables (| col | col |) with optional separator rows (|---|).
+    type State = 'idle' | 'paragraph' | 'ul' | 'ol' | 'table'
     let state: State = 'idle'
     let paraLines: string[] = []
     let listItems: string[] = []
+    let tableRows: string[][] = []
+
+    const isSeparatorRow = (cells: string[]): boolean => cells.every(c => /^:?-+:?$/.test(c.trim()))
+
+    const parseTableRow = (line: string): string[] =>
+      line
+        .replace(/^\s*\|/, '')
+        .replace(/\|\s*$/, '')
+        .split('|')
+        .map(c => c.trim())
 
     const flush = (): void => {
       if (state === 'paragraph' && paraLines.length > 0) {
@@ -151,6 +162,63 @@ function renderMarkdown(text: string): React.ReactNode[] {
           </ol>
         )
         listItems = []
+      } else if (state === 'table' && tableRows.length > 0) {
+        const rows = tableRows.slice()
+        // Separator row separates header from body; discard it
+        const sepIdx = rows.findIndex(isSeparatorRow)
+        const headerRows = sepIdx > 0 ? rows.slice(0, sepIdx) : []
+        const bodyRows = sepIdx >= 0 ? rows.slice(sepIdx + 1) : rows
+
+        const thStyle: React.CSSProperties = {
+          fontFamily: FONT_FAMILY,
+          fontSize: FONT_SIZE_BASE,
+          color: COLOR_NODE_TEXT,
+          fontWeight: 600,
+          padding: '6px 12px',
+          borderBottom: `2px solid ${COLOR_NODE_BORDER}`,
+          textAlign: 'left',
+          whiteSpace: 'nowrap',
+        }
+        const tdStyle: React.CSSProperties = {
+          fontFamily: FONT_FAMILY,
+          fontSize: FONT_SIZE_BASE,
+          color: COLOR_NODE_TEXT,
+          padding: '5px 12px',
+          borderBottom: `1px solid ${COLOR_NODE_BORDER}`,
+          verticalAlign: 'top',
+        }
+
+        result.push(
+          <div key={key++} style={{ overflowX: 'auto', margin: '10px 0' }}>
+            <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 300 }}>
+              {headerRows.length > 0 && (
+                <thead>
+                  {headerRows.map((row, i) => (
+                    <tr key={i}>
+                      {row.map((cell, j) => (
+                        <th key={j} style={thStyle}>
+                          {renderInline(cell, `th-${key}-${i}-${j}`)}
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+              )}
+              <tbody>
+                {bodyRows.map((row, i) => (
+                  <tr key={i}>
+                    {row.map((cell, j) => (
+                      <td key={j} style={tdStyle}>
+                        {renderInline(cell, `td-${key}-${i}-${j}`)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+        tableRows = []
       }
       state = 'idle'
     }
@@ -218,6 +286,16 @@ function renderMarkdown(text: string): React.ReactNode[] {
             {renderInline(h1[1], `h1-${key}`)}
           </h1>
         )
+        continue
+      }
+
+      // Table row — line starts (and ends) with |
+      if (/^\s*\|/.test(line)) {
+        if (state !== 'table') {
+          flush()
+          state = 'table'
+        }
+        tableRows.push(parseTableRow(line))
         continue
       }
 
