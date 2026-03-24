@@ -2,7 +2,7 @@
 
 **Agent:** AI Agent
 **Sequence:** 03 — runs after Canvas Agent and Settings Agent both complete
-**Trigger:** Human assigns requirement IDs A-01 → A-30
+**Trigger:** Human assigns requirement IDs A-01 → A-32
 **Branch:** `feature/A-01-map-generation`
 **Depends on:** Canvas Agent (01) and Settings Agent (02) both merged to main
 **Parallel with:** Persistence Agent (04)
@@ -235,6 +235,25 @@ Extend the Mode 1 and Mode 2 API calls to request a narrative and resource links
 
 ---
 
+### Group 6b — Chat Reading View (A-31 → A-32)
+
+- [ ] **A-31 — Reading view button on each AI response:**
+  - Add a persistent icon button to every AI response message bubble in `ChatPanel.tsx`
+  - Button is always visible (not just on hover)
+  - Clicking the button opens the reading panel for that specific message only
+
+- [ ] **A-32 — Reading panel:**
+  - Create `src/components/ai/ChatReadingPanel.tsx`
+  - Centred overlay in the viewport at 70% of viewport width × 70% of viewport height
+  - Renders the AI message content as markdown (bold, headings, bullet lists, code blocks) — use a markdown rendering library or a lightweight custom renderer consistent with existing dependencies
+  - Contains an explicit dismiss ("×") button in the top-right corner
+  - Also dismisses when the user clicks outside the panel boundary
+  - Only one reading panel may be open at a time; opening a second closes the first
+
+**Commit:** `feat(A-31,A-32): reading view button on chat AI responses, centred markdown reading panel`
+
+---
+
 ### Group 7 — UI Verification (Playwright MCP)
 
 Before committing Group 6, start the dev server and use Playwright MCP + Chrome to verify:
@@ -254,6 +273,12 @@ Before committing Group 6, start the dev server and use Playwright MCP + Chrome 
 - [ ] Typing a message and submitting → loading indicator shown, AI response appended to history
 - [ ] Dismissing Chat panel → history cleared; reopening shows empty chat
 - [ ] Opening Chat on a different node → history cleared, new heading shown
+- [ ] Every AI response has a reading view icon button (always visible, not hover-only)
+- [ ] Clicking reading view icon → reading panel opens with only that message's content
+- [ ] Reading panel renders markdown correctly (bold, bullet lists, headings visible)
+- [ ] Clicking outside the reading panel → panel dismisses
+- [ ] Clicking the dismiss button → panel dismisses
+- [ ] Opening a reading panel while another is open → first panel closes
 
 Log any issues as `/feedback` entries before committing.
 
@@ -327,4 +352,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*AI Agent Spec v1.6 — March 2026 (added A-26–A-30: AI Node Chat panel — Group 6)*
+*AI Agent Spec v1.7 — March 2026 (added A-31–A-32: Chat reading view button and markdown reading panel — Group 6b)*

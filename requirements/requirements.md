@@ -103,6 +103,8 @@
 | A-28 | Style and position the Chat panel identically to the Summary Panel (A-16, A-22); display a heading identifying the concept being discussed (the node's label) |
 | A-29 | The Chat panel contains a scrollable message history area and a text input at the bottom; the user types a message and submits it (Enter key or a send button); the AI responds inline; every AI request includes the node's label, its description (if present), and the current focus question as context |
 | A-30 | Message history persists while the Chat panel is open; history is cleared when the panel is dismissed or when Chat is opened for a different node |
+| A-31 | Each AI response message in the Chat panel must display a persistent icon button (reading view); clicking the button opens a reading panel showing only that message's content — no other messages are included |
+| A-32 | The reading panel is centred in the viewport, sized at 70% of viewport width and 70% of viewport height; it renders the AI message content as markdown (bold, headings, bullet lists, code blocks); it contains an explicit dismiss button and also closes when the user clicks outside the panel boundary |
 
 ### 4.4 API Key Management
 
@@ -349,3 +351,5 @@
 *Version 4.5 — March 2026 — Updated C-18: handles may now be used as both edge source and edge target simultaneously (removed restriction that a handle with incoming edges cannot be a source); Added C-39: viewport must not zoom or scroll when entering or exiting inline label edit mode*
 
 *Version 4.6 — March 2026 — Updated C-11: hub handles now distributed around full boundary, all hidden (opacity 0), stem and branch arrows attach to nearest side dynamically; removed visible bottom handle. Updated C-12: user initiates new branch drag by hovering hub boundary until handle appears. Updated C-17: stem edge now also repositions dynamically when hub is moved, not branch arrows only.*
+
+*Version 4.7 — March 2026 — Added A-31 (reading view button on each Chat panel AI response) and A-32 (reading panel: centred, 70% viewport, markdown rendering, dismiss button and outside-click dismissal)*
