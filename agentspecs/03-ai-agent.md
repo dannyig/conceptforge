@@ -42,6 +42,7 @@ Complete all items below in order. Commit after each group.
 > **Git protocol — mandatory before every commit and before raising a PR:**
 > 1. **Branch check:** run `git branch --show-current` — output must NOT be `main`. If it is, stop. Switch to `feature/A-01-map-generation` and re-stage changes before committing.
 > 2. **Main alignment:** run `git fetch origin main && git merge origin/main --no-edit` before pushing and raising a PR. Resolve any conflicts, then re-run `pnpm lint && pnpm typecheck && pnpm test`. The branch must be zero commits behind `origin/main`.
+> 3. **PR merge:** after opening the PR with `gh pr create`, stop. Never run `gh pr merge` or any equivalent. The human reviews and merges the PR.
 
 > **Skills active for this agent:** When writing React component code, consult `vercel-react-best-practices` (apply rules from CLAUDE.md Section 11 caveat — skip `server-*` and hydration rules). For `lib/claude.ts`, pay particular attention to `async-parallel` and `async-defer-await` rules. For `PromptPanel.tsx` and `NodeContextMenu.tsx`, apply all `rerender-*` rules and run `/web-design-guidelines src/components/ai/PromptPanel.tsx src/components/canvas/NodeContextMenu.tsx` before committing Group 3 — the prompt form and context menu must pass keyboard operability and form behaviour checks.
 

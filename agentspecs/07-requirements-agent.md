@@ -227,7 +227,7 @@ docs(requirements): <short description of what changed>
 - Impact: <agentspecs updated, new agents created, devmethod updated>
 ```
 
-Merge to `main` — CI must pass (no feature code changes, CI is lint + typecheck only for docs branches).
+Push the branch and open the PR with `gh pr create`, then **stop**. Never run `gh pr merge`. The human reviews and merges the PR. CI must pass (no feature code changes, CI is lint + typecheck only for docs branches).
 
 ---
 
@@ -237,6 +237,7 @@ Merge to `main` — CI must pass (no feature code changes, CI is lint + typechec
 - Assign requirement IDs that already exist
 - Change requirement IDs that are already referenced in agentspecs (without updating the agentspec)
 - Mark a requirement as removed without confirming with the human
+- Run `gh pr merge` or any equivalent — PRs are merged by the human only
 - Proceed past Step 3 without human approval of the draft
 - Override an `accepted` ADR through a requirement — surface the conflict and ask the human to decide
 
