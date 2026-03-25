@@ -130,6 +130,7 @@
 | P-05 | Immediately after processing the `?autoload=` parameter — whether successful or not — remove it from the browser URL using `history.replaceState()` so the encoded data does not persist in browser history |
 | P-06 | If the `?autoload=` parameter fails base64 decoding or `MapData` validation, display a visible error message to the user indicating the map could not be loaded from the URL, and leave the canvas in its default empty state |
 | P-07 | Save each node's description in the map's JSON data; restore descriptions when a saved map is loaded; node descriptions must not be rendered in PNG canvas exports |
+| P-08 | When the user triggers Save, display a filename prompt containing a text input; on the first save of a session the input is empty; on subsequent saves within the same session the input is pre-populated with the previously used filename; a static `.json` label is displayed immediately after (outside) the input field to indicate the extension will be appended automatically; the confirm action is disabled while the input is empty; confirming saves the map as `<filename>.json`; cancelling aborts the save without writing any file |
 
 ### 4.6 Export
 
@@ -353,3 +354,5 @@
 *Version 4.6 — March 2026 — Updated C-11: hub handles now distributed around full boundary, all hidden (opacity 0), stem and branch arrows attach to nearest side dynamically; removed visible bottom handle. Updated C-12: user initiates new branch drag by hovering hub boundary until handle appears. Updated C-17: stem edge now also repositions dynamically when hub is moved, not branch arrows only.*
 
 *Version 4.7 — March 2026 — Added A-31 (reading view button on each Chat panel AI response) and A-32 (reading panel: centred, 70% viewport, markdown rendering, dismiss button and outside-click dismissal)*
+
+*Version 4.8 — March 2026 — Added P-08 (filename prompt on Save: empty on first save, pre-populated on subsequent saves, .json suffix appended automatically, confirm disabled while empty, cancel aborts)*

@@ -2,7 +2,7 @@
 
 **Agent:** Persistence Agent
 **Sequence:** 04 — runs after Canvas Agent completes
-**Trigger:** Human assigns requirement IDs P-01 → P-07, E-01 → E-02, and C-13 (BranchingEdge persistence)
+**Trigger:** Human assigns requirement IDs P-01 → P-08, E-01 → E-02, and C-13 (BranchingEdge persistence)
 **Branch:** `feature/P-01-save-load-export`
 **Depends on:** Canvas Agent (01) merged to main
 **Parallel with:** AI Agent (03)
@@ -62,8 +62,8 @@ Complete all items below in order. Commit after each group.
 
 - [ ] `saveMapToJson`:
   - Serialises `MapData` to JSON (preserves all node positions, labels, types, edge data, and `focusQuestion`) (P-03, F-05)
+  - Accepts a `filename` string parameter (without extension); appends `.json` before triggering the download
   - Creates a `Blob` and triggers a download via a temporary `<a>` element
-  - Default filename: `conceptforge-map-<YYYY-MM-DD>.json`
 
 - [ ] `loadMapFromJson`:
   - Opens a file picker (`<input type="file" accept=".json">`)
@@ -137,14 +137,32 @@ Complete all items below in order. Commit after each group.
 
 ---
 
-### Group 5 — UI Verification (Playwright MCP)
+### Group 5 — Filename Prompt on Save (P-08)
 
-Before committing Group 3, start the dev server and use Playwright MCP + Chrome to verify:
+- [ ] In `src/components/toolbar/Toolbar.tsx`, when the user clicks the Save button, display a filename prompt before writing any file:
+  - Render an inline or modal prompt containing a labelled text input and a static `.json` suffix displayed immediately after (outside) the input field
+  - On the first Save of a session the input is empty; on subsequent saves pre-populate it with the last successfully used filename
+  - The confirm/save button is disabled while the input is empty
+  - Cancelling the prompt closes it and aborts the save — no file is written
+  - Confirming passes `<input-value>.json` as the filename to `saveMapToJson`
+- [ ] Store the last-used filename in component state (not localStorage) — it persists only for the current session
+
+**Commit:** `feat(P-08): filename prompt on save with session memory and .json suffix`
+
+---
+
+### Group 6 — UI Verification (Playwright MCP)
+
+Before committing Group 5, start the dev server and use Playwright MCP + Chrome to verify:
 
 - [ ] Opening `/?autoload=<valid base64 MapData>` loads the map automatically and the URL is immediately cleaned to `/`
 - [ ] Opening `/?autoload=<invalid base64>` shows the error message and leaves the canvas empty
 - [ ] Toolbar is visible with Save, Load, and Export PNG buttons
-- [ ] Adding nodes to canvas, then clicking Save → file download is triggered
+- [ ] Adding nodes to canvas, then clicking Save → filename prompt appears with empty input
+- [ ] Entering a filename and confirming → file downloads as `<name>.json`; the `.json` suffix label is visible next to the input
+- [ ] Clicking Save a second time → prompt pre-populates with the previously used filename
+- [ ] Clicking Cancel on the filename prompt → no file downloads, canvas unchanged
+- [ ] Confirm button is disabled while filename input is empty
 - [ ] Clicking Load → file picker opens; selecting the previously saved file restores all nodes and edges with correct positions
 - [ ] Loading an invalid JSON file → error message shown in toolbar, canvas unchanged
 - [ ] Clicking Export PNG with nodes on canvas → PNG file downloads and visually contains all nodes
@@ -193,4 +211,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Persistence Agent Spec v1.2 — March 2026 (P-07: node description field accepted in validateMapData; excluded from PNG export)*
+*Persistence Agent Spec v1.3 — March 2026 (P-08: filename prompt on save — empty on first save, pre-populated on subsequent saves, .json suffix appended automatically)*
