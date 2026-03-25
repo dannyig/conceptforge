@@ -97,6 +97,15 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
           backgroundColor: COLOR_NODE_SELECTED,
           border: 'none',
         }}
+        onResizeEnd={(_event, params): void => {
+          setNodes(nds =>
+            nds.map(n =>
+              n.id === id
+                ? { ...n, style: { ...n.style, width: params.width, height: params.height } }
+                : n
+            )
+          )
+        }}
       />
 
       {/* G-02, G-04: note body — draggable, behind other nodes via zIndex on the RF node */}
