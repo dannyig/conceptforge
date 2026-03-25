@@ -2,7 +2,7 @@
 
 **Agent:** Settings Agent
 **Sequence:** 02 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs K-01 → K-09
+**Trigger:** Human assigns requirement IDs K-01 → K-10
 **Branch:** `feature/K-01-api-key-settings`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Canvas Agent (01)
