@@ -1,6 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
-import { Handle, Position, useReactFlow, type Node, type NodeProps } from '@xyflow/react'
+import {
+  Handle,
+  Position,
+  useReactFlow,
+  useViewport,
+  type Node,
+  type NodeProps,
+} from '@xyflow/react'
 import {
   COLOR_NODE_BG,
   COLOR_NODE_BORDER,
@@ -27,23 +34,20 @@ export type ConceptFlowNode = Node<NodeData>
 // flushStyle offsets each handle inward by half its size so React Flow's
 // outer-edge endpoint computation places edge start/end flush with the node border.
 const HANDLE_SIZE = 8
-const FLUSH = HANDLE_SIZE / 2
 const SIDES = [
-  { position: Position.Top, id: 'top', flushStyle: { top: FLUSH } },
-  { position: Position.Right, id: 'right', flushStyle: { right: FLUSH } },
-  { position: Position.Bottom, id: 'bottom', flushStyle: { bottom: FLUSH } },
-  { position: Position.Left, id: 'left', flushStyle: { left: FLUSH } },
+  { position: Position.Top, id: 'top' },
+  { position: Position.Right, id: 'right' },
+  { position: Position.Bottom, id: 'bottom' },
+  { position: Position.Left, id: 'left' },
 ] as const
-
-// Handles are always invisible per C-18
-const HANDLE_STYLE_BASE: React.CSSProperties = {
-  width: HANDLE_SIZE,
-  height: HANDLE_SIZE,
-  opacity: 0,
-}
 
 export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>): React.JSX.Element {
   const { setNodes } = useReactFlow()
+  const { zoom } = useViewport()
+  // Scale handle hit area inversely with zoom so it stays ~10px on screen at any zoom level.
+  // Clamped: min = HANDLE_SIZE (normal zoom), max = 40px in canvas space.
+  const scaledHandle = Math.min(Math.max(HANDLE_SIZE, Math.round(10 / Math.max(zoom, 0.1))), 40)
+  const flush = scaledHandle / 2
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(data.label)
   const [hovered, setHovered] = useState(false)
@@ -147,24 +151,40 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
        * in the DOM — React Flow's connection state machine handles priority
        * correctly (source active when idle, target active when dragging).
        */}
-      {SIDES.map(({ position, id: side, flushStyle }) => (
-        <React.Fragment key={side}>
-          <Handle
-            id={`${side}-t`}
-            type="target"
-            position={position}
-            style={{ ...HANDLE_STYLE_BASE, ...flushStyle }}
-            aria-label={`Connect to node (${side})`}
-          />
-          <Handle
-            id={side}
-            type="source"
-            position={position}
-            style={{ ...HANDLE_STYLE_BASE, ...flushStyle }}
-            aria-label={`Connect from node (${side})`}
-          />
-        </React.Fragment>
-      ))}
+      {SIDES.map(({ position, id: side }) => {
+        const flushStyle =
+          side === 'top'
+            ? { top: flush }
+            : side === 'right'
+              ? { right: flush }
+              : side === 'bottom'
+                ? { bottom: flush }
+                : { left: flush }
+        const handleStyle: React.CSSProperties = {
+          width: scaledHandle,
+          height: scaledHandle,
+          opacity: 0,
+          ...flushStyle,
+        }
+        return (
+          <React.Fragment key={side}>
+            <Handle
+              id={`${side}-t`}
+              type="target"
+              position={position}
+              style={handleStyle}
+              aria-label={`Connect to node (${side})`}
+            />
+            <Handle
+              id={side}
+              type="source"
+              position={position}
+              style={handleStyle}
+              aria-label={`Connect from node (${side})`}
+            />
+          </React.Fragment>
+        )
+      })}
 
       {editing ? (
         <input
