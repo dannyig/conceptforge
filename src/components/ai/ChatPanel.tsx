@@ -19,6 +19,7 @@ import {
 } from '@/lib/theme'
 import { chatNode, type ChatMessage } from '@/lib/claude'
 import { getApiKey } from '@/lib/apiKey'
+import { getConceptChatPrompt } from '@/lib/chatPrompts'
 import { ChatReadingPanel } from './ChatReadingPanel'
 
 const MINIMAP_GAP = 8
@@ -105,7 +106,8 @@ export function ChatPanel({
         focusQuestion,
         historyRef.current,
         text,
-        apiKey
+        apiKey,
+        getConceptChatPrompt()
       )
       setHistory(prev => [...prev, { role: 'assistant', content: response }])
     } catch (err) {

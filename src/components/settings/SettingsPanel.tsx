@@ -10,6 +10,11 @@ import {
   setApiKey,
 } from '@/lib/apiKey'
 import {
+  DEFAULT_CONCEPT_CHAT_PROMPT,
+  getConceptChatPrompt,
+  setConceptChatPrompt,
+} from '@/lib/chatPrompts'
+import {
   COLOR_BUTTON_GHOST_HOVER_BG,
   COLOR_BUTTON_PRIMARY_BG,
   COLOR_BUTTON_PRIMARY_HOVER_BG,
@@ -46,6 +51,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
   const [status, setStatus] = useState<KeyStatus>(() => (getApiKey() ? 'saved' : 'empty'))
   const [errorMsg, setErrorMsg] = useState('')
   const [aiAssist, setAiAssistLocal] = useState<boolean>(() => getAiAssist())
+  const [conceptChatPrompt, setConceptChatPromptLocal] = useState<string>(() =>
+    getConceptChatPrompt()
+  )
   const inputRef = useRef<HTMLInputElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -156,6 +164,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
           .cf-btn-ghost:hover { background-color: ${COLOR_BUTTON_GHOST_HOVER_BG} !important; }
           .cf-btn-danger:hover { background-color: ${COLOR_BUTTON_GHOST_HOVER_BG} !important; color: ${COLOR_STATUS_ERROR} !important; }
           .cf-input:focus { border-color: ${COLOR_INPUT_FOCUS_BORDER} !important; outline: none; }
+          .cf-settings-reset:hover { background-color: ${COLOR_BUTTON_GHOST_HOVER_BG} !important; }
           @media (prefers-reduced-motion: reduce) {
             .cf-btn-primary, .cf-btn-ghost, .cf-btn-danger, .cf-input { transition: none !important; }
           }
@@ -416,6 +425,83 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 }}
               />
             </button>
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
+
+          {/* K-09: Concept Chat system prompt */}
+          <div>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 8,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: FONT_SIZE_SMALL,
+                  color: COLOR_TEXT_MUTED,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  fontWeight: '600',
+                }}
+              >
+                Concept Chat
+              </span>
+              <button
+                onClick={(): void => {
+                  setConceptChatPromptLocal(DEFAULT_CONCEPT_CHAT_PROMPT)
+                  setConceptChatPrompt(DEFAULT_CONCEPT_CHAT_PROMPT)
+                }}
+                style={{
+                  background: 'transparent',
+                  border: `1px solid ${COLOR_NODE_BORDER}`,
+                  borderRadius: 4,
+                  padding: '2px 8px',
+                  fontFamily: FONT_FAMILY,
+                  fontSize: '10px',
+                  color: COLOR_TEXT_MUTED,
+                  cursor: 'pointer',
+                  transition: `background-color ${TRANSITION_FAST}`,
+                }}
+                className="cf-settings-reset"
+              >
+                Reset to default
+              </button>
+            </div>
+            <textarea
+              value={conceptChatPrompt}
+              onChange={(e): void => {
+                setConceptChatPromptLocal(e.target.value)
+                setConceptChatPrompt(e.target.value)
+              }}
+              aria-label="Concept Chat system prompt"
+              rows={6}
+              style={{
+                width: '100%',
+                background: COLOR_INPUT_BG,
+                border: `1px solid ${COLOR_INPUT_BORDER}`,
+                borderRadius: 4,
+                color: COLOR_NODE_TEXT,
+                fontFamily: FONT_FAMILY,
+                fontSize: '11px',
+                lineHeight: 1.6,
+                padding: '8px',
+                resize: 'vertical',
+                outline: 'none',
+                boxSizing: 'border-box',
+                transition: `border-color ${TRANSITION_FAST}`,
+              }}
+              onFocus={(e): void => {
+                e.currentTarget.style.borderColor = COLOR_INPUT_FOCUS_BORDER
+              }}
+              onBlur={(e): void => {
+                e.currentTarget.style.borderColor = COLOR_INPUT_BORDER
+              }}
+            />
           </div>
         </div>
       </div>
