@@ -208,7 +208,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v4.7 &nbsp;·&nbsp; March 2026</span>
+    <span class="version-badge">v4.8 &nbsp;·&nbsp; March 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -356,7 +356,8 @@
         <tr><td class="req-id">P-04</td><td>When the app loads with a <code>?autoload=&lt;base64&gt;</code> query parameter present, decode it from base64, validate it as <code>MapData</code>, and load the resulting map onto the canvas automatically &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">P-05</td><td>Immediately after processing the <code>?autoload=</code> parameter — whether successful or not — remove it from the browser URL using <code>history.replaceState()</code> so the encoded data does not persist in browser history &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td class="req-id">P-06</td><td>If the <code>?autoload=</code> parameter fails base64 decoding or <code>MapData</code> validation, display a visible error message to the user indicating the map could not be loaded from the URL, and leave the canvas in its default empty state &nbsp;<span class="badge badge-core">NEW</span></td></tr>
-        <tr><td class="req-id">P-07</td><td>Save each node's description in the map's JSON data; restore descriptions when a saved map is loaded; node descriptions must not be rendered in PNG canvas exports &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td class="req-id">P-07</td><td>Save each node's description in the map's JSON data; restore descriptions when a saved map is loaded; node descriptions must not be rendered in PNG canvas exports</td></tr>
+        <tr><td class="req-id">P-08</td><td>When the user triggers Save, display a filename prompt containing a text input; on the first save of a session the input is empty; on subsequent saves within the same session the input is pre-populated with the previously used filename; a static <code>.json</code> label is displayed immediately after (outside) the input field to indicate the extension will be appended automatically; the confirm action is disabled while the input is empty; confirming saves the map as <code>&lt;filename&gt;.json</code>; cancelling aborts the save without writing any file &nbsp;<span class="badge badge-core">NEW</span></td></tr>
       </tbody>
     </table>
 
