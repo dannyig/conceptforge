@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import type { CanvasHandle } from '@/components/canvas/Canvas'
 import { loadMapFromJson, saveMapToJson } from '@/lib/export'
 import {
@@ -12,6 +12,7 @@ import {
   FONT_SIZE_SMALL,
   TRANSITION_FAST,
 } from '@/lib/theme'
+import { FilenamePrompt } from './FilenamePrompt'
 
 interface ToolbarProps {
   canvasRef: React.RefObject<CanvasHandle | null>
@@ -75,13 +76,31 @@ export function Toolbar({
 }: ToolbarProps): React.JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const displayedError = error ?? autoloadError
+  const [promptOpen, setPromptOpen] = useState(false)
+  const [lastFilename, setLastFilename] = useState('')
+  // Snapshot map data at the moment Save is clicked; passed to saveMapToJson on confirm
+  const pendingDataRef = useRef<ReturnType<NonNullable<CanvasHandle>['getMapData']> | null>(null)
 
   const handleSave = useCallback((): void => {
     const data = canvasRef.current?.getMapData()
     if (!data) return
     setError(null)
-    saveMapToJson(data)
+    pendingDataRef.current = data
+    setPromptOpen(true)
   }, [canvasRef])
+
+  const handlePromptConfirm = useCallback((filename: string): void => {
+    if (!pendingDataRef.current) return
+    saveMapToJson(pendingDataRef.current, filename)
+    setLastFilename(filename)
+    setPromptOpen(false)
+    pendingDataRef.current = null
+  }, [])
+
+  const handlePromptCancel = useCallback((): void => {
+    setPromptOpen(false)
+    pendingDataRef.current = null
+  }, [])
 
   const handleLoad = useCallback(async (): Promise<void> => {
     setError(null)
@@ -150,6 +169,14 @@ export function Toolbar({
           </span>
         )}
       </div>
+
+      {promptOpen && (
+        <FilenamePrompt
+          defaultValue={lastFilename}
+          onConfirm={handlePromptConfirm}
+          onCancel={handlePromptCancel}
+        />
+      )}
     </>
   )
 }
