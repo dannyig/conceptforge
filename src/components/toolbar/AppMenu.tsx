@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import type { CanvasHandle } from '@/components/canvas/Canvas'
 import { loadMapFromJson, saveMapToJson } from '@/lib/export'
+import { FilenamePrompt } from './FilenamePrompt'
 import {
   COLOR_BUTTON_GHOST_HOVER_BG,
   COLOR_BUTTON_PRIMARY_BG,
@@ -140,6 +141,9 @@ export function AppMenu({
   const [skillVersion, setSkillVersion] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showInstructions, setShowInstructions] = useState(false)
+  const [promptOpen, setPromptOpen] = useState(false)
+  const [lastFilename, setLastFilename] = useState('')
+  const pendingDataRef = useRef<ReturnType<NonNullable<CanvasHandle>['getMapData']> | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
   const displayedError = error ?? autoloadError
@@ -187,8 +191,22 @@ export function AppMenu({
     if (!data) return
     setError(null)
     setMenuOpen(false)
-    saveMapToJson({ ...data, focusQuestion: focusQuestion || undefined })
+    pendingDataRef.current = { ...data, focusQuestion: focusQuestion || undefined }
+    setPromptOpen(true)
   }, [canvasRef, focusQuestion])
+
+  const handlePromptConfirm = useCallback((filename: string): void => {
+    if (!pendingDataRef.current) return
+    saveMapToJson(pendingDataRef.current, filename)
+    setLastFilename(filename)
+    setPromptOpen(false)
+    pendingDataRef.current = null
+  }, [])
+
+  const handlePromptCancel = useCallback((): void => {
+    setPromptOpen(false)
+    pendingDataRef.current = null
+  }, [])
 
   const handleLoad = useCallback(async (): Promise<void> => {
     setError(null)
@@ -506,6 +524,14 @@ export function AppMenu({
             </button>
           </div>
         </div>
+      )}
+
+      {promptOpen && (
+        <FilenamePrompt
+          defaultValue={lastFilename}
+          onConfirm={handlePromptConfirm}
+          onCancel={handlePromptCancel}
+        />
       )}
     </>
   )
