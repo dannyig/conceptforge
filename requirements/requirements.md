@@ -70,6 +70,7 @@
 | C-37 | When Alt+Arrow is pressed and a single node is selected, select the edge connected to that node (incoming or outgoing) whose other endpoint is most directly in the arrow's direction; when Alt+Arrow is pressed and a single edge is selected, use that edge's source node as the pivot and select the edge connected to it (incoming or outgoing) whose other endpoint is most directly in the arrow's direction; if no matching edge exists in that direction, do nothing; if nothing is selected, first select a random edge |
 | C-38 | Remap keyboard nudge: Ctrl+Arrow moves the currently selected node or edge by the canvas default nudge increment; plain arrow keys no longer move canvas items |
 | C-39 | When the user enters or exits inline label edit mode on a concept node (via double-click, Enter, or F2), the canvas viewport must not zoom or scroll; the current position and zoom level must remain unchanged throughout the edit interaction |
+| C-40 | When the user manually draws a new edge between two nodes (including the edge created via drag-to-empty-canvas, C-19), automatically set its label to `?`; the label is not placed in edit mode and remains `?` until the user double-clicks it to change it (C-09); AI-generated edges (from Generate Map, Suggest Concepts, and Expand) are unaffected and always receive the label produced by Claude |
 
 ### 4.2 AI — Map Generation
 
@@ -360,3 +361,5 @@
 *Version 4.8 — March 2026 — Added P-08 (filename prompt on Save: empty on first save, pre-populated on subsequent saves, .json suffix appended automatically, confirm disabled while empty, cancel aborts)*
 
 *Version 4.9 — March 2026 — Added K-09 (Concept Chat system prompt in Settings: editable textarea, Reset to default, localStorage persistence) and A-33 (system prompt sent as `system` parameter on every concept node chat API call; includes citation and resources requirements in default prompt)*
+
+*Version 5.0 — March 2026 — Added C-40 (new manually drawn edges default to `?` label; AI-generated edges unaffected)*
