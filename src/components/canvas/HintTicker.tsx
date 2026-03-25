@@ -33,6 +33,14 @@ const HINTS: readonly string[] = [
   'Right-click a node to add a description',
   'Green dot on node — hover to read info',
   'Menu → Download cmap skill for Claude Code',
+  'Right-click a node to open AI chat',
+  'Chat reply — hit Read for a full view',
+  'Arrow keys navigate between connected nodes',
+  'Alt+Arrow selects an edge from current node',
+  'Tab cycles through every node on canvas',
+  'Drag an edge tip to reconnect it',
+  'Ctrl+Arrow nudges the selected node or edge',
+  'Enable AI Assist in Settings to use AI',
 ]
 
 // Four-phase cycle per hint:
