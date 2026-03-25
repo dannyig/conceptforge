@@ -342,6 +342,58 @@ export async function suggestEdgeLabels(
   return text
 }
 
+// A-39: suggest target concepts for a directed relationship — returns raw markdown string for reading panel
+export async function suggestEdgeConcepts(
+  sourceLabel: string,
+  sourceDescription: string | undefined,
+  edgeLabel: string,
+  existingTargetLabels: string[],
+  focusQuestion: string | undefined,
+  apiKey: string,
+  systemPrompt: string
+): Promise<string> {
+  let userPrompt = `Source concept: "${sourceLabel}"\n`
+  if (sourceDescription) userPrompt += `Source description: ${sourceDescription}\n`
+  userPrompt += `Relationship: "${edgeLabel}"\n`
+  if (existingTargetLabels.length > 0) {
+    userPrompt += `Existing target concepts (do not suggest these): ${existingTargetLabels.join(', ')}\n`
+  }
+  if (focusQuestion) userPrompt += `Focus question: "${focusQuestion}"\n`
+  userPrompt +=
+    `\nSuggest 3–5 target concepts that could be connected from "${sourceLabel}" via the "${edgeLabel}" relationship.\n\n` +
+    `Format your response exactly as follows:\n` +
+    `First, an ASCII relationship diagram on its own line:\n` +
+    `[${sourceLabel}] -- ${edgeLabel} --> [?]\n\n` +
+    `Then a numbered list of 3–5 candidate target concepts. For each, write the concept name on its own line ` +
+    `followed by a brief paragraph explaining why it fits as a target of the "${edgeLabel}" relationship from "${sourceLabel}".`
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  })
+
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`Claude API error ${res.status}: ${body}`)
+  }
+
+  const data = (await res.json()) as { content: Array<{ type: string; text: string }> }
+  const text = data.content.find(c => c.type === 'text')?.text
+  if (!text) throw new Error('Empty response from Claude')
+  return text
+}
+
 // A-36: explain an existing edge label — returns raw markdown string for display in reading panel
 export async function explainEdgeLabel(
   edgeLabel: string,

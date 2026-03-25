@@ -64,7 +64,7 @@ import {
   COLOR_STATUS_ERROR,
   FIT_VIEW_DURATION_MS,
 } from '@/lib/theme'
-import { expandNode, suggestEdgeLabels, explainEdgeLabel } from '@/lib/claude'
+import { expandNode, suggestEdgeConcepts, suggestEdgeLabels, explainEdgeLabel } from '@/lib/claude'
 import { getApiKey, OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
 import { getEdgeLabelPrompt } from '@/lib/edgeLabelPrompts'
 import { ChatReadingPanel } from '@/components/ai/ChatReadingPanel'
@@ -289,6 +289,13 @@ function CanvasFlow({
     y: number
   } | null>(null)
 
+  // A-38: hub right-click menu state
+  const [hubMenu, setHubMenu] = useState<{
+    hubNodeId: string
+    x: number
+    y: number
+  } | null>(null)
+
   // A-35/A-36: edge label AI reading panel state
   const [edgeLabelPanel, setEdgeLabelPanel] = useState<{
     title: string
@@ -343,6 +350,7 @@ function CanvasFlow({
 
   const closeAllMenus = useCallback((): void => {
     setContextMenu(null)
+    setHubMenu(null)
     setPaneMenu(null)
     setNoteMenu(null)
     setNodeMenu(null)
@@ -909,6 +917,10 @@ function CanvasFlow({
         setNodeMenu({ nodeId: node.id, x: event.clientX, y: event.clientY })
         return
       }
+      if (node.type === 'branchHub') {
+        setHubMenu({ hubNodeId: node.id, x: event.clientX, y: event.clientY })
+        return
+      }
       if (node.type === 'note') {
         const flowPos = screenToFlowPosition({ x: event.clientX, y: event.clientY })
         setNoteMenu({
@@ -1117,6 +1129,50 @@ function CanvasFlow({
     [focusQuestion]
   )
 
+  // ---------- A-39: suggest target concepts for an edge or hub ----------
+
+  const handleSuggestConcepts = useCallback(
+    async (
+      sourceNodeId: string,
+      edgeLabel: string,
+      existingTargetNodeIds: string[]
+    ): Promise<void> => {
+      const sourceNode = nodesRef.current.find(n => n.id === sourceNodeId)
+      if (!sourceNode) return
+
+      const apiKey = getApiKey()
+      if (!apiKey) {
+        window.dispatchEvent(new CustomEvent(OPEN_SETTINGS_EVENT))
+        return
+      }
+
+      const existingTargetLabels = existingTargetNodeIds
+        .map(id => nodesRef.current.find(n => n.id === id)?.data.label)
+        .filter((l): l is string => l !== undefined)
+
+      setEdgeLabelLoading(true)
+      setEdgeLabelError(null)
+
+      try {
+        const content = await suggestEdgeConcepts(
+          sourceNode.data.label,
+          sourceNode.data.description,
+          edgeLabel,
+          existingTargetLabels,
+          focusQuestion || undefined,
+          apiKey,
+          getEdgeLabelPrompt()
+        )
+        setEdgeLabelPanel({ title: 'Suggest Concepts', content })
+      } catch (err) {
+        setEdgeLabelError(err instanceof Error ? err.message : 'Request failed')
+      } finally {
+        setEdgeLabelLoading(false)
+      }
+    },
+    [focusQuestion]
+  )
+
   // ---------- double-click pane to add node; dismiss all menus ----------
 
   const lastPaneClickTime = useRef<number>(0)
@@ -1144,7 +1200,8 @@ function CanvasFlow({
   )
 
   useEffect((): (() => void) => {
-    const anyOpen = contextMenu || paneMenu || noteMenu || nodeMenu || nodeInfoEdit || selectionMode
+    const anyOpen =
+      contextMenu || hubMenu || paneMenu || noteMenu || nodeMenu || nodeInfoEdit || selectionMode
     if (!anyOpen) return (): void => {}
     const handler = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
@@ -1159,7 +1216,16 @@ function CanvasFlow({
     }
     window.addEventListener('keydown', handler)
     return (): void => window.removeEventListener('keydown', handler)
-  }, [contextMenu, paneMenu, noteMenu, nodeMenu, nodeInfoEdit, selectionMode, closeAllMenus])
+  }, [
+    contextMenu,
+    hubMenu,
+    paneMenu,
+    noteMenu,
+    nodeMenu,
+    nodeInfoEdit,
+    selectionMode,
+    closeAllMenus,
+  ])
 
   // C-25: while in selection mode, Space held → temporarily switch to pan mode
   useEffect((): (() => void) => {
@@ -1578,6 +1644,65 @@ function CanvasFlow({
                 Explain Label
               </button>
             )}
+            {/* A-38/A-39: Suggest Concepts — dimmed when label is '?' or AI Assist off */}
+            <button
+              role="menuitem"
+              disabled={
+                !aiAssistEnabled ||
+                edgeLabelLoading ||
+                !contextMenu.edgeLabel ||
+                contextMenu.edgeLabel === '?'
+              }
+              onClick={(): void => {
+                const { sourceNodeId, targetNodeId, edgeLabel } = contextMenu
+                setContextMenu(null)
+                void handleSuggestConcepts(sourceNodeId, edgeLabel ?? '', [targetNodeId])
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 16px',
+                background: 'none',
+                border: 'none',
+                color: COLOR_NODE_TEXT,
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_NODE_LABEL,
+                textAlign: 'left',
+                cursor:
+                  !aiAssistEnabled ||
+                  edgeLabelLoading ||
+                  !contextMenu.edgeLabel ||
+                  contextMenu.edgeLabel === '?'
+                    ? 'not-allowed'
+                    : 'pointer',
+                opacity:
+                  !aiAssistEnabled ||
+                  edgeLabelLoading ||
+                  !contextMenu.edgeLabel ||
+                  contextMenu.edgeLabel === '?'
+                    ? 0.35
+                    : 1,
+                pointerEvents:
+                  !aiAssistEnabled || !contextMenu.edgeLabel || contextMenu.edgeLabel === '?'
+                    ? 'none'
+                    : 'auto',
+                transition: `background ${TRANSITION_FAST}, opacity ${TRANSITION_FAST}`,
+              }}
+              onMouseEnter={(e): void => {
+                const disabled =
+                  !aiAssistEnabled ||
+                  edgeLabelLoading ||
+                  !contextMenu.edgeLabel ||
+                  contextMenu.edgeLabel === '?'
+                if (!disabled) (e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+              }}
+              onMouseLeave={(e): void => {
+                ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
+              }}
+              aria-label="Suggest target concepts with AI"
+            >
+              Suggest Concepts
+            </button>
             <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
             {/* C-10: Branch — only when label exists */}
             {contextMenu.edgeLabel && (
@@ -1608,6 +1733,86 @@ function CanvasFlow({
                 Branch
               </button>
             )}
+          </div>
+        </>
+      )}
+
+      {/* A-38: hub right-click menu — "Suggest Concepts" */}
+      {hubMenu && (
+        <>
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 999 }}
+            onClick={(): void => setHubMenu(null)}
+            onContextMenu={(e): void => {
+              e.preventDefault()
+              setHubMenu(null)
+            }}
+          />
+          <div
+            role="menu"
+            aria-label="Hub options"
+            style={{
+              position: 'fixed',
+              left: hubMenu.x,
+              top: hubMenu.y,
+              zIndex: 1000,
+              background: COLOR_NODE_BG,
+              border: `1px solid ${COLOR_NODE_BORDER}`,
+              borderRadius: 6,
+              overflow: 'hidden',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+              minWidth: 148,
+            }}
+          >
+            <button
+              role="menuitem"
+              disabled={!aiAssistEnabled || edgeLabelLoading}
+              onClick={(): void => {
+                const hubNodeId = hubMenu.hubNodeId
+                const hubNode = nodesRef.current.find(n => n.id === hubNodeId)
+                if (!hubNode?.data.branchingEdgeId) {
+                  setHubMenu(null)
+                  return
+                }
+                const beId = hubNode.data.branchingEdgeId
+                const stemEdge = edgesRef.current.find(
+                  e => e.data?.isStem && e.data.branchingEdgeId === beId
+                )
+                const branchEdges = edgesRef.current.filter(
+                  e => e.data?.isBranch && e.data.branchingEdgeId === beId
+                )
+                const sourceNodeId = stemEdge?.source ?? ''
+                const targetNodeIds = branchEdges.map(e => e.target)
+                const edgeLabel = hubNode.data.label
+                setHubMenu(null)
+                void handleSuggestConcepts(sourceNodeId, edgeLabel, targetNodeIds)
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 16px',
+                background: 'none',
+                border: 'none',
+                color: COLOR_NODE_TEXT,
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_NODE_LABEL,
+                textAlign: 'left',
+                cursor: !aiAssistEnabled || edgeLabelLoading ? 'not-allowed' : 'pointer',
+                opacity: !aiAssistEnabled || edgeLabelLoading ? 0.35 : 1,
+                pointerEvents: !aiAssistEnabled ? 'none' : 'auto',
+                transition: `background ${TRANSITION_FAST}, opacity ${TRANSITION_FAST}`,
+              }}
+              onMouseEnter={(e): void => {
+                if (aiAssistEnabled && !edgeLabelLoading)
+                  (e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+              }}
+              onMouseLeave={(e): void => {
+                ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
+              }}
+              aria-label="Suggest target concepts with AI"
+            >
+              Suggest Concepts
+            </button>
           </div>
         </>
       )}
