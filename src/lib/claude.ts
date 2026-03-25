@@ -236,16 +236,20 @@ export interface ChatMessage {
   content: string
 }
 
-// A-29: conversational chat about a concept node
+// A-29, A-33: conversational chat about a concept node
+// systemPromptBase is the K-09 user-configurable prompt; node context is appended on top of it.
 export async function chatNode(
   nodeLabel: string,
   nodeDescription: string | undefined,
   focusQuestion: string | undefined,
   history: ChatMessage[],
   userMessage: string,
-  apiKey: string
+  apiKey: string,
+  systemPromptBase: string
 ): Promise<string> {
-  let systemPrompt = `You are a knowledgeable assistant helping the user explore and understand the concept "${nodeLabel}" in depth.`
+  let systemPrompt = systemPromptBase
+
+  systemPrompt += `\n\nYou are specifically helping the user explore the concept: "${nodeLabel}".`
 
   if (nodeDescription) {
     systemPrompt += `\n\nContext about this concept: ${nodeDescription}`
@@ -254,9 +258,6 @@ export async function chatNode(
   if (focusQuestion) {
     systemPrompt += `\n\nThe user is exploring this concept in the context of the following focus question: "${focusQuestion}"`
   }
-
-  systemPrompt +=
-    "\n\nBe concise and informative. Answer the user's questions about this concept directly."
 
   const messages = [
     ...history.map(m => ({ role: m.role, content: m.content })),
@@ -273,7 +274,7 @@ export async function chatNode(
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 1024,
+      max_tokens: 2048,
       system: systemPrompt,
       messages,
     }),
