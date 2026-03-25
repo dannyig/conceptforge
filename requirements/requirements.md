@@ -105,6 +105,7 @@
 | A-30 | Message history persists while the Chat panel is open; history is cleared when the panel is dismissed or when Chat is opened for a different node |
 | A-31 | Each AI response message in the Chat panel must display a persistent icon button (reading view); clicking the button opens a reading panel showing only that message's content — no other messages are included |
 | A-32 | The reading panel is centred in the viewport, sized at 70% of viewport width and 70% of viewport height; it renders the AI message content as markdown (bold, headings, bullet lists, code blocks); it contains an explicit dismiss button and also closes when the user clicks outside the panel boundary |
+| A-33 | Include the concept chat system prompt (retrieved from K-09 storage, falling back to the default if absent) as the `system` parameter in every Chat panel API call initiated against a concept node; the system prompt is sent once per conversation, not repeated in the message history; this prompt must not be applied to any other chat type introduced in future. Default system prompt text: *"You are an expert knowledge assistant embedded in a concept mapping tool. Your role is to help the user deeply understand the concept they are exploring. Ground every response in the specific concept and its relationship to the focus question. Be concise, accurate, and educational — avoid tangents, excessive caveats, and generic advice. Prefer structured explanations with clear reasoning. When listing items, keep lists short and focused. Base all factual claims on credible sources and cite them inline. At the end of every response, provide a Resources section with up to 5 relevant links to authoritative sources."* |
 
 ### 4.4 API Key Management
 
@@ -118,6 +119,7 @@
 | K-06 | Automatically enable the AI Assist toggle when the user saves an API key; automatically disable it when the API key is removed or cleared |
 | K-07 | Persist the AI Assist toggle state to `localStorage`; on page load, if no API key is stored, the toggle is always off regardless of the persisted value |
 | K-08 | When AI Assist is off, dim all AI-triggered controls and make them non-interactive (reduced opacity, pointer events disabled); affected controls: Generate Map button, Suggest Concepts button, and the Expand action in the node right-click context menu |
+| K-09 | Add a "Concept Chat" system prompt section to the Settings panel, positioned below the AI Assist toggle; display an editable multi-line textarea pre-filled with the default system prompt text; provide a "Reset to default" button that restores the textarea to the default text without requiring a save action; persist the user's edited value to `localStorage` under a namespaced key; on page load restore the persisted value if present, otherwise use the default; the section heading must name the chat objective ("Concept Chat") so future chat objectives can each have their own prompt |
 
 ### 4.5 Persistence — Export & Import
 
@@ -356,3 +358,5 @@
 *Version 4.7 — March 2026 — Added A-31 (reading view button on each Chat panel AI response) and A-32 (reading panel: centred, 70% viewport, markdown rendering, dismiss button and outside-click dismissal)*
 
 *Version 4.8 — March 2026 — Added P-08 (filename prompt on Save: empty on first save, pre-populated on subsequent saves, .json suffix appended automatically, confirm disabled while empty, cancel aborts)*
+
+*Version 4.9 — March 2026 — Added K-09 (Concept Chat system prompt in Settings: editable textarea, Reset to default, localStorage persistence) and A-33 (system prompt sent as `system` parameter on every concept node chat API call; includes citation and resources requirements in default prompt)*

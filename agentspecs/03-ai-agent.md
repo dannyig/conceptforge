@@ -2,7 +2,7 @@
 
 **Agent:** AI Agent
 **Sequence:** 03 — runs after Canvas Agent and Settings Agent both complete
-**Trigger:** Human assigns requirement IDs A-01 → A-32
+**Trigger:** Human assigns requirement IDs A-01 → A-33
 **Branch:** `feature/A-01-map-generation`
 **Depends on:** Canvas Agent (01) and Settings Agent (02) both merged to main
 **Parallel with:** Persistence Agent (04)
@@ -254,6 +254,17 @@ Extend the Mode 1 and Mode 2 API calls to request a narrative and resource links
 
 ---
 
+### Group 6c — Concept Chat System Prompt (A-33)
+
+- [ ] In `src/lib/claude.ts`, update the `chatNode` function to accept an optional `systemPrompt` string parameter
+- [ ] When `systemPrompt` is provided, include it as the `system` field in the Messages API request body — sent once per call, not injected into the `messages` array
+- [ ] In `src/components/ai/ChatPanel.tsx`, import `getConceptChatPrompt` from `src/lib/chatPrompts.ts` and pass the result to every `chatNode` call
+- [ ] The system prompt applies only to concept node chats — do not pass it to `generateMap`, `expandNode`, or any other API call
+
+**Commit:** `feat(A-33): system prompt on concept node chat calls`
+
+---
+
 ### Group 7 — UI Verification (Playwright MCP)
 
 Before committing Group 6, start the dev server and use Playwright MCP + Chrome to verify:
@@ -279,6 +290,9 @@ Before committing Group 6, start the dev server and use Playwright MCP + Chrome 
 - [ ] Clicking outside the reading panel → panel dismisses
 - [ ] Clicking the dismiss button → panel dismisses
 - [ ] Opening a reading panel while another is open → first panel closes
+- [ ] Chat responses reference citations and include a Resources section with links
+- [ ] Editing the system prompt in Settings → subsequent chat responses reflect the new prompt
+- [ ] Resetting to default in Settings → chat responses reflect the default prompt behaviour
 
 Log any issues as `/feedback` entries before committing.
 
@@ -352,4 +366,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*AI Agent Spec v1.7 — March 2026 (added A-31–A-32: Chat reading view button and markdown reading panel — Group 6b)*
+*AI Agent Spec v1.8 — March 2026 (added A-33: concept chat system prompt sent via `system` parameter — Group 6c; chatNode updated to accept systemPrompt; ChatPanel reads from chatPrompts.ts)*
