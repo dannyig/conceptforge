@@ -2,7 +2,7 @@
 
 **Agent:** Settings Agent
 **Sequence:** 02 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs K-01 → K-08
+**Trigger:** Human assigns requirement IDs K-01 → K-09
 **Branch:** `feature/K-01-api-key-settings`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Canvas Agent (01)
@@ -124,7 +124,38 @@ Complete all items below in order. Commit after each group.
 
 ---
 
-### Group 5 — UI Verification (Playwright MCP)
+### Group 5 — Concept Chat System Prompt (K-09)
+
+- [ ] Add a "Concept Chat" section to `SettingsPanel.tsx`, positioned below the AI Assist toggle:
+  - Section heading: `"Concept Chat"` (labels the chat objective for future extensibility)
+  - Multi-line `<textarea>` pre-filled with the default system prompt (defined as a constant in `src/lib/chatPrompts.ts`)
+  - "Reset to default" button alongside the textarea — restores content to the default without requiring a separate save
+- [ ] Create `src/lib/chatPrompts.ts`:
+  ```typescript
+  export const CONCEPT_CHAT_PROMPT_KEY = 'conceptforge:concept-chat-prompt'
+
+  export const DEFAULT_CONCEPT_CHAT_PROMPT =
+    'You are an expert knowledge assistant embedded in a concept mapping tool. ' +
+    'Your role is to help the user deeply understand the concept they are exploring. ' +
+    'Ground every response in the specific concept and its relationship to the focus question. ' +
+    'Be concise, accurate, and educational — avoid tangents, excessive caveats, and generic advice. ' +
+    'Prefer structured explanations with clear reasoning. When listing items, keep lists short and focused. ' +
+    'Base all factual claims on credible sources and cite them inline. ' +
+    'At the end of every response, provide a Resources section with up to 5 relevant links to authoritative sources.'
+
+  export function getConceptChatPrompt(): string
+  export function setConceptChatPrompt(prompt: string): void
+  ```
+- [ ] `getConceptChatPrompt`: reads from `localStorage`; returns the stored value if present, `DEFAULT_CONCEPT_CHAT_PROMPT` otherwise
+- [ ] `setConceptChatPrompt`: writes to `localStorage` under `CONCEPT_CHAT_PROMPT_KEY`; if the value equals `DEFAULT_CONCEPT_CHAT_PROMPT`, store it anyway (explicit user action, not a side-effect)
+- [ ] The textarea in Settings updates `localStorage` on every change (live persistence — no separate Save button required for the prompt)
+- [ ] "Reset to default" sets the textarea value and writes `DEFAULT_CONCEPT_CHAT_PROMPT` to `localStorage`
+
+**Commit:** `feat(K-09): concept chat system prompt in settings with default, edit, and reset`
+
+---
+
+### Group 6 — UI Verification (Playwright MCP)
 
 Before committing Group 4, start the dev server and use Playwright MCP + Chrome to verify:
 
@@ -140,6 +171,10 @@ Before committing Group 4, start the dev server and use Playwright MCP + Chrome 
 - [ ] When toggle is off: Generate Map, Suggest Concepts, and Expand are visually dimmed and unclickable
 - [ ] When toggle is on: all three controls are fully interactive
 - [ ] Toggle state persists across page reloads (when key is present)
+- [ ] Concept Chat system prompt section is visible in Settings below the AI Assist toggle
+- [ ] Textarea is pre-filled with the default prompt text on first load
+- [ ] Editing the textarea and reloading the page — custom prompt is restored
+- [ ] Clicking "Reset to default" restores the default text in the textarea and in localStorage
 - [ ] No errors in browser console
 
 Log any visual or interaction issues found as `/feedback` entries before committing.
@@ -197,4 +232,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Settings Agent Spec v1.2 — March 2026 (added Group 4: AI Assist toggle K-05–K-08)*
+*Settings Agent Spec v1.3 — March 2026 (added Group 5: Concept Chat system prompt K-09; chatPrompts.ts with default, get, set)*
