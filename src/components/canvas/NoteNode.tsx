@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { NodeResizer, useReactFlow, type Node, type NodeProps } from '@xyflow/react'
+import { NodeResizer, useReactFlow, useViewport, type Node, type NodeProps } from '@xyflow/react'
 import {
   COLOR_NODE_SELECTED,
   FONT_FAMILY,
@@ -27,6 +27,9 @@ export function getContrastText(hex: string): string {
 
 export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React.JSX.Element {
   const { setNodes } = useReactFlow()
+  const { zoom } = useViewport()
+  // Keep resize handles ~8px on screen regardless of zoom level. Clamped to [8, 24] in canvas space.
+  const scaledHandle = Math.min(Math.max(8, Math.round(8 / Math.max(zoom, 0.1))), 24)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(data.text ?? '')
   // G-03: resize handles shown on hover — tracked on the outer wrapper so that
@@ -91,8 +94,8 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
           borderWidth: 0,
         }}
         handleStyle={{
-          width: 8,
-          height: 8,
+          width: scaledHandle,
+          height: scaledHandle,
           borderRadius: 2,
           backgroundColor: COLOR_NODE_SELECTED,
           border: 'none',
