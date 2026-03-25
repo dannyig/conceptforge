@@ -291,6 +291,101 @@ export async function chatNode(
   return text
 }
 
+// A-35: suggest labels for a directed edge — returns raw markdown string for display in reading panel
+export async function suggestEdgeLabels(
+  sourceLabel: string,
+  sourceDescription: string | undefined,
+  targetLabel: string,
+  targetDescription: string | undefined,
+  focusQuestion: string | undefined,
+  apiKey: string,
+  systemPrompt: string
+): Promise<string> {
+  let userPrompt = `Source concept: "${sourceLabel}"\n`
+  if (sourceDescription) userPrompt += `Source description: ${sourceDescription}\n`
+  userPrompt += `Target concept: "${targetLabel}"\n`
+  if (targetDescription) userPrompt += `Target description: ${targetDescription}\n`
+  if (focusQuestion) userPrompt += `Focus question: "${focusQuestion}"\n`
+  userPrompt +=
+    `\nSuggest 3–5 concise, directionally accurate labels for the edge from ` +
+    `"${sourceLabel}" to "${targetLabel}".\n\n` +
+    `Format your response exactly as follows:\n` +
+    `First, an ASCII relationship diagram on its own line:\n` +
+    `[${sourceLabel}] -- ? --> [${targetLabel}]\n\n` +
+    `Then a numbered list of 3–5 candidate labels. For each, write the label on its own line ` +
+    `followed by a short paragraph explaining why it accurately describes the directed relationship.`
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  })
+
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`Claude API error ${res.status}: ${body}`)
+  }
+
+  const data = (await res.json()) as { content: Array<{ type: string; text: string }> }
+  const text = data.content.find(c => c.type === 'text')?.text
+  if (!text) throw new Error('Empty response from Claude')
+  return text
+}
+
+// A-36: explain an existing edge label — returns raw markdown string for display in reading panel
+export async function explainEdgeLabel(
+  edgeLabel: string,
+  sourceLabel: string,
+  sourceDescription: string | undefined,
+  targetLabel: string,
+  targetDescription: string | undefined,
+  focusQuestion: string | undefined,
+  apiKey: string,
+  systemPrompt: string
+): Promise<string> {
+  let userPrompt = `Edge: [${sourceLabel}] -- ${edgeLabel} --> [${targetLabel}]\n`
+  if (sourceDescription) userPrompt += `Source description: ${sourceDescription}\n`
+  if (targetDescription) userPrompt += `Target description: ${targetDescription}\n`
+  if (focusQuestion) userPrompt += `Focus question: "${focusQuestion}"\n`
+  userPrompt += `\nExplain this relationship label in context.`
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  })
+
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`Claude API error ${res.status}: ${body}`)
+  }
+
+  const data = (await res.json()) as { content: Array<{ type: string; text: string }> }
+  const text = data.content.find(c => c.type === 'text')?.text
+  if (!text) throw new Error('Empty response from Claude')
+  return text
+}
+
 export function parseClaudeResponse(raw: unknown): ClaudeMapResponse {
   if (typeof raw !== 'object' || raw === null) {
     throw new Error('Invalid Claude response: expected an object')

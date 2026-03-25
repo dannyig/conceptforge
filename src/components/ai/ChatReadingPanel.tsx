@@ -338,10 +338,15 @@ function renderMarkdown(text: string): React.ReactNode[] {
 interface ChatReadingPanelProps {
   content: string
   onDismiss: () => void
+  title?: string
 }
 
 // A-32: centred reading panel, 70% viewport, markdown rendering, dismiss button + outside-click
-export function ChatReadingPanel({ content, onDismiss }: ChatReadingPanelProps): React.JSX.Element {
+export function ChatReadingPanel({
+  content,
+  onDismiss,
+  title = 'Reading View',
+}: ChatReadingPanelProps): React.JSX.Element {
   const handleOverlayClick = useCallback(
     (e: React.MouseEvent): void => {
       if (e.target === e.currentTarget) onDismiss()
@@ -412,7 +417,7 @@ export function ChatReadingPanel({ content, onDismiss }: ChatReadingPanelProps):
               textTransform: 'uppercase',
             }}
           >
-            Reading View
+            {title}
           </span>
           <button
             className="cf-reading-dismiss"

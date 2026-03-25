@@ -64,8 +64,10 @@ import {
   COLOR_STATUS_ERROR,
   FIT_VIEW_DURATION_MS,
 } from '@/lib/theme'
-import { expandNode } from '@/lib/claude'
+import { expandNode, suggestEdgeLabels, explainEdgeLabel } from '@/lib/claude'
 import { getApiKey, OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
+import { getEdgeLabelPrompt } from '@/lib/edgeLabelPrompts'
+import { ChatReadingPanel } from '@/components/ai/ChatReadingPanel'
 
 // Canvas-internal node data — superset of concept-node, branch-hub, and note data
 type CanvasNodeData = {
@@ -280,9 +282,20 @@ function CanvasFlow({
 
   const [contextMenu, setContextMenu] = useState<{
     edgeId: string
+    edgeLabel: string | undefined
+    sourceNodeId: string
+    targetNodeId: string
     x: number
     y: number
   } | null>(null)
+
+  // A-35/A-36: edge label AI reading panel state
+  const [edgeLabelPanel, setEdgeLabelPanel] = useState<{
+    title: string
+    content: string
+  } | null>(null)
+  const [edgeLabelLoading, setEdgeLabelLoading] = useState(false)
+  const [edgeLabelError, setEdgeLabelError] = useState<string | null>(null)
 
   // G-01: pane right-click menu state
   const [paneMenu, setPaneMenu] = useState<{
@@ -588,7 +601,7 @@ function CanvasFlow({
           {
             ...params,
             id: crypto.randomUUID(),
-            data: { label: '' },
+            data: { label: '?' },
             markerEnd: MARKER_END_DEFAULT,
             style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
           },
@@ -672,7 +685,7 @@ function CanvasFlow({
             target: newNodeId,
             targetHandle: pickTargetHandle(fromNode.position, position),
             type: 'default',
-            data: { label: '' },
+            data: { label: '?' },
             markerEnd: MARKER_END_DEFAULT,
             style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
           },
@@ -799,9 +812,16 @@ function CanvasFlow({
   const onEdgeContextMenu = useCallback(
     (event: React.MouseEvent, edge: CanvasFlowEdge): void => {
       event.preventDefault()
-      if (!edge.data?.label || edge.data?.isStem || edge.data?.isBranch) return
+      if (edge.data?.isStem || edge.data?.isBranch) return
       closeAllMenus()
-      setContextMenu({ edgeId: edge.id, x: event.clientX, y: event.clientY })
+      setContextMenu({
+        edgeId: edge.id,
+        edgeLabel: edge.data?.label || undefined,
+        sourceNodeId: edge.source,
+        targetNodeId: edge.target,
+        x: event.clientX,
+        y: event.clientY,
+      })
     },
     [closeAllMenus]
   )
@@ -1016,6 +1036,85 @@ function CanvasFlow({
       )
     },
     [setNodes]
+  )
+
+  // ---------- A-35: suggest labels for an edge ----------
+
+  const handleSuggestLabels = useCallback(
+    async (edgeId: string): Promise<void> => {
+      const edge = edgesRef.current.find(e => e.id === edgeId)
+      if (!edge) return
+      const sourceNode = nodesRef.current.find(n => n.id === edge.source)
+      const targetNode = nodesRef.current.find(n => n.id === edge.target)
+      if (!sourceNode || !targetNode) return
+
+      const apiKey = getApiKey()
+      if (!apiKey) {
+        window.dispatchEvent(new CustomEvent(OPEN_SETTINGS_EVENT))
+        return
+      }
+
+      setEdgeLabelLoading(true)
+      setEdgeLabelError(null)
+
+      try {
+        const content = await suggestEdgeLabels(
+          sourceNode.data.label,
+          sourceNode.data.description,
+          targetNode.data.label,
+          targetNode.data.description,
+          focusQuestion || undefined,
+          apiKey,
+          getEdgeLabelPrompt()
+        )
+        setEdgeLabelPanel({ title: 'Suggest Labels', content })
+      } catch (err) {
+        setEdgeLabelError(err instanceof Error ? err.message : 'Request failed')
+      } finally {
+        setEdgeLabelLoading(false)
+      }
+    },
+    [focusQuestion]
+  )
+
+  // ---------- A-36: explain an edge label ----------
+
+  const handleExplainLabel = useCallback(
+    async (edgeId: string): Promise<void> => {
+      const edge = edgesRef.current.find(e => e.id === edgeId)
+      if (!edge || !edge.data?.label) return
+      const sourceNode = nodesRef.current.find(n => n.id === edge.source)
+      const targetNode = nodesRef.current.find(n => n.id === edge.target)
+      if (!sourceNode || !targetNode) return
+
+      const apiKey = getApiKey()
+      if (!apiKey) {
+        window.dispatchEvent(new CustomEvent(OPEN_SETTINGS_EVENT))
+        return
+      }
+
+      setEdgeLabelLoading(true)
+      setEdgeLabelError(null)
+
+      try {
+        const content = await explainEdgeLabel(
+          edge.data.label,
+          sourceNode.data.label,
+          sourceNode.data.description,
+          targetNode.data.label,
+          targetNode.data.description,
+          focusQuestion || undefined,
+          apiKey,
+          getEdgeLabelPrompt()
+        )
+        setEdgeLabelPanel({ title: `Explain: ${edge.data.label}`, content })
+      } catch (err) {
+        setEdgeLabelError(err instanceof Error ? err.message : 'Request failed')
+      } finally {
+        setEdgeLabelLoading(false)
+      }
+    },
+    [focusQuestion]
   )
 
   // ---------- double-click pane to add node; dismiss all menus ----------
@@ -1382,42 +1481,135 @@ function CanvasFlow({
       )}
 
       {contextMenu && (
-        <div
-          role="menu"
-          aria-label="Edge options"
-          style={{
-            position: 'fixed',
-            left: contextMenu.x,
-            top: contextMenu.y,
-            zIndex: 1000,
-            background: COLOR_NODE_BG,
-            border: `1px solid ${COLOR_NODE_BORDER}`,
-            borderRadius: 6,
-            overflow: 'hidden',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
-            minWidth: 120,
-          }}
-        >
-          <button
-            role="menuitem"
-            onClick={(): void => convertToBranchingEdge(contextMenu.edgeId)}
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: '8px 16px',
-              background: 'none',
-              border: 'none',
-              color: COLOR_NODE_TEXT,
-              fontFamily: FONT_FAMILY,
-              fontSize: FONT_SIZE_NODE_LABEL,
-              textAlign: 'left',
-              cursor: 'pointer',
+        <>
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 999 }}
+            onClick={(): void => setContextMenu(null)}
+            onContextMenu={(e): void => {
+              e.preventDefault()
+              setContextMenu(null)
             }}
-            aria-label="Convert to branching edge"
+          />
+          <div
+            role="menu"
+            aria-label="Edge options"
+            style={{
+              position: 'fixed',
+              left: contextMenu.x,
+              top: contextMenu.y,
+              zIndex: 1000,
+              background: COLOR_NODE_BG,
+              border: `1px solid ${COLOR_NODE_BORDER}`,
+              borderRadius: 6,
+              overflow: 'hidden',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+              minWidth: 148,
+            }}
           >
-            Branch
-          </button>
-        </div>
+            {/* A-35: Suggest Labels — always present on single edges */}
+            <button
+              role="menuitem"
+              disabled={!aiAssistEnabled || edgeLabelLoading}
+              onClick={(): void => {
+                const edgeId = contextMenu.edgeId
+                setContextMenu(null)
+                void handleSuggestLabels(edgeId)
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 16px',
+                background: 'none',
+                border: 'none',
+                color: COLOR_NODE_TEXT,
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_NODE_LABEL,
+                textAlign: 'left',
+                cursor: !aiAssistEnabled || edgeLabelLoading ? 'not-allowed' : 'pointer',
+                opacity: !aiAssistEnabled || edgeLabelLoading ? 0.35 : 1,
+                pointerEvents: !aiAssistEnabled ? 'none' : 'auto',
+                transition: `background ${TRANSITION_FAST}, opacity ${TRANSITION_FAST}`,
+              }}
+              onMouseEnter={(e): void => {
+                if (aiAssistEnabled && !edgeLabelLoading)
+                  (e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+              }}
+              onMouseLeave={(e): void => {
+                ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
+              }}
+              aria-label="Suggest edge labels with AI"
+            >
+              Suggest Labels
+            </button>
+            {/* A-36: Explain Label — only when label is set and not '?' */}
+            {contextMenu.edgeLabel && contextMenu.edgeLabel !== '?' && (
+              <button
+                role="menuitem"
+                disabled={!aiAssistEnabled || edgeLabelLoading}
+                onClick={(): void => {
+                  const edgeId = contextMenu.edgeId
+                  setContextMenu(null)
+                  void handleExplainLabel(edgeId)
+                }}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '8px 16px',
+                  background: 'none',
+                  border: 'none',
+                  color: COLOR_NODE_TEXT,
+                  fontFamily: FONT_FAMILY,
+                  fontSize: FONT_SIZE_NODE_LABEL,
+                  textAlign: 'left',
+                  cursor: !aiAssistEnabled || edgeLabelLoading ? 'not-allowed' : 'pointer',
+                  opacity: !aiAssistEnabled || edgeLabelLoading ? 0.35 : 1,
+                  pointerEvents: !aiAssistEnabled ? 'none' : 'auto',
+                  transition: `background ${TRANSITION_FAST}, opacity ${TRANSITION_FAST}`,
+                }}
+                onMouseEnter={(e): void => {
+                  if (aiAssistEnabled && !edgeLabelLoading)
+                    (e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+                }}
+                onMouseLeave={(e): void => {
+                  ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
+                }}
+                aria-label="Explain edge label with AI"
+              >
+                Explain Label
+              </button>
+            )}
+            <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
+            {/* C-10: Branch — only when label exists */}
+            {contextMenu.edgeLabel && (
+              <button
+                role="menuitem"
+                onClick={(): void => convertToBranchingEdge(contextMenu.edgeId)}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '8px 16px',
+                  background: 'none',
+                  border: 'none',
+                  color: COLOR_NODE_TEXT,
+                  fontFamily: FONT_FAMILY,
+                  fontSize: FONT_SIZE_NODE_LABEL,
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  transition: `background ${TRANSITION_FAST}`,
+                }}
+                onMouseEnter={(e): void => {
+                  ;(e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+                }}
+                onMouseLeave={(e): void => {
+                  ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
+                }}
+                aria-label="Convert to branching edge"
+              >
+                Branch
+              </button>
+            )}
+          </div>
+        </>
       )}
 
       {/* C-28: concept node right-click menu */}
@@ -1606,6 +1798,64 @@ function CanvasFlow({
         >
           {expandError}
         </div>
+      )}
+
+      {/* A-35/A-36: edge label AI — loading indicator */}
+      {edgeLabelLoading && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 80,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 30,
+            background: COLOR_NODE_BG,
+            border: `1px solid ${COLOR_NODE_BORDER}`,
+            borderRadius: 6,
+            padding: '8px 16px',
+            fontFamily: FONT_FAMILY,
+            fontSize: FONT_SIZE_NODE_LABEL,
+            color: COLOR_TEXT_MUTED,
+          }}
+        >
+          Thinking…
+        </div>
+      )}
+
+      {/* A-35/A-36: edge label AI — error indicator */}
+      {edgeLabelError !== null && (
+        <div
+          role="alert"
+          onClick={(): void => setEdgeLabelError(null)}
+          style={{
+            position: 'absolute',
+            bottom: 80,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 30,
+            background: COLOR_NODE_BG,
+            border: `1px solid ${COLOR_STATUS_ERROR}`,
+            borderRadius: 6,
+            padding: '8px 16px',
+            fontFamily: FONT_FAMILY,
+            fontSize: FONT_SIZE_NODE_LABEL,
+            color: COLOR_STATUS_ERROR,
+            cursor: 'pointer',
+            maxWidth: 360,
+            textAlign: 'center',
+          }}
+        >
+          {edgeLabelError}
+        </div>
+      )}
+
+      {/* A-35/A-36: edge label AI reading panel */}
+      {edgeLabelPanel !== null && (
+        <ChatReadingPanel
+          content={edgeLabelPanel.content}
+          title={edgeLabelPanel.title}
+          onDismiss={(): void => setEdgeLabelPanel(null)}
+        />
       )}
 
       {/* C-28: description edit popover — blur saves, Escape cancels */}
