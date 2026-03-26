@@ -68,6 +68,7 @@ import { expandNode, suggestEdgeConcepts, suggestEdgeLabels, explainEdgeLabel } 
 import { getApiKey, OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
 import { getEdgeLabelPrompt } from '@/lib/edgeLabelPrompts'
 import { ChatReadingPanel } from '@/components/ai/ChatReadingPanel'
+import { SuggestionSelectPanel, type SuggestionItem } from '@/components/ai/SuggestionSelectPanel'
 
 // Canvas-internal node data — superset of concept-node, branch-hub, and note data
 type CanvasNodeData = {
@@ -296,10 +297,14 @@ function CanvasFlow({
     y: number
   } | null>(null)
 
-  // A-35/A-36: edge label AI reading panel state
+  // A-35/A-36/A-40/A-41: edge label AI panel state
   const [edgeLabelPanel, setEdgeLabelPanel] = useState<{
     title: string
     content: string
+    type: 'explainLabel' | 'suggestLabels' | 'suggestConcepts'
+    edgeId?: string // suggestLabels: edge to update; suggestConcepts from single edge
+    sourceNodeId?: string // suggestConcepts from single edge: source node
+    hubNodeId?: string // suggestConcepts from hub: hub node
   } | null>(null)
   const [edgeLabelLoading, setEdgeLabelLoading] = useState(false)
   const [edgeLabelError, setEdgeLabelError] = useState<string | null>(null)
@@ -1079,7 +1084,7 @@ function CanvasFlow({
           apiKey,
           getEdgeLabelPrompt()
         )
-        setEdgeLabelPanel({ title: 'Suggest Labels', content })
+        setEdgeLabelPanel({ title: 'Suggest Labels', content, type: 'suggestLabels', edgeId })
       } catch (err) {
         setEdgeLabelError(err instanceof Error ? err.message : 'Request failed')
       } finally {
@@ -1119,7 +1124,7 @@ function CanvasFlow({
           apiKey,
           getEdgeLabelPrompt()
         )
-        setEdgeLabelPanel({ title: `Explain: ${edge.data.label}`, content })
+        setEdgeLabelPanel({ title: `Explain: ${edge.data.label}`, content, type: 'explainLabel' })
       } catch (err) {
         setEdgeLabelError(err instanceof Error ? err.message : 'Request failed')
       } finally {
@@ -1135,7 +1140,8 @@ function CanvasFlow({
     async (
       sourceNodeId: string,
       edgeLabel: string,
-      existingTargetNodeIds: string[]
+      existingTargetNodeIds: string[],
+      context: { edgeId: string } | { hubNodeId: string }
     ): Promise<void> => {
       const sourceNode = nodesRef.current.find(n => n.id === sourceNodeId)
       if (!sourceNode) return
@@ -1163,7 +1169,14 @@ function CanvasFlow({
           apiKey,
           getEdgeLabelPrompt()
         )
-        setEdgeLabelPanel({ title: 'Suggest Concepts', content })
+        setEdgeLabelPanel({
+          title: 'Suggest Concepts',
+          content,
+          type: 'suggestConcepts',
+          ...('edgeId' in context
+            ? { edgeId: context.edgeId, sourceNodeId }
+            : { hubNodeId: context.hubNodeId }),
+        })
       } catch (err) {
         setEdgeLabelError(err instanceof Error ? err.message : 'Request failed')
       } finally {
@@ -1171,6 +1184,133 @@ function CanvasFlow({
       }
     },
     [focusQuestion]
+  )
+
+  // ---------- A-40: apply selected edge label ----------
+
+  const applyEdgeLabel = useCallback(
+    (edgeId: string, label: string): void => {
+      setEdges(es => es.map(e => (e.id === edgeId ? { ...e, data: { ...e.data, label } } : e)))
+      setEdgeLabelPanel(null)
+    },
+    [setEdges]
+  )
+
+  // ---------- A-41: apply selected concepts from a single edge ----------
+
+  const applyConceptsFromEdge = useCallback(
+    (edgeId: string, sourceNodeId: string, items: SuggestionItem[]): void => {
+      const edge = edgesRef.current.find(e => e.id === edgeId)
+      const sourceNode = nodesRef.current.find(n => n.id === sourceNodeId)
+      if (!edge || !sourceNode) return
+
+      const ts = Date.now()
+      const newNodeIds = items.map((_, i) => `node-${ts}-${i}`)
+      const positions = fanPositions(sourceNode.position, items.length)
+      const newFlowNodes: CanvasFlowNode[] = items.map((item, i) => ({
+        id: newNodeIds[i],
+        type: 'concept' as const,
+        position: positions[i],
+        data: { label: item.label, description: item.explanation || undefined },
+      }))
+
+      // Convert single edge to branching hub (C-10) with original target + all new nodes
+      const beId = crypto.randomUUID()
+      const hub = hubNodeId(beId)
+      const tn = nodesRef.current.find(n => n.id === edge.target)
+      const hubX = tn
+        ? (sourceNode.position.x + tn.position.x) / 2 - 20
+        : sourceNode.position.x + 120
+      const hubY = tn
+        ? (sourceNode.position.y + tn.position.y) / 2 - 12
+        : sourceNode.position.y - 12
+      const edgeLabel = edge.data?.label ?? ''
+
+      setNodes(nds => [
+        ...nds,
+        {
+          id: hub,
+          type: 'branchHub' as const,
+          position: { x: hubX, y: hubY },
+          data: { label: edgeLabel, branchingEdgeId: beId },
+        },
+        ...newFlowNodes,
+      ])
+      setEdges(eds => [
+        ...eds.filter(e => e.id !== edgeId),
+        {
+          id: stemEdgeId(beId),
+          source: edge.source,
+          sourceHandle: edge.sourceHandle ?? null,
+          target: hub,
+          type: 'branchStem',
+          data: { branchingEdgeId: beId, isStem: true },
+        },
+        {
+          id: branchEdgeId(beId, edge.target),
+          source: hub,
+          target: edge.target,
+          targetHandle: edge.targetHandle ?? null,
+          type: 'branchArrow',
+          data: { branchingEdgeId: beId, isBranch: true },
+          markerEnd: MARKER_END_DEFAULT,
+          style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+        },
+        ...newNodeIds.map(nid => ({
+          id: branchEdgeId(beId, nid),
+          source: hub,
+          target: nid,
+          type: 'branchArrow',
+          data: { branchingEdgeId: beId, isBranch: true },
+          markerEnd: MARKER_END_DEFAULT,
+          style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+        })),
+      ])
+      setEdgeLabelPanel(null)
+      setTimeout((): void => {
+        fitView({ padding: 0.15, maxZoom: 1, duration: FIT_VIEW_DURATION_MS })
+      }, 50)
+    },
+    [setNodes, setEdges, fitView]
+  )
+
+  // ---------- A-41: apply selected concepts from a hub ----------
+
+  const applyConceptsFromHub = useCallback(
+    (hubId: string, items: SuggestionItem[]): void => {
+      const hubNode = nodesRef.current.find(n => n.id === hubId)
+      if (!hubNode?.data.branchingEdgeId) return
+      const beId = hubNode.data.branchingEdgeId
+
+      const ts = Date.now()
+      const newNodeIds = items.map((_, i) => `node-${ts}-${i}`)
+      const positions = fanPositions(hubNode.position, items.length)
+      const newFlowNodes: CanvasFlowNode[] = items.map((item, i) => ({
+        id: newNodeIds[i],
+        type: 'concept' as const,
+        position: positions[i],
+        data: { label: item.label, description: item.explanation || undefined },
+      }))
+
+      setNodes(nds => [...nds, ...newFlowNodes])
+      setEdges(eds => [
+        ...eds,
+        ...newNodeIds.map(nid => ({
+          id: branchEdgeId(beId, nid),
+          source: hubId,
+          target: nid,
+          type: 'branchArrow',
+          data: { branchingEdgeId: beId, isBranch: true },
+          markerEnd: MARKER_END_DEFAULT,
+          style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+        })),
+      ])
+      setEdgeLabelPanel(null)
+      setTimeout((): void => {
+        fitView({ padding: 0.15, maxZoom: 1, duration: FIT_VIEW_DURATION_MS })
+      }, 50)
+    },
+    [setNodes, setEdges, fitView]
   )
 
   // ---------- double-click pane to add node; dismiss all menus ----------
@@ -1654,9 +1794,11 @@ function CanvasFlow({
                 contextMenu.edgeLabel === '?'
               }
               onClick={(): void => {
-                const { sourceNodeId, targetNodeId, edgeLabel } = contextMenu
+                const { sourceNodeId, targetNodeId, edgeLabel, edgeId } = contextMenu
                 setContextMenu(null)
-                void handleSuggestConcepts(sourceNodeId, edgeLabel ?? '', [targetNodeId])
+                void handleSuggestConcepts(sourceNodeId, edgeLabel ?? '', [targetNodeId], {
+                  edgeId,
+                })
               }}
               style={{
                 display: 'block',
@@ -1785,7 +1927,9 @@ function CanvasFlow({
                 const targetNodeIds = branchEdges.map(e => e.target)
                 const edgeLabel = hubNode.data.label
                 setHubMenu(null)
-                void handleSuggestConcepts(sourceNodeId, edgeLabel, targetNodeIds)
+                void handleSuggestConcepts(sourceNodeId, edgeLabel, targetNodeIds, {
+                  hubNodeId,
+                })
               }}
               style={{
                 display: 'block',
@@ -2054,12 +2198,44 @@ function CanvasFlow({
         </div>
       )}
 
-      {/* A-35/A-36: edge label AI reading panel */}
-      {edgeLabelPanel !== null && (
+      {/* A-36: explain label — read-only markdown panel */}
+      {edgeLabelPanel?.type === 'explainLabel' && (
         <ChatReadingPanel
           content={edgeLabelPanel.content}
           title={edgeLabelPanel.title}
           onDismiss={(): void => setEdgeLabelPanel(null)}
+        />
+      )}
+
+      {/* A-40: suggest labels — single-select interactive panel */}
+      {edgeLabelPanel?.type === 'suggestLabels' && edgeLabelPanel.edgeId && (
+        <SuggestionSelectPanel
+          title={edgeLabelPanel.title}
+          content={edgeLabelPanel.content}
+          mode="single"
+          onDismiss={(): void => setEdgeLabelPanel(null)}
+          onApply={(selected): void => {
+            if (selected[0] && edgeLabelPanel.edgeId) {
+              applyEdgeLabel(edgeLabelPanel.edgeId, selected[0].label)
+            }
+          }}
+        />
+      )}
+
+      {/* A-41: suggest concepts — multi-select interactive panel */}
+      {edgeLabelPanel?.type === 'suggestConcepts' && (
+        <SuggestionSelectPanel
+          title={edgeLabelPanel.title}
+          content={edgeLabelPanel.content}
+          mode="multi"
+          onDismiss={(): void => setEdgeLabelPanel(null)}
+          onApply={(selected): void => {
+            if (edgeLabelPanel.hubNodeId) {
+              applyConceptsFromHub(edgeLabelPanel.hubNodeId, selected)
+            } else if (edgeLabelPanel.edgeId && edgeLabelPanel.sourceNodeId) {
+              applyConceptsFromEdge(edgeLabelPanel.edgeId, edgeLabelPanel.sourceNodeId, selected)
+            }
+          }}
         />
       )}
 
