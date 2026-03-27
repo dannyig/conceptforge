@@ -74,7 +74,7 @@ export function ConceptEdge({
   }, [data?.label])
 
   const confirmEdit = useCallback((): void => {
-    const trimmed = draft.trim()
+    const trimmed = draft.trim() || '?'
     setEdges(eds => eds.map(e => (e.id === id ? { ...e, data: { ...e.data, label: trimmed } } : e)))
     setEditing(false)
   }, [id, draft, setEdges])
