@@ -1,6 +1,11 @@
 import React, { useCallback, useRef, useState } from 'react'
 import type { CanvasHandle } from '@/components/canvas/Canvas'
-import { loadMapFromJson, saveMapToJson } from '@/lib/export'
+import {
+  hasNativeSavePicker,
+  loadMapFromJson,
+  saveMapToJson,
+  saveMapToJsonNative,
+} from '@/lib/export'
 import {
   COLOR_BUTTON_GHOST_HOVER_BG,
   COLOR_NODE_BORDER,
@@ -78,16 +83,33 @@ export function Toolbar({
   const displayedError = error ?? autoloadError
   const [promptOpen, setPromptOpen] = useState(false)
   const [lastFilename, setLastFilename] = useState('')
-  // Snapshot map data at the moment Save is clicked; passed to saveMapToJson on confirm
+  // Snapshot map data at the moment Save is clicked; passed to saveMapToJson on fallback confirm
   const pendingDataRef = useRef<ReturnType<NonNullable<CanvasHandle>['getMapData']> | null>(null)
 
-  const handleSave = useCallback((): void => {
+  const DEFAULT_FILENAME = 'concept-map'
+
+  const handleSave = useCallback(async (): Promise<void> => {
     const data = canvasRef.current?.getMapData()
     if (!data) return
     setError(null)
-    pendingDataRef.current = data
-    setPromptOpen(true)
-  }, [canvasRef])
+
+    if (hasNativeSavePicker()) {
+      // P-08: native OS save-file dialog
+      try {
+        const saved = await saveMapToJsonNative(data, lastFilename || DEFAULT_FILENAME)
+        setLastFilename(saved)
+      } catch (err) {
+        // User cancelled the dialog — AbortError is expected; ignore it
+        if (!(err instanceof DOMException && err.name === 'AbortError')) {
+          setError('Failed to save file')
+        }
+      }
+    } else {
+      // P-09: fallback filename prompt for browsers without File System Access API
+      pendingDataRef.current = data
+      setPromptOpen(true)
+    }
+  }, [canvasRef, lastFilename])
 
   const handlePromptConfirm = useCallback((filename: string): void => {
     if (!pendingDataRef.current) return
@@ -137,7 +159,9 @@ export function Toolbar({
           <button
             className="cf-toolbar-btn"
             style={BUTTON_BASE_STYLE}
-            onClick={handleSave}
+            onClick={(): void => {
+              void handleSave()
+            }}
             disabled={!hasNodes}
             aria-label="Save map as JSON"
           >

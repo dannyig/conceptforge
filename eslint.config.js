@@ -64,6 +64,8 @@ export default [
         TextDecoder: 'readonly',
         Uint8Array: 'readonly',
         Node: 'readonly',
+        Window: 'readonly',
+        DOMException: 'readonly',
       },
     },
     plugins: {

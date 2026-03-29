@@ -1,5 +1,52 @@
 import type { BranchingEdge, ConceptEdge, ConceptNode, MapData, NoteData } from '@/types'
 
+// Minimal local types for the File System Access API (not in standard TS lib)
+interface FileSystemWritableFileStream {
+  write(data: string): Promise<void>
+  close(): Promise<void>
+}
+
+interface FileSystemFileHandle {
+  name: string
+  createWritable(): Promise<FileSystemWritableFileStream>
+}
+
+interface ShowSaveFilePickerOptions {
+  suggestedName?: string
+  types?: Array<{ description?: string; accept: Record<string, string[]> }>
+}
+
+type WindowWithPicker = Window & {
+  showSaveFilePicker?: (opts: ShowSaveFilePickerOptions) => Promise<FileSystemFileHandle>
+}
+
+// P-08: detect native save-file dialog support (File System Access API)
+export function hasNativeSavePicker(): boolean {
+  return typeof (window as WindowWithPicker).showSaveFilePicker === 'function'
+}
+
+// P-08: native save-file dialog — user picks folder and filename in OS dialog.
+// suggestedFilename should be the bare name WITHOUT .json extension.
+// Returns the saved filename WITHOUT .json extension (for session pre-population).
+// Throws DOMException with name 'AbortError' if the user cancels the dialog.
+export async function saveMapToJsonNative(
+  data: MapData,
+  suggestedFilename: string
+): Promise<string> {
+  const json = JSON.stringify(data, null, 2)
+  const picker = (window as WindowWithPicker).showSaveFilePicker!
+  const handle = await picker({
+    suggestedName: `${suggestedFilename}.json`,
+    types: [{ description: 'JSON file', accept: { 'application/json': ['.json'] } }],
+  })
+  const writable = await handle.createWritable()
+  await writable.write(json)
+  await writable.close()
+  // Strip .json extension so the bare name is stored for next-save pre-population
+  return handle.name.replace(/\.json$/i, '')
+}
+
+// P-09 fallback: standard browser download — used when showSaveFilePicker is unavailable.
 export function saveMapToJson(data: MapData, filename: string): void {
   const json = JSON.stringify(data, null, 2)
   const blob = new Blob([json], { type: 'application/json' })
