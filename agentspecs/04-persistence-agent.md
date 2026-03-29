@@ -2,7 +2,7 @@
 
 **Agent:** Persistence Agent
 **Sequence:** 04 — runs after Canvas Agent completes
-**Trigger:** Human assigns requirement IDs P-01 → P-08, E-01 → E-02, and C-13 (BranchingEdge persistence)
+**Trigger:** Human assigns requirement IDs P-01 → P-09, E-01 → E-02, and C-13 (BranchingEdge persistence)
 **Branch:** `feature/P-01-save-load-export`
 **Depends on:** Canvas Agent (01) merged to main
 **Parallel with:** AI Agent (03)
@@ -137,17 +137,21 @@ Complete all items below in order. Commit after each group.
 
 ---
 
-### Group 5 — Filename Prompt on Save (P-08)
+### Group 5 — Native Save-File Dialog (P-08, P-09)
 
-- [ ] In `src/components/toolbar/Toolbar.tsx`, when the user clicks the Save button, display a filename prompt before writing any file:
-  - Render an inline or modal prompt containing a labelled text input and a static `.json` suffix displayed immediately after (outside) the input field
-  - On the first Save of a session the input is empty; on subsequent saves pre-populate it with the last successfully used filename
-  - The confirm/save button is disabled while the input is empty
-  - Cancelling the prompt closes it and aborts the save — no file is written
-  - Confirming passes `<input-value>.json` as the filename to `saveMapToJson`
+- [ ] In `src/components/toolbar/Toolbar.tsx`, when the user clicks the Save button:
+  - Attempt to open the browser's native save-file dialog (File System Access API `showSaveFilePicker`)
+  - Pre-populate the dialog filename field with the last successfully used filename for the session, or a default name if none
+  - On confirm: write the map JSON to the chosen file and location; store the filename for future pre-population
+  - On cancel: abort the save — no file is written
+- [ ] **Fallback (P-09):** if `showSaveFilePicker` is not available in the browser, fall back to displaying a filename input prompt:
+  - Pre-populate with the last successfully used filename, or empty if none
+  - The filename entered by the user is stored for future pre-population (both the native dialog and the fallback prompt share the same stored value)
+  - Confirming downloads the map JSON to the default downloads folder as `<filename>.json`
+  - Cancelling aborts the save — no file is written
 - [ ] Store the last-used filename in component state (not localStorage) — it persists only for the current session
 
-**Commit:** `feat(P-08): filename prompt on save with session memory and .json suffix`
+**Commit:** `feat(P-08,P-09): native save-file dialog with fallback filename prompt`
 
 ---
 
@@ -158,11 +162,11 @@ Before committing Group 5, start the dev server and use Playwright MCP + Chrome 
 - [ ] Opening `/?autoload=<valid base64 MapData>` loads the map automatically and the URL is immediately cleaned to `/`
 - [ ] Opening `/?autoload=<invalid base64>` shows the error message and leaves the canvas empty
 - [ ] Toolbar is visible with Save, Load, and Export PNG buttons
-- [ ] Adding nodes to canvas, then clicking Save → filename prompt appears with empty input
-- [ ] Entering a filename and confirming → file downloads as `<name>.json`; the `.json` suffix label is visible next to the input
-- [ ] Clicking Save a second time → prompt pre-populates with the previously used filename
-- [ ] Clicking Cancel on the filename prompt → no file downloads, canvas unchanged
-- [ ] Confirm button is disabled while filename input is empty
+- [ ] Adding nodes to canvas, then clicking Save → native save-file dialog opens (or fallback filename prompt in unsupported browsers)
+- [ ] Choosing a folder and filename in the native dialog and confirming → file is written to chosen location as `<name>.json`
+- [ ] Clicking Save a second time → dialog/prompt pre-populates with the previously used filename
+- [ ] Clicking Cancel on the dialog/prompt → no file is written, canvas unchanged
+- [ ] In a browser without File System Access API → fallback filename prompt appears; entering a name and confirming triggers a download to the default downloads folder
 - [ ] Clicking Load → file picker opens; selecting the previously saved file restores all nodes and edges with correct positions
 - [ ] Loading an invalid JSON file → error message shown in toolbar, canvas unchanged
 - [ ] Clicking Export PNG with nodes on canvas → PNG file downloads and visually contains all nodes
@@ -211,4 +215,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Persistence Agent Spec v1.3 — March 2026 (P-08: filename prompt on save — empty on first save, pre-populated on subsequent saves, .json suffix appended automatically)*
+*Persistence Agent Spec v1.4 — March 2026 (P-08 updated: native save-file dialog replaces custom filename prompt; P-09 added: fallback filename prompt for unsupported browsers with shared session filename memory)*
