@@ -142,7 +142,8 @@
 | P-05 | Immediately after processing the `?autoload=` parameter — whether successful or not — remove it from the browser URL using `history.replaceState()` so the encoded data does not persist in browser history |
 | P-06 | If the `?autoload=` parameter fails base64 decoding or `MapData` validation, display a visible error message to the user indicating the map could not be loaded from the URL, and leave the canvas in its default empty state |
 | P-07 | Save each node's description in the map's JSON data; restore descriptions when a saved map is loaded; node descriptions must not be rendered in PNG canvas exports |
-| P-08 | When the user triggers Save, display a filename prompt containing a text input; on the first save of a session the input is empty; on subsequent saves within the same session the input is pre-populated with the previously used filename; a static `.json` label is displayed immediately after (outside) the input field to indicate the extension will be appended automatically; the confirm action is disabled while the input is empty; confirming saves the map as `<filename>.json`; cancelling aborts the save without writing any file |
+| P-08 | When the user triggers Save, present the browser's native save-file dialog allowing the user to choose a destination folder and filename; the dialog is pre-populated with the previously used filename for the session, or a default name if no prior save has occurred in the session; confirming the dialog writes the map as a `.json` file to the chosen location; cancelling aborts the save without writing any file |
+| P-09 | On browsers where a native save-file dialog is unavailable, fall back to displaying a filename input prompt; the input is pre-populated with the previously used filename for the session, or empty if none; the filename entered by the user is stored and used to pre-populate the dialog or prompt on the next save; confirming downloads the map JSON to the default downloads folder as `<filename>.json`; cancelling aborts the save without writing any file |
 
 ### 4.6 Export
 
@@ -378,3 +379,5 @@
 *Version 5.2 — March 2026 — Added A-38 through A-39 (Suggest Concepts on single-edge and hub right-click menus: AI suggests target concepts from source, label, focus question, and existing targets; reading panel display); updated A-37 to include A-39; updated K-10 default system prompt to cover concept suggestion guidance*
 
 *Version 5.3 — March 2026 — Added A-40 (interactive label selection in Suggest Labels panel with Apply button) and A-41 (interactive concept selection in Suggest Concepts panel with Apply button; auto-converts single edge to branching hub; adds to existing hub targets)*
+
+*Version 5.4 — March 2026 — Updated P-08: replaced custom filename prompt with browser native save-file dialog (pre-populated with previously used filename); added P-09: fallback filename prompt for browsers without native save-file dialog support, with filename stored for next session pre-population*
