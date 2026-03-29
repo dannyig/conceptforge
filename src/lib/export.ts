@@ -34,8 +34,8 @@ export async function saveMapToJsonNative(
   suggestedFilename: string
 ): Promise<string> {
   const json = JSON.stringify(data, null, 2)
-  const picker = (window as WindowWithPicker).showSaveFilePicker!
-  const handle = await picker({
+  // Call directly on window to preserve `this` binding — extracted references fail in ESM strict mode
+  const handle = await (window as WindowWithPicker).showSaveFilePicker!({
     suggestedName: `${suggestedFilename}.json`,
     types: [{ description: 'JSON file', accept: { 'application/json': ['.json'] } }],
   })
