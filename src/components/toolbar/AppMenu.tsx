@@ -1,6 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import type { CanvasHandle } from '@/components/canvas/Canvas'
-import { loadMapFromJson, saveMapToJson } from '@/lib/export'
+import {
+  hasNativeSavePicker,
+  loadMapFromJson,
+  saveMapToJson,
+  saveMapToJsonNative,
+} from '@/lib/export'
 import { FilenamePrompt } from './FilenamePrompt'
 import {
   COLOR_BUTTON_GHOST_HOVER_BG,
@@ -186,14 +191,31 @@ export function AppMenu({
     }
   }, [menuOpen])
 
-  const handleSave = useCallback((): void => {
+  const DEFAULT_FILENAME = 'concept-map'
+
+  const handleSave = useCallback(async (): Promise<void> => {
     const data = canvasRef.current?.getMapData()
     if (!data) return
+    const mapData = { ...data, focusQuestion: focusQuestion || undefined }
     setError(null)
     setMenuOpen(false)
-    pendingDataRef.current = { ...data, focusQuestion: focusQuestion || undefined }
-    setPromptOpen(true)
-  }, [canvasRef, focusQuestion])
+
+    if (hasNativeSavePicker()) {
+      // P-08: native OS save-file dialog
+      try {
+        const saved = await saveMapToJsonNative(mapData, lastFilename || DEFAULT_FILENAME)
+        setLastFilename(saved)
+      } catch (err) {
+        if (!(err instanceof DOMException && err.name === 'AbortError')) {
+          setError('Failed to save file')
+        }
+      }
+    } else {
+      // P-09: fallback filename prompt
+      pendingDataRef.current = mapData
+      setPromptOpen(true)
+    }
+  }, [canvasRef, focusQuestion, lastFilename])
 
   const handlePromptConfirm = useCallback((filename: string): void => {
     if (!pendingDataRef.current) return
@@ -310,7 +332,9 @@ export function AppMenu({
               className="cf-menu-item"
               role="menuitem"
               style={MENU_ITEM_STYLE}
-              onClick={handleSave}
+              onClick={(): void => {
+                void handleSave()
+              }}
               disabled={!hasNodes}
               aria-label="Save map as JSON"
             >
