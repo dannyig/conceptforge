@@ -271,7 +271,10 @@ function CanvasFlow({
 
       const reconnectableChanged = edge.reconnectable !== reconnectable
       const hoverChanged = !!edge.data?.isHovered !== isHovered
-      if (!reconnectableChanged && !hoverChanged) return edge
+      // Also check markerEnd: RF's batch queue can bake computed markerEnd back into edges
+      // state via "replace" changes, so we must detect a stale value here too.
+      const markerEndChanged = edge.markerEnd !== markerEnd
+      if (!reconnectableChanged && !hoverChanged && !markerEndChanged) return edge
       return {
         ...edge,
         reconnectable,
