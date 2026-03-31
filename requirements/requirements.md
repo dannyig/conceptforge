@@ -166,6 +166,7 @@
 | V-08 | The canvas must never auto-fit the viewport in response to node additions or changes. On initial load with no nodes, the canvas starts at a default zoom of `0.85`. When a saved map is loaded, the viewport is fitted to content once (padding `0.5`, maximum zoom `0.85`). The fitView button in the canvas Controls remains available at all times and is not subject to the `0.85` cap |
 | V-09 | The rubber-band selection rectangle must render as a subtle frame: a thin single-pixel border in the orange accent colour (`#f97316`) at low opacity, with a near-transparent fill of the same colour; no solid background, no drop shadow |
 | V-10 | Each selected item (node or note) in a multi-selection must display the same orange border highlight used for single-item selection; when multiple items are selected, all selected items show this highlight simultaneously |
+| V-11 | All edge arrowheads — on single concept edges and branching edge branch arrows — must render at a uniform size equal to the selected-state arrowhead size; arrowhead colour is unaffected by this change |
 
 ### 4.8 Focus Question
 
@@ -381,3 +382,5 @@
 *Version 5.3 — March 2026 — Added A-40 (interactive label selection in Suggest Labels panel with Apply button) and A-41 (interactive concept selection in Suggest Concepts panel with Apply button; auto-converts single edge to branching hub; adds to existing hub targets)*
 
 *Version 5.4 — March 2026 — Updated P-08: replaced custom filename prompt with browser native save-file dialog (pre-populated with previously used filename); added P-09: fallback filename prompt for browsers without native save-file dialog support, with filename stored for next session pre-population*
+
+*Version 5.5 — March 2026 — Added V-11: uniform arrowhead size on all edges (single concept edges and branching edge branch arrows) matching the selected-state arrowhead size; colour unaffected*
