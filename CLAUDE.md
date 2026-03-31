@@ -599,6 +599,8 @@ Agents must check this table before implementing any UI or React work.
 ## 12. Critical Rules
 
 > **Active rule — Requirements Agent Gate:** Any agent that receives a request containing a new requirement or a change to an existing requirement **must stop and invoke the Requirements Agent (`/requirements`) before writing any implementation code.** The Requirements Agent runs the full Q&A and approval flow on a `chore/requirements-*` branch. Only after that branch is merged to `main` does the implementing agent proceed on its own `feature/*` or `fix/*` branch. No agent may update `requirements/requirements.md` or `requirements/requirements.html` as a side-effect of an implementation task — requirements documents are owned exclusively by the Requirements Agent.
+>
+> **Exception — Status column only:** Implementation agents may flip the `Status` column of a requirement row from unmarked to `✅` in both `requirements/requirements.md` and `requirements/requirements.html` as part of their feature PR — this is the sole permitted exception to the ownership rule. No other content in either file may be modified by an implementation agent. The Requirements Agent may also be invoked with a status-update request at any time to sync statuses in bulk; see `agentspecs/07-requirements-agent.md` for the Status Update Process.
 
 > **Active rule — Paired Document Sync:** Where a `.md` file has a paired `.html` file, both must be updated in the same commit. Pairs: `devmethod/devmethod.md ↔ devmethod/devmethod.html` · `requirements/requirements.md ↔ requirements/requirements.html` · `resources/resources.md ↔ resources/resources.html`. This applies to every agent including the Improvement Agent.
 

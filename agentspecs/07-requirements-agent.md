@@ -41,8 +41,28 @@ Before asking any questions, determine what kind of session this is:
 | **Refinement** | Human wants to change or clarify an existing requirement | Read the relevant requirement ID, then ask only targeted clarification questions |
 | **Post-MVP promotion** | Human wants to move a Nice-to-Have (N-XX) to MVP | Ask readiness and scoping questions only |
 | **Out-of-scope challenge** | Human wants something listed as out-of-scope in CLAUDE.md section 15 | Explicitly surface the out-of-scope status, ask if they want to formally override it before proceeding |
+| **Status update** | Human asks to update, sync, or mark requirement statuses | Skip Q&A — follow the Status Update Process below |
 
 State the session type to the human at the start so they can correct it if wrong.
+
+---
+
+### Status Update Process
+
+When the session type is **Status update**, skip Steps 2–4 entirely. Follow this process instead:
+
+1. Read `requirements/requirements.md` in full
+2. For each requirement row that does not already have `✅`:
+   - Search `src/` for code implementing that requirement (use Grep/Glob on the requirement ID and key behaviour terms)
+   - Check `git log --oneline` for commits referencing the requirement ID
+   - If evidence of implementation is found, mark it `✅`; if uncertain, leave it unmarked and note it for the human
+3. Present a summary to the human: which IDs were marked done, which remain unmarked and why
+4. On human confirmation (or if no ambiguous cases exist, proceed directly), update both `requirements/requirements.md` and `requirements/requirements.html` — Status column only; no other content changes
+5. Commit on `chore/requirements-<YYYY-MM-DD>-status-update` branch, push, and open PR — then stop
+
+**Human approval is not required** for straightforward status updates where implementation evidence is clear. It is required when one or more requirements are ambiguous (e.g. partially implemented, or code exists but feature gated).
+
+No downstream document updates (agentspecs, devmethod, CLAUDE.md) are needed for status-only changes.
 
 ---
 
