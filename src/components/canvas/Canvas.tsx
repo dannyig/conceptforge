@@ -166,8 +166,8 @@ const EDGE_TYPES: Record<string, React.ComponentType<any>> = {
 const MARKER_END_DEFAULT = {
   type: MarkerType.ArrowClosed,
   color: COLOR_EDGE,
-  width: 14,
-  height: 14,
+  width: 22,
+  height: 22,
 }
 const MARKER_END_SELECTED = {
   type: MarkerType.ArrowClosed,
