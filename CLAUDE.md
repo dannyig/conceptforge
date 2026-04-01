@@ -751,7 +751,8 @@ Agents must not implement these unless a requirement ID is assigned:
 - No real-time collaboration
 - No mobile or touch support
 - No SVG export (post-MVP)
-- No document upload or URL ingestion (post-MVP)
+- No document upload (post-MVP)
+- URL ingestion: implemented via Jina.ai — see K-11, K-12, U-01–U-05
 - No undo/redo history (post-MVP)
 - No multi-language UI
 - No analytics or telemetry
@@ -768,7 +769,8 @@ The following are **intentionally absent** from the MVP. Agents must not impleme
 | Real-time collaboration | Single-user tool for MVP |
 | Mobile or touch support | Desktop browser only for MVP |
 | SVG export | Post-MVP — PNG export only in MVP |
-| Document upload or URL ingestion | Post-MVP |
+| Document upload | Post-MVP |
+| URL ingestion | In scope — Jina.ai Reader (K-11, K-12, U-01–U-05) |
 | Undo/redo history | Post-MVP |
 | Multi-language UI | English only |
 | Analytics or telemetry | Intentionally excluded — see Section 13 |
