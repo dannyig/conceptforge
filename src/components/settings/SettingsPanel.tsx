@@ -219,7 +219,16 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
         </div>
 
         {/* Body */}
-        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 20,
+          }}
+        >
           {/* Section label */}
           <div>
             <span
