@@ -122,6 +122,7 @@
     }
 
     .badge-core     { background: #1a3a2a; color: #34d399; border: 1px solid #10b98133; }
+    .badge-updated  { background: #1a2a3a; color: #60a5fa; border: 1px solid #3b82f633; }
     .badge-nice     { background: #1f2937; color: #94a3b8; border: 1px solid #47556933; }
     .badge-out      { background: #2d1f1f; color: #f87171; border: 1px solid #ef444433; }
 
@@ -208,7 +209,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v5.7 &nbsp;·&nbsp; April 2026</span>
+    <span class="version-badge">v5.8 &nbsp;·&nbsp; April 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -357,6 +358,7 @@
         <tr><td>✅</td><td class="req-id">K-10</td><td>Add an "Edge Label" system prompt section to the Settings panel, positioned below the Concept Chat section; same pattern as K-09 (editable textarea, Reset to default button, localStorage persistence under a namespaced key, section heading "Edge Label"); default system prompt text: <em>"You are an expert knowledge assistant embedded in a concept mapping tool. Your role is to help the user understand and name directed relationships between concepts, and to suggest meaningful target concepts for a given relationship. When suggesting edge labels, generate concise, directionally accurate labels (1–4 words each) that meaningfully describe the relationship from the source concept to the target concept; accompany each suggestion with a short paragraph explaining why it accurately describes the directed relationship. When explaining a label, describe in a short paragraph why the relationship holds between the two concepts given their context. When suggesting target concepts for a directed relationship, generate concise, meaningful concept names with a brief explanatory paragraph for each — explaining why that concept fits as a target given the source and the relationship label; avoid repeating any existing target concepts supplied in the context. Only generate output when the concept names and descriptions are meaningful — if they appear to be placeholders (e.g. 'New Concept'), acknowledge this and provide best-effort suggestions."</em> &nbsp;<span class="badge badge-core">UPDATED</span></td></tr>
         <tr><td></td><td class="req-id">K-11</td><td>Add a "Jina API Key" input to the Settings panel, positioned below the Edge Label system prompt section; the key is optional — URL ingestion works without it using Jina's anonymous free tier; if provided, store it in <code>localStorage</code> under a namespaced key and send it as <code>Authorization: Bearer &lt;key&gt;</code> on all Jina fetch requests; include a "Clear" button to remove the stored key &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td></td><td class="req-id">K-12</td><td>Add a "Jina Token Budget" numeric input to the Settings panel, positioned directly below the Jina API key input; the value controls the maximum token count of content returned from Jina via the <code>X-Token-Budget</code> request header; default value: <code>10000</code>; stored in <code>localStorage</code> under a namespaced key; accepts positive integers only &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td></td><td class="req-id">K-13</td><td>Add a "URL Map Generation" system prompt section to the Settings panel, positioned below the Edge Label system prompt section (K-10) and above the URL Ingestion (Jina.ai) section (K-11/K-12); same pattern as K-09 and K-10 (editable multi-line textarea, "Reset to default" button, localStorage persistence under a namespaced key, section heading "URL Map Generation"); default system prompt text: <em>"You are an expert knowledge assistant embedded in a concept mapping tool. Your role is to analyse the provided web page content and extract a structured concept map guided by the user's focus question. Identify the primary concepts most relevant to the focus question and the directed relationships between them, labelling each relationship with a concise phrase (1–3 words). For each primary concept, also identify its sub-concepts — more specific ideas, details, or elaborations present in the content — and describe how each sub-concept relates to its parent concept with a directional relationship label. Prioritise depth and connected structure: a well-linked map that captures both concept-to-concept and concept-to-sub-concept relationships is preferred over a flat list of loosely connected concepts."</em> &nbsp;<span class="badge badge-core">NEW</span></td></tr>
       </tbody>
     </table>
 
@@ -500,7 +502,7 @@
       <tbody>
         <tr><td></td><td class="req-id">U-01</td><td>Display a URL icon button at the right end of the focus question bar; clicking it opens a compact inline URL input field within the bar; pressing Enter or clicking a confirm button triggers ingestion; pressing Escape or clicking outside dismisses the input without action &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td></td><td class="req-id">U-02</td><td>When ingestion is triggered, fetch the URL content via <code>GET https://r.jina.ai/{url}</code>; include <code>Authorization: Bearer &lt;key&gt;</code> if a Jina API key is configured (K-11); always include <code>X-Token-Budget: &lt;value&gt;</code> using the configured token budget (K-12) and <code>X-Return-Format: markdown</code> to ensure a token-efficient structured response suitable for passing to Claude &nbsp;<span class="badge badge-core">NEW</span></td></tr>
-        <tr><td></td><td class="req-id">U-03</td><td>Pass the fetched page content to the Claude API using the same Mode 1 (Generate Map) prompt and behaviour — render the resulting map on the canvas and display the Summary Panel (A-16); if a focus question is set in the bar, include it as additional context alongside the fetched content &nbsp;<span class="badge badge-core">NEW</span></td></tr>
+        <tr><td></td><td class="req-id">U-03</td><td>Pass the fetched page content to the Claude API with the K-13 system prompt as the <code>system</code> parameter; use the same response structure (nodes, edges, narrative, resources) and canvas rendering as Mode 1 (Generate Map); display the Summary Panel (A-16); if a focus question is set, include it as additional context alongside the fetched content &nbsp;<span class="badge badge-updated">UPDATED</span></td></tr>
         <tr><td></td><td class="req-id">U-04</td><td>If the Jina fetch fails (network error, non-200 response, or empty content returned), display a visible error message and leave the canvas in its current state; keep the URL input open so the user can correct the URL and retry &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td></td><td class="req-id">U-05</td><td>The URL icon button is dimmed and non-interactive when AI Assist is off (K-08), consistent with all other AI-triggered controls &nbsp;<span class="badge badge-core">NEW</span></td></tr>
       </tbody>
@@ -603,7 +605,8 @@
   <footer>
     <p><strong>Version 5.6</strong> — March 2026 — Added Status column to all requirement tables; all Section 4 requirements marked ✅ (implemented); N-09 marked ✅; N-01 through N-08 left unmarked (outstanding)</p>
     <p><strong>Version 5.7</strong> — April 2026 — Promoted N-03 (URL ingestion) to core requirements as Section 4.14; added K-11 (Jina API key, optional), K-12 (Jina token budget, default 10000), U-01–U-05 (URL ingestion via Jina.ai Reader with markdown response format); retired N-03 from Section 5</p>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v5.6 &nbsp;·&nbsp; March 2026
+    <p><strong>Version 5.8</strong> — April 2026 — Added K-13 (URL Map Generation system prompt, positioned between K-10 Edge Label and K-11/K-12 Jina settings); updated U-03 to reference K-13 as the <code>system</code> parameter for URL-based Claude API calls</p>
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v5.8 &nbsp;·&nbsp; April 2026
   </footer>
 
 </div>
