@@ -32,13 +32,13 @@ export function setJinaTokenBudget(n: number): void {
 }
 
 // U-02: fetch URL content via Jina.ai Reader, returning markdown text
-// Uses X-Return-Format: markdown (fixed — Option A) and X-Token-Budget from K-12
+// Uses X-Return-Format: markdown (fixed — Option A)
 // Optionally sends Authorization: Bearer <key> from K-11
+// X-Token-Budget is NOT sent — it is not a recognised Jina header and causes 409
 export async function fetchUrlContent(url: string): Promise<string> {
   const jinaUrl = `${JINA_READER_BASE}${url}`
   const headers: Record<string, string> = {
     'X-Return-Format': 'markdown',
-    'X-Token-Budget': String(getJinaTokenBudget()),
   }
   const apiKey = getJinaApiKey()
   if (apiKey) {
