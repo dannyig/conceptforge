@@ -20,6 +20,13 @@ import {
   setEdgeLabelPrompt,
 } from '@/lib/edgeLabelPrompts'
 import {
+  clearJinaApiKey,
+  getJinaApiKey,
+  getJinaTokenBudget,
+  setJinaApiKey,
+  setJinaTokenBudget,
+} from '@/lib/jinaFetch'
+import {
   COLOR_BUTTON_GHOST_HOVER_BG,
   COLOR_BUTTON_PRIMARY_BG,
   COLOR_BUTTON_PRIMARY_HOVER_BG,
@@ -60,6 +67,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
     getConceptChatPrompt()
   )
   const [edgeLabelPrompt, setEdgeLabelPromptLocal] = useState<string>(() => getEdgeLabelPrompt())
+  const [jinaApiKeyDraft, setJinaApiKeyDraft] = useState<string>('')
+  const [jinaApiKeySaved, setJinaApiKeySaved] = useState<boolean>(() => !!getJinaApiKey())
+  const [jinaTokenBudget, setJinaTokenBudgetLocal] = useState<number>(() => getJinaTokenBudget())
   const inputRef = useRef<HTMLInputElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -585,6 +595,194 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 e.currentTarget.style.borderColor = COLOR_INPUT_BORDER
               }}
             />
+          </div>
+
+          {/* K-11, K-12: Jina.ai Reader settings for URL ingestion */}
+          <div
+            style={{
+              borderTop: `1px solid ${COLOR_NODE_BORDER}`,
+              paddingTop: 20,
+              marginTop: 8,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+            }}
+          >
+            <span
+              style={{
+                fontSize: FONT_SIZE_SMALL,
+                color: COLOR_TEXT_MUTED,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                fontWeight: '600',
+              }}
+            >
+              URL Ingestion (Jina.ai)
+            </span>
+
+            {/* K-11: optional Jina API key */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label
+                style={{
+                  fontFamily: FONT_FAMILY,
+                  fontSize: FONT_SIZE_SMALL,
+                  color: COLOR_TEXT_MUTED,
+                }}
+              >
+                Jina API Key
+                <span style={{ marginLeft: 6, fontSize: '10px', opacity: 0.6 }}>
+                  (optional — free tier works without a key)
+                </span>
+              </label>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <input
+                  type="password"
+                  value={jinaApiKeyDraft}
+                  onChange={(e): void => setJinaApiKeyDraft(e.target.value)}
+                  placeholder={jinaApiKeySaved ? '••••••••••••' : 'jina_…'}
+                  aria-label="Jina API key"
+                  style={{
+                    flex: 1,
+                    background: COLOR_INPUT_BG,
+                    border: `1px solid ${COLOR_INPUT_BORDER}`,
+                    borderRadius: 4,
+                    color: COLOR_NODE_TEXT,
+                    fontFamily: FONT_FAMILY,
+                    fontSize: FONT_SIZE_SMALL,
+                    padding: '6px 10px',
+                    outline: 'none',
+                    transition: `border-color ${TRANSITION_FAST}`,
+                  }}
+                  onFocus={(e): void => {
+                    e.currentTarget.style.borderColor = COLOR_INPUT_FOCUS_BORDER
+                  }}
+                  onBlur={(e): void => {
+                    e.currentTarget.style.borderColor = COLOR_INPUT_BORDER
+                  }}
+                  onKeyDown={(e): void => {
+                    if (e.key === 'Enter') {
+                      const trimmed = jinaApiKeyDraft.trim()
+                      if (trimmed) {
+                        setJinaApiKey(trimmed)
+                        setJinaApiKeyDraft('')
+                        setJinaApiKeySaved(true)
+                      }
+                    }
+                  }}
+                />
+                {jinaApiKeyDraft.trim() && (
+                  <button
+                    onClick={(): void => {
+                      const trimmed = jinaApiKeyDraft.trim()
+                      if (trimmed) {
+                        setJinaApiKey(trimmed)
+                        setJinaApiKeyDraft('')
+                        setJinaApiKeySaved(true)
+                      }
+                    }}
+                    aria-label="Save Jina API key"
+                    style={{
+                      background: COLOR_BUTTON_PRIMARY_BG,
+                      border: 'none',
+                      borderRadius: 4,
+                      color: COLOR_BUTTON_PRIMARY_TEXT,
+                      fontFamily: FONT_FAMILY,
+                      fontSize: FONT_SIZE_SMALL,
+                      padding: '6px 12px',
+                      cursor: 'pointer',
+                      transition: `background-color ${TRANSITION_FAST}`,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Save
+                  </button>
+                )}
+                {jinaApiKeySaved && !jinaApiKeyDraft.trim() && (
+                  <button
+                    onClick={(): void => {
+                      clearJinaApiKey()
+                      setJinaApiKeyDraft('')
+                      setJinaApiKeySaved(false)
+                    }}
+                    aria-label="Clear Jina API key"
+                    style={{
+                      background: 'transparent',
+                      border: `1px solid ${COLOR_NODE_BORDER}`,
+                      borderRadius: 4,
+                      color: COLOR_TEXT_MUTED,
+                      fontFamily: FONT_FAMILY,
+                      fontSize: FONT_SIZE_SMALL,
+                      padding: '6px 12px',
+                      cursor: 'pointer',
+                      transition: `background-color ${TRANSITION_FAST}`,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {jinaApiKeySaved && (
+                <span
+                  style={{
+                    fontFamily: FONT_FAMILY,
+                    fontSize: '11px',
+                    color: COLOR_STATUS_SUCCESS,
+                  }}
+                >
+                  Jina API key saved
+                </span>
+              )}
+            </div>
+
+            {/* K-12: token budget */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label
+                style={{
+                  fontFamily: FONT_FAMILY,
+                  fontSize: FONT_SIZE_SMALL,
+                  color: COLOR_TEXT_MUTED,
+                }}
+              >
+                Token Budget
+                <span style={{ marginLeft: 6, fontSize: '10px', opacity: 0.6 }}>
+                  (max tokens returned by Jina; default 10000)
+                </span>
+              </label>
+              <input
+                type="number"
+                min={1000}
+                max={100000}
+                step={1000}
+                value={jinaTokenBudget}
+                onChange={(e): void => {
+                  const n = parseInt(e.target.value, 10)
+                  if (!isNaN(n) && n > 0) {
+                    setJinaTokenBudgetLocal(n)
+                    setJinaTokenBudget(n)
+                  }
+                }}
+                aria-label="Jina token budget"
+                style={{
+                  width: 120,
+                  background: COLOR_INPUT_BG,
+                  border: `1px solid ${COLOR_INPUT_BORDER}`,
+                  borderRadius: 4,
+                  color: COLOR_NODE_TEXT,
+                  fontFamily: FONT_FAMILY,
+                  fontSize: FONT_SIZE_SMALL,
+                  padding: '6px 10px',
+                  outline: 'none',
+                  transition: `border-color ${TRANSITION_FAST}`,
+                }}
+                onFocus={(e): void => {
+                  e.currentTarget.style.borderColor = COLOR_INPUT_FOCUS_BORDER
+                }}
+                onBlur={(e): void => {
+                  e.currentTarget.style.borderColor = COLOR_INPUT_BORDER
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
