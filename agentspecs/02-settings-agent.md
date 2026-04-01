@@ -2,7 +2,7 @@
 
 **Agent:** Settings Agent
 **Sequence:** 02 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs K-01 → K-10
+**Trigger:** Human assigns requirement IDs K-01 → K-14
 **Branch:** `feature/K-01-api-key-settings`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Canvas Agent (01)
@@ -155,7 +155,36 @@ Complete all items below in order. Commit after each group.
 
 ---
 
-### Group 6 — UI Verification (Playwright MCP)
+### Group 6 — Claude Model Selector (K-14)
+
+- [ ] Add a "Claude Model" label and `<select>` dropdown to `SettingsPanel.tsx`, positioned directly below the API key input (K-01) and above the AI Assist toggle (K-05)
+- [ ] Offer exactly three `<option>` entries:
+  - `claude-sonnet-4-6` — displayed as "Sonnet 4.6"
+  - `claude-opus-4-6` — displayed as "Opus 4.6"
+  - `claude-haiku-4-5-20251001` — displayed as "Haiku 4.5"
+- [ ] Create `src/lib/modelConfig.ts`:
+  ```typescript
+  export const MODEL_CONFIG_KEY = 'conceptforge:claude-model'
+  export const DEFAULT_MODEL = 'claude-sonnet-4-6'
+  export const CLAUDE_MODELS = [
+    { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6' },
+    { id: 'claude-opus-4-6', label: 'Opus 4.6' },
+    { id: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5' },
+  ] as const
+  export type ClaudeModelId = typeof CLAUDE_MODELS[number]['id']
+  export function getModel(): ClaudeModelId
+  export function setModel(id: ClaudeModelId): void
+  ```
+- [ ] `getModel`: reads from `localStorage`; returns the stored value if it is a valid model ID, `DEFAULT_MODEL` otherwise
+- [ ] `setModel`: writes to `localStorage` under `MODEL_CONFIG_KEY`
+- [ ] The dropdown in Settings updates `localStorage` on change (live persistence — no separate Save button required)
+- [ ] Replace the hardcoded `MODEL` constant in `src/lib/claude.ts` with a call to `getModel()` at the start of every exported function that makes a Claude API call (generateMap, generateMapFromContent, suggestConcepts, expandNode, chatNode, suggestEdgeLabels, explainEdgeLabel, suggestEdgeConcepts)
+
+**Commit:** `feat(K-14): Claude model selector in settings with localStorage persistence and apply to all API calls`
+
+---
+
+### Group 7 — UI Verification (Playwright MCP)
 
 Before committing Group 4, start the dev server and use Playwright MCP + Chrome to verify:
 
@@ -175,6 +204,9 @@ Before committing Group 4, start the dev server and use Playwright MCP + Chrome 
 - [ ] Textarea is pre-filled with the default prompt text on first load
 - [ ] Editing the textarea and reloading the page — custom prompt is restored
 - [ ] Clicking "Reset to default" restores the default text in the textarea and in localStorage
+- [ ] Claude Model selector is visible in Settings below the API key input and above the AI Assist toggle
+- [ ] Dropdown shows three options: Sonnet 4.6, Opus 4.6, Haiku 4.5
+- [ ] Selecting a model and reloading the page — selection is restored
 - [ ] No errors in browser console
 
 Log any visual or interaction issues found as `/feedback` entries before committing.
@@ -232,4 +264,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Settings Agent Spec v1.3 — March 2026 (added Group 5: Concept Chat system prompt K-09; chatPrompts.ts with default, get, set)*
+*Settings Agent Spec v1.4 — April 2026 (added Group 6: Claude Model selector K-14; modelConfig.ts; applied to all claude.ts API calls)*
