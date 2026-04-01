@@ -19,6 +19,7 @@ import {
   getEdgeLabelPrompt,
   setEdgeLabelPrompt,
 } from '@/lib/edgeLabelPrompts'
+import { DEFAULT_URL_MAP_PROMPT, getUrlMapPrompt, setUrlMapPrompt } from '@/lib/urlMapPrompts'
 import {
   clearJinaApiKey,
   getJinaApiKey,
@@ -67,6 +68,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
     getConceptChatPrompt()
   )
   const [edgeLabelPrompt, setEdgeLabelPromptLocal] = useState<string>(() => getEdgeLabelPrompt())
+  const [urlMapPrompt, setUrlMapPromptLocal] = useState<string>(() => getUrlMapPrompt())
   const [jinaApiKeyDraft, setJinaApiKeyDraft] = useState<string>('')
   const [jinaApiKeySaved, setJinaApiKeySaved] = useState<boolean>(() => !!getJinaApiKey())
   const [jinaTokenBudget, setJinaTokenBudgetLocal] = useState<number>(() => getJinaTokenBudget())
@@ -581,6 +583,73 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 setEdgeLabelPrompt(e.target.value)
               }}
               aria-label="Edge Label system prompt"
+              rows={6}
+              style={{
+                width: '100%',
+                background: COLOR_INPUT_BG,
+                border: `1px solid ${COLOR_INPUT_BORDER}`,
+                borderRadius: 4,
+                color: COLOR_NODE_TEXT,
+                fontFamily: FONT_FAMILY,
+                fontSize: '11px',
+                lineHeight: 1.6,
+                padding: '8px',
+                resize: 'vertical',
+                outline: 'none',
+                boxSizing: 'border-box',
+                transition: `border-color ${TRANSITION_FAST}`,
+              }}
+              onFocus={(e): void => {
+                e.currentTarget.style.borderColor = COLOR_INPUT_FOCUS_BORDER
+              }}
+              onBlur={(e): void => {
+                e.currentTarget.style.borderColor = COLOR_INPUT_BORDER
+              }}
+            />
+          </div>
+
+          {/* K-13: URL Map Generation system prompt */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span
+                style={{
+                  fontSize: FONT_SIZE_SMALL,
+                  color: COLOR_TEXT_MUTED,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  fontWeight: '600',
+                }}
+              >
+                URL Map Generation
+              </span>
+              <button
+                onClick={(): void => {
+                  setUrlMapPromptLocal(DEFAULT_URL_MAP_PROMPT)
+                  setUrlMapPrompt(DEFAULT_URL_MAP_PROMPT)
+                }}
+                style={{
+                  background: 'transparent',
+                  border: `1px solid ${COLOR_NODE_BORDER}`,
+                  borderRadius: 4,
+                  padding: '2px 8px',
+                  fontFamily: FONT_FAMILY,
+                  fontSize: '10px',
+                  color: COLOR_TEXT_MUTED,
+                  cursor: 'pointer',
+                  transition: `background-color ${TRANSITION_FAST}`,
+                }}
+                className="cf-settings-reset"
+              >
+                Reset to default
+              </button>
+            </div>
+            <textarea
+              value={urlMapPrompt}
+              onChange={(e): void => {
+                setUrlMapPromptLocal(e.target.value)
+                setUrlMapPrompt(e.target.value)
+              }}
+              aria-label="URL Map Generation system prompt"
               rows={6}
               style={{
                 width: '100%',
