@@ -1,5 +1,6 @@
 // Claude API client
 import type { ClaudeMapResponse, ExpandNodeRequest, SummaryResource } from '@/types'
+import { getUrlMapPrompt } from '@/lib/urlMapPrompts'
 
 const API_URL = 'https://api.anthropic.com/v1/messages'
 const MODEL = 'claude-sonnet-4-6'
@@ -120,6 +121,9 @@ export async function generateMapFromContent(
     `- resources: 3–5 real, useful online resources related to the topic\n` +
     `- Do not include markdown fences or any text outside the JSON object`
 
+  // K-13: URL Map Generation system prompt
+  const systemPrompt = getUrlMapPrompt()
+
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: {
@@ -131,6 +135,7 @@ export async function generateMapFromContent(
     body: JSON.stringify({
       model: MODEL,
       max_tokens: 2048,
+      system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     }),
   })
