@@ -130,6 +130,8 @@
 | ✅ | K-08 | When AI Assist is off, dim all AI-triggered controls and make them non-interactive (reduced opacity, pointer events disabled); affected controls: Generate Map button, Suggest Concepts button, and the Expand action in the node right-click context menu |
 | ✅ | K-09 | Add a "Concept Chat" system prompt section to the Settings panel, positioned below the AI Assist toggle; display an editable multi-line textarea pre-filled with the default system prompt text; provide a "Reset to default" button that restores the textarea to the default text without requiring a save action; persist the user's edited value to `localStorage` under a namespaced key; on page load restore the persisted value if present, otherwise use the default; the section heading must name the chat objective ("Concept Chat") so future chat objectives can each have their own prompt |
 | ✅ | K-10 | Add an "Edge Label" system prompt section to the Settings panel, positioned below the Concept Chat section; same pattern as K-09 (editable textarea, Reset to default button, localStorage persistence under a namespaced key, section heading "Edge Label"); default system prompt text: *"You are an expert knowledge assistant embedded in a concept mapping tool. Your role is to help the user understand and name directed relationships between concepts, and to suggest meaningful target concepts for a given relationship. When suggesting edge labels, generate concise, directionally accurate labels (1–4 words each) that meaningfully describe the relationship from the source concept to the target concept; accompany each suggestion with a short paragraph explaining why it accurately describes the directed relationship. When explaining a label, describe in a short paragraph why the relationship holds between the two concepts given their context. When suggesting target concepts for a directed relationship, generate concise, meaningful concept names with a brief explanatory paragraph for each — explaining why that concept fits as a target given the source and the relationship label; avoid repeating any existing target concepts supplied in the context. Only generate output when the concept names and descriptions are meaningful — if they appear to be placeholders (e.g. 'New Concept'), acknowledge this and provide best-effort suggestions."* |
+|  | K-11 | Add a "Jina API Key" input to the Settings panel, positioned below the Edge Label system prompt section; the key is optional — URL ingestion works without it using Jina's anonymous free tier; if provided, store it in `localStorage` under a namespaced key and send it as `Authorization: Bearer <key>` on all Jina fetch requests; include a "Clear" button to remove the stored key |
+|  | K-12 | Add a "Jina Token Budget" numeric input to the Settings panel, positioned directly below the Jina API key input; the value controls the maximum token count of content returned from Jina via the `X-Token-Budget` request header; default value: `10000`; stored in `localStorage` under a namespaced key; accepts positive integers only |
 
 ### 4.5 Persistence — Export & Import
 
@@ -247,13 +249,24 @@
 
 ---
 
+### 4.14 URL Ingestion
+
+| Status | ID | Requirement |
+|---|---|---|
+|  | U-01 | Display a URL icon button at the right end of the focus question bar; clicking it opens a compact inline URL input field within the bar; pressing Enter or clicking a confirm button triggers ingestion; pressing Escape or clicking outside dismisses the input without action |
+|  | U-02 | When ingestion is triggered, fetch the URL content via `GET https://r.jina.ai/{url}`; include `Authorization: Bearer <key>` if a Jina API key is configured (K-11); always include `X-Token-Budget: <value>` using the configured token budget (K-12) and `X-Return-Format: markdown` to ensure a token-efficient structured response suitable for passing to Claude |
+|  | U-03 | Pass the fetched page content to the Claude API using the same Mode 1 (Generate Map) prompt and behaviour — render the resulting map on the canvas and display the Summary Panel (A-16); if a focus question is set in the bar, include it as additional context alongside the fetched content |
+|  | U-04 | If the Jina fetch fails (network error, non-200 response, or empty content returned), display a visible error message and leave the canvas in its current state; keep the URL input open so the user can correct the URL and retry |
+|  | U-05 | The URL icon button is dimmed and non-interactive when AI Assist is off (K-08), consistent with all other AI-triggered controls |
+
+---
+
 ## 5. Nice to Have (Post-MVP)
 
 | Status | ID | Feature | Description |
 |---|---|---|---|
 |  | N-01 | Suggest connections | AI scans existing nodes and proposes new edges between them |
 |  | N-02 | Document upload | Upload PDF, Word, or .txt — AI builds map from extracted text |
-|  | N-03 | URL ingestion | Paste a URL — app fetches page content and generates a map |
 |  | N-04 | SVG export | Export map as scalable vector graphic |
 |  | N-05 | Node types | Visual distinction between concept, question, source, and insight nodes |
 |  | N-06 | Undo / redo | Full history stack for canvas actions |
@@ -386,3 +399,5 @@
 *Version 5.5 — March 2026 — Added V-11: uniform arrowhead size on all edges (single concept edges and branching edge branch arrows) matching the selected-state arrowhead size; colour unaffected*
 
 *Version 5.6 — March 2026 — Added Status column to all requirement tables; all Section 4 requirements marked ✅ (implemented); N-09 marked ✅; N-01 through N-08 left unmarked (outstanding)*
+
+*Version 5.7 — April 2026 — Promoted N-03 (URL ingestion) to core requirements as Section 4.14; added K-11 (Jina API key, optional), K-12 (Jina token budget, default 10000), U-01–U-05 (URL ingestion via Jina.ai Reader with markdown response format); retired N-03 from Section 5*
