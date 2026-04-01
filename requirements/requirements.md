@@ -124,6 +124,7 @@
 | ✅ | K-02 | Store the API key in localStorage only — never transmitted to any server |
 | ✅ | K-03 | Prompt the user to enter their key if an AI action is triggered without one |
 | ✅ | K-04 | Allow the user to clear/update their stored API key |
+|  | K-14 | Add a "Claude Model" selector to the Settings panel, positioned directly below the API key input (K-01) and above the AI Assist toggle (K-05); display a fixed dropdown offering three options: **Sonnet 4.6** (`claude-sonnet-4-6`), **Opus 4.6** (`claude-opus-4-6`), and **Haiku 4.5** (`claude-haiku-4-5-20251001`); default to Sonnet 4.6 if no value is stored; persist the selected model to `localStorage` under a namespaced key; apply the selected model to every Claude API call in the application (map generation, URL ingestion, suggest concepts, node expand, concept chat, suggest labels, explain label, suggest concepts on edge) |
 | ✅ | K-05 | Display an "AI Assist" toggle switch in the Settings panel, positioned below the API key input field; the toggle defaults to off on first use |
 | ✅ | K-06 | Automatically enable the AI Assist toggle when the user saves an API key; automatically disable it when the API key is removed or cleared |
 | ✅ | K-07 | Persist the AI Assist toggle state to `localStorage`; on page load, if no API key is stored, the toggle is always off regardless of the persisted value |
@@ -404,3 +405,5 @@
 *Version 5.7 — April 2026 — Promoted N-03 (URL ingestion) to core requirements as Section 4.14; added K-11 (Jina API key, optional), K-12 (Jina token budget, default 10000), U-01–U-05 (URL ingestion via Jina.ai Reader with markdown response format); retired N-03 from Section 5*
 
 *Version 5.8 — April 2026 — Added K-13 (URL Map Generation system prompt, positioned between K-10 Edge Label and K-11 Jina settings); updated U-03 to reference K-13 as the `system` parameter for URL-based Claude API calls*
+
+*Version 5.9 — April 2026 — Added K-14 (Claude Model selector: fixed dropdown with Sonnet 4.6, Opus 4.6, Haiku 4.5; default Sonnet 4.6; persisted to localStorage; applies to all Claude API calls; positioned below API key input, above AI Assist toggle)*

@@ -209,7 +209,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v5.8 &nbsp;·&nbsp; April 2026</span>
+    <span class="version-badge">v5.9 &nbsp;·&nbsp; April 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -350,6 +350,7 @@
         <tr><td>✅</td><td class="req-id">K-02</td><td>Store the API key in localStorage only — never transmitted to any server</td></tr>
         <tr><td>✅</td><td class="req-id">K-03</td><td>Prompt the user to enter their key if an AI action is triggered without one</td></tr>
         <tr><td>✅</td><td class="req-id">K-04</td><td>Allow the user to clear/update their stored API key</td></tr>
+        <tr><td></td><td class="req-id">K-14</td><td>Add a "Claude Model" selector to the Settings panel, positioned directly below the API key input (K-01) and above the AI Assist toggle (K-05); display a fixed dropdown offering three options: <strong>Sonnet 4.6</strong> (<code>claude-sonnet-4-6</code>), <strong>Opus 4.6</strong> (<code>claude-opus-4-6</code>), and <strong>Haiku 4.5</strong> (<code>claude-haiku-4-5-20251001</code>); default to Sonnet 4.6 if no value is stored; persist the selected model to <code>localStorage</code> under a namespaced key; apply the selected model to every Claude API call in the application (map generation, URL ingestion, suggest concepts, node expand, concept chat, suggest labels, explain label, suggest concepts on edge) &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td>✅</td><td class="req-id">K-05</td><td>Display an "AI Assist" toggle switch in the Settings panel, positioned below the API key input field; the toggle defaults to off on first use &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td>✅</td><td class="req-id">K-06</td><td>Automatically enable the AI Assist toggle when the user saves an API key; automatically disable it when the API key is removed or cleared &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td>✅</td><td class="req-id">K-07</td><td>Persist the AI Assist toggle state to <code>localStorage</code>; on page load, if no API key is stored, the toggle is always off regardless of the persisted value &nbsp;<span class="badge badge-core">NEW</span></td></tr>
@@ -606,7 +607,8 @@
     <p><strong>Version 5.6</strong> — March 2026 — Added Status column to all requirement tables; all Section 4 requirements marked ✅ (implemented); N-09 marked ✅; N-01 through N-08 left unmarked (outstanding)</p>
     <p><strong>Version 5.7</strong> — April 2026 — Promoted N-03 (URL ingestion) to core requirements as Section 4.14; added K-11 (Jina API key, optional), K-12 (Jina token budget, default 10000), U-01–U-05 (URL ingestion via Jina.ai Reader with markdown response format); retired N-03 from Section 5</p>
     <p><strong>Version 5.8</strong> — April 2026 — Added K-13 (URL Map Generation system prompt, positioned between K-10 Edge Label and K-11/K-12 Jina settings); updated U-03 to reference K-13 as the <code>system</code> parameter for URL-based Claude API calls</p>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v5.8 &nbsp;·&nbsp; April 2026
+    <p><strong>Version 5.9</strong> — April 2026 — Added K-14 (Claude Model selector: fixed dropdown with Sonnet 4.6, Opus 4.6, Haiku 4.5; default Sonnet 4.6; persisted to localStorage; applies to all Claude API calls; positioned below API key input, above AI Assist toggle)</p>
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v5.9 &nbsp;·&nbsp; April 2026
   </footer>
 
 </div>
