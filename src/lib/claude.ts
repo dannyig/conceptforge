@@ -84,6 +84,80 @@ export async function generateMap(prompt: string, apiKey: string): Promise<Claud
   return parseClaudeResponse(parsed)
 }
 
+// U-03: generate a concept map from fetched URL content (Jina.ai markdown)
+// Uses the focus question to guide concept extraction from the content
+export async function generateMapFromContent(
+  content: string,
+  focusQuestion: string,
+  apiKey: string
+): Promise<ClaudeMapResponse> {
+  const userPrompt =
+    `A user is studying the following topic or question:\n\n"${focusQuestion}"\n\n` +
+    `Below is the content of a web page they want to map. Read it and produce a concept map ` +
+    `that captures the key ideas from this content, filtered through the lens of the focus question.\n\n` +
+    `--- BEGIN CONTENT ---\n${content.slice(0, 12000)}\n--- END CONTENT ---\n\n` +
+    `Return ONLY valid JSON — no markdown, no explanation:\n` +
+    `{\n` +
+    `  "nodes": [\n` +
+    `    { "id": "1", "label": "Main Concept", "description": "A brief 1–2 sentence definition of this concept and why it is relevant." }\n` +
+    `  ],\n` +
+    `  "edges": [\n` +
+    `    { "source": "1", "target": "2", "label": "relates to" }\n` +
+    `  ],\n` +
+    `  "narrative": "A short paragraph explaining what this content covers and why these concepts were chosen.",\n` +
+    `  "resources": [\n` +
+    `    { "label": "Wikipedia — Topic Name", "url": "https://en.wikipedia.org/wiki/Topic" }\n` +
+    `  ]\n` +
+    `}\n\n` +
+    `Rules:\n` +
+    `- Extract 6–12 nodes that form a well-connected concept map reflecting the content\n` +
+    `- Node IDs must be unique strings ("1", "2", "3", etc.)\n` +
+    `- Keep node labels concise (1–4 words)\n` +
+    `- Every node must include a "description" field: 1–2 sentences from the source content\n` +
+    `- Edge labels should be short relationship phrases (1–3 words)\n` +
+    `- Every node should have at least one edge connecting it to another node\n` +
+    `- narrative: 2–4 sentences about what this content covers and why these concepts were selected\n` +
+    `- resources: 3–5 real, useful online resources related to the topic\n` +
+    `- Do not include markdown fences or any text outside the JSON object`
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  })
+
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`Claude API error ${res.status}: ${body}`)
+  }
+
+  const data = (await res.json()) as { content: Array<{ type: string; text: string }> }
+  const text = data.content.find(c => c.type === 'text')?.text
+  if (!text) throw new Error('Empty response from Claude')
+
+  let parsed: unknown
+  try {
+    const cleaned = text
+      .replace(/^```(?:json)?\n?/, '')
+      .replace(/\n?```$/, '')
+      .trim()
+    parsed = JSON.parse(cleaned)
+  } catch {
+    throw new Error('Claude returned invalid JSON')
+  }
+
+  return parseClaudeResponse(parsed)
+}
+
 // A-13, A-14, A-15: Mode 2 — suggest concept nodes only (no edges), each with a description
 // A-17, A-18: also returns narrative and resources for the summary panel
 export async function suggestConcepts(

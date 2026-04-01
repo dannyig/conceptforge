@@ -3,6 +3,8 @@ import {
   COLOR_BUTTON_PRIMARY_BG,
   COLOR_BUTTON_PRIMARY_HOVER_BG,
   COLOR_BUTTON_PRIMARY_TEXT,
+  COLOR_INPUT_BG,
+  COLOR_INPUT_BORDER,
   COLOR_INPUT_FOCUS_BORDER,
   COLOR_NODE_BORDER,
   COLOR_NODE_SELECTED,
@@ -22,6 +24,7 @@ interface FocusQuestionBarProps {
   onChange: (value: string) => void
   onGenerateMap?: () => void
   onSuggestConcepts?: () => void
+  onIngestUrl?: (url: string) => void
   isGenerating?: boolean
   aiError?: string | null
   onDismissError?: () => void
@@ -33,16 +36,20 @@ export function FocusQuestionBar({
   onChange,
   onGenerateMap,
   onSuggestConcepts,
+  onIngestUrl,
   isGenerating = false,
   aiError = null,
   onDismissError,
   aiAssistEnabled = true,
 }: FocusQuestionBarProps): React.JSX.Element {
   const inputRef = useRef<HTMLInputElement>(null)
+  const urlInputRef = useRef<HTMLInputElement>(null)
   // Snapshot of the committed value at focus time — used to revert on Escape
   const committedRef = useRef<string>(value)
   const [isFocused, setIsFocused] = useState<boolean>(false)
-  const [hoveredBtn, setHoveredBtn] = useState<'generate' | 'suggest' | null>(null)
+  const [hoveredBtn, setHoveredBtn] = useState<'generate' | 'suggest' | 'url' | null>(null)
+  const [showUrlInput, setShowUrlInput] = useState<boolean>(false)
+  const [urlDraft, setUrlDraft] = useState<string>('')
 
   // Sync the input DOM value when value changes externally (e.g. map loaded from file — F-06)
   useEffect((): void => {
@@ -75,6 +82,35 @@ export function FocusQuestionBar({
       }
       inputRef.current?.blur()
     }
+  }, [])
+
+  const handleUrlKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>): void => {
+      if (e.key === 'Enter') {
+        const trimmed = urlDraft.trim()
+        if (trimmed && onIngestUrl) {
+          onIngestUrl(trimmed)
+          setShowUrlInput(false)
+          setUrlDraft('')
+        }
+      }
+      if (e.key === 'Escape') {
+        setShowUrlInput(false)
+        setUrlDraft('')
+      }
+    },
+    [urlDraft, onIngestUrl]
+  )
+
+  const handleUrlButtonClick = useCallback((): void => {
+    setShowUrlInput(prev => {
+      if (!prev) {
+        // Open: focus the input after render
+        setTimeout((): void => urlInputRef.current?.focus(), 0)
+      }
+      return !prev
+    })
+    setUrlDraft('')
   }, [])
 
   // A-11: buttons appear when focus question has content
@@ -120,7 +156,9 @@ export function FocusQuestionBar({
         .cf-fqb-input::placeholder { color: ${COLOR_TEXT_MUTED}; opacity: 1; }
         .cf-fqb-btn-generate:hover:not(:disabled) { background-color: ${COLOR_BUTTON_PRIMARY_HOVER_BG} !important; }
         .cf-fqb-btn-suggest:hover:not(:disabled) { background-color: #21262d !important; }
-        .cf-fqb-btn-generate:focus-visible, .cf-fqb-btn-suggest:focus-visible { outline: 2px solid ${COLOR_NODE_SELECTED}; outline-offset: 2px; }
+        .cf-fqb-btn-url:hover:not(:disabled) { background-color: #21262d !important; }
+        .cf-fqb-btn-generate:focus-visible, .cf-fqb-btn-suggest:focus-visible, .cf-fqb-btn-url:focus-visible { outline: 2px solid ${COLOR_NODE_SELECTED}; outline-offset: 2px; }
+        .cf-fqb-url-input::placeholder { color: ${COLOR_TEXT_MUTED}; opacity: 1; }
       `}</style>
 
       {/* Main bar row */}
@@ -225,7 +263,83 @@ export function FocusQuestionBar({
         >
           {`v${__APP_VERSION__}`}
         </span>
+
+        {/* U-01, U-05: URL ingestion button */}
+        {onIngestUrl !== undefined && (
+          <button
+            className="cf-fqb-btn-url"
+            disabled={isGenerating}
+            onClick={handleUrlButtonClick}
+            onMouseEnter={() => setHoveredBtn('url')}
+            onMouseLeave={() => setHoveredBtn(null)}
+            aria-label="Ingest URL — generate map from a web page"
+            aria-pressed={showUrlInput}
+            style={{
+              ...btnBase,
+              backgroundColor: showUrlInput || hoveredBtn === 'url' ? '#21262d' : 'transparent',
+              color: showUrlInput ? COLOR_NODE_SELECTED : COLOR_TEXT_MUTED,
+              border: `1px solid ${showUrlInput ? COLOR_NODE_SELECTED : COLOR_NODE_BORDER}`,
+              padding: '5px 8px',
+              marginLeft: 4,
+            }}
+          >
+            <LinkIcon />
+          </button>
+        )}
       </div>
+
+      {/* U-05: inline URL input row — shown when URL button is toggled */}
+      {showUrlInput && (
+        <div
+          style={{
+            paddingLeft: 24,
+            paddingRight: 24,
+            paddingBottom: 8,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          <input
+            ref={urlInputRef}
+            type="url"
+            className="cf-fqb-url-input"
+            value={urlDraft}
+            onChange={(e): void => setUrlDraft(e.target.value)}
+            onKeyDown={handleUrlKeyDown}
+            placeholder="Paste a URL and press Enter to generate a map…"
+            aria-label="URL to ingest"
+            style={{
+              flex: 1,
+              background: COLOR_INPUT_BG,
+              border: `1px solid ${COLOR_INPUT_BORDER}`,
+              borderRadius: 4,
+              outline: 'none',
+              fontFamily: FONT_FAMILY,
+              fontSize: FONT_SIZE_SMALL,
+              color: COLOR_NODE_TEXT,
+              padding: '4px 8px',
+              transition: `border-color ${TRANSITION_FAST}`,
+            }}
+            onFocus={(e): void => {
+              e.currentTarget.style.borderColor = COLOR_INPUT_FOCUS_BORDER
+            }}
+            onBlur={(e): void => {
+              e.currentTarget.style.borderColor = COLOR_INPUT_BORDER
+            }}
+          />
+          <span
+            style={{
+              fontFamily: FONT_FAMILY,
+              fontSize: '11px',
+              color: COLOR_TEXT_MUTED,
+              flexShrink: 0,
+            }}
+          >
+            Enter ↵ to generate · Esc to cancel
+          </span>
+        </div>
+      )}
 
       {/* A-11: inline error strip below the bar */}
       {aiError !== null && (
@@ -336,6 +450,26 @@ function BulbIcon(): React.JSX.Element {
     >
       <path d="M9 21h6" />
       <path d="M12 3a6 6 0 0 1 6 6c0 2.2-1.2 4.1-3 5.2V17H9v-2.8C7.2 13.1 6 11.2 6 9a6 6 0 0 1 6-6z" />
+    </svg>
+  )
+}
+
+function LinkIcon(): React.JSX.Element {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      style={{ flexShrink: 0 }}
+    >
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
     </svg>
   )
 }

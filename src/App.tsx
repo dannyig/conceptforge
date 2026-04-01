@@ -10,7 +10,8 @@ import { AppMenu } from '@/components/toolbar/AppMenu'
 import { validateMapData } from '@/lib/export'
 import { getApiKey, OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
 import { useApiKey } from '@/hooks/useApiKey'
-import { generateMap, suggestConcepts } from '@/lib/claude'
+import { generateMap, generateMapFromContent, suggestConcepts } from '@/lib/claude'
+import { fetchUrlContent } from '@/lib/jinaFetch'
 import { autoLayout, ringPositions } from '@/lib/graph'
 import type { SummaryResource } from '@/types'
 
@@ -206,6 +207,56 @@ export function App(): React.JSX.Element {
     }
   }, [focusQuestion, openSettings])
 
+  // U-01, U-03, U-04: ingest a URL — fetch via Jina.ai then generate map from content
+  const handleUrlIngest = useCallback(
+    async (url: string): Promise<void> => {
+      const apiKey = getApiKey()
+      if (!apiKey) {
+        openSettings()
+        return
+      }
+      setIsGenerating(true)
+      setAiError(null)
+      setSummaryData(null)
+      setChatNodeInfo(null)
+      try {
+        const content = await fetchUrlContent(url)
+        const response = await generateMapFromContent(content, focusQuestion, apiKey)
+        const laid = autoLayout(
+          response.nodes.map(n => ({ id: n.id, label: n.label, position: { x: 0, y: 0 } })),
+          response.edges
+        )
+        const posMap = new Map(laid.map(n => [n.id, n.position]))
+        canvasRef.current?.setMapData({
+          nodes: response.nodes.map(n => ({
+            id: n.id,
+            label: n.label,
+            position: posMap.get(n.id) ?? { x: 0, y: 0 },
+            description: n.description,
+          })),
+          edges: response.edges.map((e, i) => ({
+            id: `e-${i}`,
+            source: e.source,
+            target: e.target,
+            label: e.label,
+          })),
+          focusQuestion,
+        })
+        if (response.narrative) {
+          setSummaryData({
+            narrative: response.narrative,
+            resources: response.resources ?? [],
+          })
+        }
+      } catch (err) {
+        setAiError(err instanceof Error ? err.message : 'URL ingestion failed')
+      } finally {
+        setIsGenerating(false)
+      }
+    },
+    [focusQuestion, openSettings]
+  )
+
   return (
     <div
       style={{
@@ -224,6 +275,9 @@ export function App(): React.JSX.Element {
         }}
         onSuggestConcepts={(): void => {
           void handleSuggestConcepts()
+        }}
+        onIngestUrl={(url): void => {
+          void handleUrlIngest(url)
         }}
         isGenerating={isGenerating}
         aiError={aiError}
