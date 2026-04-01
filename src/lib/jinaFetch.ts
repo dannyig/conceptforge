@@ -37,7 +37,6 @@ export function setJinaTokenBudget(n: number): void {
 export async function fetchUrlContent(url: string): Promise<string> {
   const jinaUrl = `${JINA_READER_BASE}${url}`
   const headers: Record<string, string> = {
-    Accept: 'text/plain',
     'X-Return-Format': 'markdown',
     'X-Token-Budget': String(getJinaTokenBudget()),
   }
