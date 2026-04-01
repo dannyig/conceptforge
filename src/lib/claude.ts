@@ -1,9 +1,9 @@
 // Claude API client
 import type { ClaudeMapResponse, ExpandNodeRequest, SummaryResource } from '@/types'
+import { getModel } from '@/lib/modelConfig'
 import { getUrlMapPrompt } from '@/lib/urlMapPrompts'
 
 const API_URL = 'https://api.anthropic.com/v1/messages'
-const MODEL = 'claude-sonnet-4-6'
 
 // Internal type for Mode 2 (A-13, A-15) concept suggestions
 export interface ConceptSuggestion {
@@ -56,7 +56,7 @@ export async function generateMap(prompt: string, apiKey: string): Promise<Claud
       'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
-      model: MODEL,
+      model: getModel(),
       max_tokens: 2048,
       messages: [{ role: 'user', content: userPrompt }],
     }),
@@ -133,7 +133,7 @@ export async function generateMapFromContent(
       'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
-      model: MODEL,
+      model: getModel(),
       max_tokens: 2048,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
@@ -206,7 +206,7 @@ export async function suggestConcepts(
       'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
-      model: MODEL,
+      model: getModel(),
       max_tokens: 2048,
       messages: [{ role: 'user', content: userPrompt }],
     }),
@@ -279,7 +279,7 @@ export async function expandNode(
       'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
-      model: MODEL,
+      model: getModel(),
       max_tokens: 1024,
       messages: [{ role: 'user', content: prompt }],
     }),
@@ -352,7 +352,7 @@ export async function chatNode(
       'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
-      model: MODEL,
+      model: getModel(),
       max_tokens: 2048,
       system: systemPrompt,
       messages,
@@ -403,7 +403,7 @@ export async function suggestEdgeLabels(
       'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
-      model: MODEL,
+      model: getModel(),
       max_tokens: 1024,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
@@ -455,7 +455,7 @@ export async function suggestEdgeConcepts(
       'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
-      model: MODEL,
+      model: getModel(),
       max_tokens: 1024,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
@@ -499,7 +499,7 @@ export async function explainEdgeLabel(
       'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
-      model: MODEL,
+      model: getModel(),
       max_tokens: 1024,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
