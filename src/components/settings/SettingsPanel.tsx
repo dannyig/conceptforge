@@ -20,6 +20,7 @@ import {
   setEdgeLabelPrompt,
 } from '@/lib/edgeLabelPrompts'
 import { DEFAULT_URL_MAP_PROMPT, getUrlMapPrompt, setUrlMapPrompt } from '@/lib/urlMapPrompts'
+import { CLAUDE_MODELS, type ClaudeModelId, getModel, setModel } from '@/lib/modelConfig'
 import {
   clearJinaApiKey,
   getJinaApiKey,
@@ -72,6 +73,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
   const [jinaApiKeyDraft, setJinaApiKeyDraft] = useState<string>('')
   const [jinaApiKeySaved, setJinaApiKeySaved] = useState<boolean>(() => !!getJinaApiKey())
   const [jinaTokenBudget, setJinaTokenBudgetLocal] = useState<number>(() => getJinaTokenBudget())
+  const [selectedModel, setSelectedModelLocal] = useState<ClaudeModelId>(() => getModel())
   const inputRef = useRef<HTMLInputElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -379,6 +381,66 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
             <span style={{ color: COLOR_NODE_TEXT }}>api.anthropic.com</span>. It never touches any
             server.
           </p>
+
+          {/* Divider */}
+          <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
+
+          {/* K-14: Claude Model selector */}
+          <div>
+            <span
+              style={{
+                fontSize: FONT_SIZE_SMALL,
+                color: COLOR_TEXT_MUTED,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                fontWeight: '600',
+              }}
+            >
+              Claude Model
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <label
+              htmlFor="cf-model-select"
+              style={{ fontSize: FONT_SIZE_SMALL, color: COLOR_TEXT_MUTED }}
+            >
+              Model used for all AI operations
+            </label>
+            <select
+              id="cf-model-select"
+              value={selectedModel}
+              onChange={(e): void => {
+                const id = e.target.value as ClaudeModelId
+                setSelectedModelLocal(id)
+                setModel(id)
+              }}
+              aria-label="Claude model"
+              style={{
+                width: '100%',
+                padding: '9px 12px',
+                backgroundColor: COLOR_INPUT_BG,
+                border: `1px solid ${COLOR_INPUT_BORDER}`,
+                borderRadius: 6,
+                color: COLOR_NODE_TEXT,
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_SMALL,
+                cursor: 'pointer',
+                boxSizing: 'border-box',
+                transition: `border-color ${TRANSITION_FAST}`,
+                appearance: 'none',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e7681' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 10px center',
+                paddingRight: 32,
+              }}
+            >
+              {CLAUDE_MODELS.map(m => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Divider */}
           <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
