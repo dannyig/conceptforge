@@ -2110,10 +2110,13 @@ function CanvasFlow({
       {expandingNodeId !== null && (
         <>
           <style>{`
-            @keyframes cf-thinking-sweep {
-              0%   { background-position: 0% 50%; }
-              50%  { background-position: 100% 50%; }
-              100% { background-position: 0% 50%; }
+            @property --cf-thinking-angle {
+              syntax: '<angle>';
+              initial-value: 0deg;
+              inherits: false;
+            }
+            @keyframes cf-thinking-rotate {
+              to { --cf-thinking-angle: 360deg; }
             }
           `}</style>
           <div
@@ -2124,18 +2127,17 @@ function CanvasFlow({
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 20,
-              padding: 2,
+              padding: 1,
               borderRadius: 8,
-              background: `linear-gradient(90deg, ${COLOR_THINKING_BORDER_DEEP}, ${COLOR_THINKING_BORDER_SKY}, ${COLOR_THINKING_BORDER_DEEP})`,
-              backgroundSize: '200% 200%',
-              animation: `cf-thinking-sweep ${THINKING_BORDER_DURATION_MS}ms ease infinite`,
+              background: `conic-gradient(from var(--cf-thinking-angle), ${COLOR_THINKING_BORDER_DEEP}, ${COLOR_THINKING_BORDER_SKY}, ${COLOR_THINKING_BORDER_DEEP})`,
+              animation: `cf-thinking-rotate ${THINKING_BORDER_DURATION_MS}ms linear infinite`,
               pointerEvents: 'none',
             }}
           >
             <div
               style={{
                 background: COLOR_NODE_BG,
-                borderRadius: 6,
+                borderRadius: 7,
                 padding: '6px 14px',
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_NODE_LABEL,
@@ -2177,10 +2179,13 @@ function CanvasFlow({
       {edgeLabelLoading && (
         <>
           <style>{`
-            @keyframes cf-thinking-sweep {
-              0%   { background-position: 0% 50%; }
-              50%  { background-position: 100% 50%; }
-              100% { background-position: 0% 50%; }
+            @property --cf-thinking-angle {
+              syntax: '<angle>';
+              initial-value: 0deg;
+              inherits: false;
+            }
+            @keyframes cf-thinking-rotate {
+              to { --cf-thinking-angle: 360deg; }
             }
           `}</style>
           <div
@@ -2190,17 +2195,16 @@ function CanvasFlow({
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 30,
-              padding: 2,
+              padding: 1,
               borderRadius: 8,
-              background: `linear-gradient(90deg, ${COLOR_THINKING_BORDER_DEEP}, ${COLOR_THINKING_BORDER_SKY}, ${COLOR_THINKING_BORDER_DEEP})`,
-              backgroundSize: '200% 200%',
-              animation: `cf-thinking-sweep ${THINKING_BORDER_DURATION_MS}ms ease infinite`,
+              background: `conic-gradient(from var(--cf-thinking-angle), ${COLOR_THINKING_BORDER_DEEP}, ${COLOR_THINKING_BORDER_SKY}, ${COLOR_THINKING_BORDER_DEEP})`,
+              animation: `cf-thinking-rotate ${THINKING_BORDER_DURATION_MS}ms linear infinite`,
             }}
           >
             <div
               style={{
                 background: COLOR_NODE_BG,
-                borderRadius: 6,
+                borderRadius: 7,
                 padding: '8px 16px',
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_NODE_LABEL,
