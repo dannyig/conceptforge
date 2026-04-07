@@ -2175,33 +2175,42 @@ function CanvasFlow({
 
       {/* A-35/A-36: edge label AI — loading indicator */}
       {edgeLabelLoading && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 80,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 30,
-            padding: 2,
-            borderRadius: 8,
-            background: `linear-gradient(90deg, ${COLOR_THINKING_BORDER_DEEP}, ${COLOR_THINKING_BORDER_SKY}, ${COLOR_THINKING_BORDER_DEEP})`,
-            backgroundSize: '200% 200%',
-            animation: `cf-thinking-sweep ${THINKING_BORDER_DURATION_MS}ms ease infinite`,
-          }}
-        >
+        <>
+          <style>{`
+            @keyframes cf-thinking-sweep {
+              0%   { background-position: 0% 50%; }
+              50%  { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
+            }
+          `}</style>
           <div
             style={{
-              background: COLOR_NODE_BG,
-              borderRadius: 6,
-              padding: '8px 16px',
-              fontFamily: FONT_FAMILY,
-              fontSize: FONT_SIZE_NODE_LABEL,
-              color: COLOR_TEXT_MUTED,
+              position: 'absolute',
+              bottom: 80,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 30,
+              padding: 2,
+              borderRadius: 8,
+              background: `linear-gradient(90deg, ${COLOR_THINKING_BORDER_DEEP}, ${COLOR_THINKING_BORDER_SKY}, ${COLOR_THINKING_BORDER_DEEP})`,
+              backgroundSize: '200% 200%',
+              animation: `cf-thinking-sweep ${THINKING_BORDER_DURATION_MS}ms ease infinite`,
             }}
           >
-            Thinking…
+            <div
+              style={{
+                background: COLOR_NODE_BG,
+                borderRadius: 6,
+                padding: '8px 16px',
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_NODE_LABEL,
+                color: COLOR_TEXT_MUTED,
+              }}
+            >
+              Thinking…
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* A-35/A-36: edge label AI — error indicator */}
