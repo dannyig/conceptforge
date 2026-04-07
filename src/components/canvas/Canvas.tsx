@@ -63,6 +63,9 @@ import {
   COLOR_TEXT_MUTED,
   COLOR_STATUS_ERROR,
   FIT_VIEW_DURATION_MS,
+  COLOR_THINKING_BORDER_DEEP,
+  COLOR_THINKING_BORDER_SKY,
+  THINKING_BORDER_DURATION_MS,
 } from '@/lib/theme'
 import { expandNode, suggestEdgeConcepts, suggestEdgeLabels, explainEdgeLabel } from '@/lib/claude'
 import { getApiKey, OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
@@ -2105,26 +2108,44 @@ function CanvasFlow({
 
       {/* A-04/A-05 analog: expansion loading and error indicators */}
       {expandingNodeId !== null && (
-        <div
-          aria-live="polite"
-          style={{
-            position: 'absolute',
-            bottom: TICKER_HEIGHT + 36,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 20,
-            backgroundColor: COLOR_NODE_BG,
-            border: `1px solid ${COLOR_NODE_BORDER}`,
-            borderRadius: 6,
-            padding: '6px 14px',
-            fontFamily: FONT_FAMILY,
-            fontSize: FONT_SIZE_NODE_LABEL,
-            color: COLOR_TEXT_MUTED,
-            pointerEvents: 'none',
-          }}
-        >
-          Expanding…
-        </div>
+        <>
+          <style>{`
+            @keyframes cf-thinking-sweep {
+              0%   { background-position: 0% 50%; }
+              50%  { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
+            }
+          `}</style>
+          <div
+            aria-live="polite"
+            style={{
+              position: 'absolute',
+              bottom: TICKER_HEIGHT + 36,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 20,
+              padding: 2,
+              borderRadius: 8,
+              background: `linear-gradient(90deg, ${COLOR_THINKING_BORDER_DEEP}, ${COLOR_THINKING_BORDER_SKY}, ${COLOR_THINKING_BORDER_DEEP})`,
+              backgroundSize: '200% 200%',
+              animation: `cf-thinking-sweep ${THINKING_BORDER_DURATION_MS}ms ease infinite`,
+              pointerEvents: 'none',
+            }}
+          >
+            <div
+              style={{
+                background: COLOR_NODE_BG,
+                borderRadius: 6,
+                padding: '6px 14px',
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_NODE_LABEL,
+                color: COLOR_TEXT_MUTED,
+              }}
+            >
+              Expanding…
+            </div>
+          </div>
+        </>
       )}
       {expandError !== null && (
         <div
@@ -2161,16 +2182,25 @@ function CanvasFlow({
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 30,
-            background: COLOR_NODE_BG,
-            border: `1px solid ${COLOR_NODE_BORDER}`,
-            borderRadius: 6,
-            padding: '8px 16px',
-            fontFamily: FONT_FAMILY,
-            fontSize: FONT_SIZE_NODE_LABEL,
-            color: COLOR_TEXT_MUTED,
+            padding: 2,
+            borderRadius: 8,
+            background: `linear-gradient(90deg, ${COLOR_THINKING_BORDER_DEEP}, ${COLOR_THINKING_BORDER_SKY}, ${COLOR_THINKING_BORDER_DEEP})`,
+            backgroundSize: '200% 200%',
+            animation: `cf-thinking-sweep ${THINKING_BORDER_DURATION_MS}ms ease infinite`,
           }}
         >
-          Thinking…
+          <div
+            style={{
+              background: COLOR_NODE_BG,
+              borderRadius: 6,
+              padding: '8px 16px',
+              fontFamily: FONT_FAMILY,
+              fontSize: FONT_SIZE_NODE_LABEL,
+              color: COLOR_TEXT_MUTED,
+            }}
+          >
+            Thinking…
+          </div>
         </div>
       )}
 
