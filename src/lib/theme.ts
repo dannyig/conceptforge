@@ -75,6 +75,11 @@ export const TICKER_READ_MS = 5500 // pause-to-read duration (ms)
 // Fit-to-view animation (A-25)
 export const FIT_VIEW_DURATION_MS = 400
 
+// V-12: Thinking/Expanding indicator animated gradient border
+export const COLOR_THINKING_BORDER_DEEP = '#1e40af' // deep blue
+export const COLOR_THINKING_BORDER_SKY = '#38bdf8' // sky blue
+export const THINKING_BORDER_DURATION_MS = 2000
+
 // Summary Panel (A-16 → A-22)
 export const COLOR_SUMMARY_BG = 'rgba(13,17,23,0.72)'
 export const COLOR_SUMMARY_BORDER = '#21262d'
