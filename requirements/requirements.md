@@ -171,6 +171,7 @@
 | ✅ | V-09 | The rubber-band selection rectangle must render as a subtle frame: a thin single-pixel border in the orange accent colour (`#f97316`) at low opacity, with a near-transparent fill of the same colour; no solid background, no drop shadow |
 | ✅ | V-10 | Each selected item (node or note) in a multi-selection must display the same orange border highlight used for single-item selection; when multiple items are selected, all selected items show this highlight simultaneously |
 | ✅ | V-11 | All edge arrowheads — on single concept edges and branching edge branch arrows — must render at a uniform size equal to the selected-state arrowhead size; arrowhead colour is unaffected by this change |
+|  | V-12 | While the "Thinking" indicator is visible (the AI processing state defined by A-04), animate its border with a continuously traveling blue gradient — a conic or linear gradient that sweeps around the border perimeter in a loop; the animation runs for the entire duration the indicator is visible and stops when the indicator is dismissed |
 
 ### 4.8 Focus Question
 
@@ -407,3 +408,5 @@
 *Version 5.8 — April 2026 — Added K-13 (URL Map Generation system prompt, positioned between K-10 Edge Label and K-11 Jina settings); updated U-03 to reference K-13 as the `system` parameter for URL-based Claude API calls*
 
 *Version 5.9 — April 2026 — Added K-14 (Claude Model selector: fixed dropdown with Sonnet 4.6, Opus 4.6, Haiku 4.5; default Sonnet 4.6; persisted to localStorage; applies to all Claude API calls; positioned below API key input, above AI Assist toggle)*
+
+*Version 6.0 — April 2026 — Added V-12 (animated traveling blue gradient border on the Thinking indicator while an AI operation is in progress)*
