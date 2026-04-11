@@ -209,8 +209,8 @@ interface ConceptEdge {
   id: string
   source: string
   target: string
-  sourceHandle?: string | null  // which side handle the edge originates from; absent = unspecified
-  targetHandle?: string | null  // which side handle the edge terminates at; absent = unspecified
+  sourceHandle?: string | null  // C-41/C-42: will change to a floating boundary position type when C-18/C-41/C-42 are implemented — currently stores named cardinal values ("left", "right", "top", "bottom"); implementation agent must update this field and its type before writing boundary-attachment code
+  targetHandle?: string | null  // same as sourceHandle — see C-41/C-42 note above
   label?: string
   labelPosition?: { x: number; y: number }  // C-22: custom waypoint position; absent when at default midpoint
 }
