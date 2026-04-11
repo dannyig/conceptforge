@@ -9,6 +9,7 @@ import {
   type NodeProps,
 } from '@xyflow/react'
 import {
+  COLOR_HANDLE_HOVER,
   COLOR_NODE_BG,
   COLOR_NODE_BORDER,
   COLOR_NODE_GLOW,
@@ -51,6 +52,8 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(data.label)
   const [hovered, setHovered] = useState(false)
+  // C-43: which side handle is currently proximity-visible (null = all invisible)
+  const [nearSide, setNearSide] = useState<'top' | 'right' | 'bottom' | 'left' | null>(null)
   const [showTooltip, setShowTooltip] = useState(false)
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null)
   const dotRef = useRef<HTMLDivElement>(null)
@@ -104,6 +107,38 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
 
   const boxShadow = selected ? `0 0 0 3px ${COLOR_NODE_GLOW}` : 'none'
 
+  // C-43: determine which side the cursor is closest to and within the proximity zone.
+  // Returns null when the cursor is too far from all sides (i.e. in the node interior).
+  const PROXIMITY_PX = 16
+  const onNodeMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>): void => {
+      if (editing) {
+        setNearSide(null)
+        return
+      }
+      const rect = e.currentTarget.getBoundingClientRect()
+      const x = e.clientX - rect.left // cursor x relative to node
+      const y = e.clientY - rect.top // cursor y relative to node
+      const w = rect.width
+      const h = rect.height
+      // Distance from each side
+      const dTop = y
+      const dBottom = h - y
+      const dLeft = x
+      const dRight = w - x
+      const minDist = Math.min(dTop, dBottom, dLeft, dRight)
+      if (minDist > PROXIMITY_PX) {
+        setNearSide(null)
+        return
+      }
+      if (minDist === dTop) setNearSide('top')
+      else if (minDist === dBottom) setNearSide('bottom')
+      else if (minDist === dLeft) setNearSide('left')
+      else setNearSide('right')
+    },
+    [editing]
+  )
+
   const onNodeKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>): void => {
       if (!editing && (e.key === 'Enter' || e.key === 'F2')) {
@@ -123,7 +158,11 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
       }}
       onKeyDown={onNodeKeyDown}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={() => {
+        setHovered(false)
+        setNearSide(null)
+      }}
+      onMouseMove={onNodeMouseMove}
       style={{
         backgroundColor: COLOR_NODE_BG,
         border: `1px solid ${borderColor}`,
@@ -160,10 +199,15 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
               : side === 'bottom'
                 ? { bottom: flush }
                 : { left: flush }
+        // C-43: the handle on the nearest side becomes dimly visible; all others stay invisible
+        const handleOpacity = !editing && nearSide === side ? 0.35 : 0
         const handleStyle: React.CSSProperties = {
           width: scaledHandle,
           height: scaledHandle,
-          opacity: 0,
+          opacity: handleOpacity,
+          background: COLOR_HANDLE_HOVER,
+          border: 'none',
+          transition: 'opacity 120ms ease',
           ...flushStyle,
         }
         return (
@@ -271,9 +315,8 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
           document.body
         )}
 
-      {/* All handles hidden — pseudo-class input focus styles */}
+      {/* C-43: handle opacity is managed via inline style; only input focus and motion styles here */}
       <style>{`
-        .react-flow__node-concept .react-flow__handle { opacity: 0 !important; }
         .react-flow__node input:focus-visible { outline: 1px solid ${COLOR_NODE_SELECTED}; outline-offset: 2px; border-radius: 2px; }
         @media (prefers-reduced-motion: reduce) {
           .react-flow__handle { transition: none !important; }
