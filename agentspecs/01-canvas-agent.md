@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-42, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
+**Trigger:** Human assigns requirement IDs C-01 → C-43, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)

@@ -73,6 +73,7 @@
 | ✅ | C-40 | When the user manually draws a new edge between two nodes (including the edge created via drag-to-empty-canvas, C-19), automatically set its label to `?`; the label is not placed in edit mode and remains `?` until the user double-clicks it to change it (C-09); AI-generated edges (from Generate Map, Suggest Concepts, and Expand) are unaffected and always receive the label produced by Claude |
 |  | C-41 | When a connected node is repositioned on the canvas, all edges attached to that node automatically reposition their connection endpoint to the nearest boundary point of the moved node that faces toward the opposite connected node; this applies to source and target endpoints of all edge types (single edges, branching stems, branching branch arrows) |
 |  | C-42 | When a map is loaded from JSON, any edge whose stored handle value is a named cardinal identifier (`"left"`, `"right"`, `"top"`, `"bottom"`, or `null`) must have its connection point recalculated to the optimal floating boundary position relative to the opposite connected node; the recalculation must not produce errors or visible artefacts |
+|  | C-43 | When the cursor is within the connection zone of a concept node (approximately 16px of any side), the static connection handle on that side becomes visible at reduced opacity; the other three handles remain invisible; when the cursor moves to a different side the corresponding handle becomes visible and the previous one returns to invisible; when the cursor leaves the node entirely all handles return to invisible; handles must not become visible during inline label editing |
 
 ### 4.2 AI — Map Generation
 
@@ -414,3 +415,5 @@
 *Version 6.0 — April 2026 — Added V-12 (animated traveling blue gradient border on the Thinking indicator while an AI operation is in progress)*
 
 *Version 6.1 — April 2026 — Updated C-18 (floating boundary connection: edge start/end snaps to nearest boundary point on cursor position, replaces fixed four-handle system); updated C-31 (reconnect drops at nearest boundary point, not fixed handle); added C-41 (dynamic endpoint repositioning when a node is moved); added C-42 (migration of cardinal handle values to floating positions on map load)*
+
+*Version 6.2 — April 2026 — Added C-43 (proximity-triggered handle visibility: the static connection handle on the nearest side becomes visible at reduced opacity when the cursor is within ~16px of that side; all handles invisible otherwise; suppressed during inline label editing)*
