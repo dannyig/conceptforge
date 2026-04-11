@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-40, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
+**Trigger:** Human assigns requirement IDs C-01 → C-42, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -538,19 +538,41 @@ interface MapData {
 
 ---
 
-### Group 4n — Handle and Viewport Fixes (C-18 update, C-39)
-
-- [ ] **C-18 — Remove handle source restriction:**
-  - In `Canvas.tsx`, remove the `occupiedSides` logic that prevents a handle with incoming edges from being used as an edge source
-  - Remove the `occupiedSides` field from `CanvasNodeData` and from the `enrichedNodes` memo that computes it
-  - In `ConceptNode.tsx`, remove any code that reads `occupiedSides` to disable source handles; all four handles must always be draggable as an edge source
+### Group 4n — Handle and Viewport Fixes (C-39)
 
 - [ ] **C-39 — No viewport zoom on label edit:**
   - In `Canvas.tsx` (or wherever inline edit mode is entered), ensure that entering edit mode on a node does not call `fitView`, `zoomIn`, `zoomTo`, or any React Flow method that changes the viewport
   - If React Flow's double-click handler is triggering a zoom, suppress it: call `event.preventDefault()` or `event.stopPropagation()` on the `onNodeDoubleClick` handler before entering edit mode
   - Verify that the viewport zoom level and position are identical before and after entering and exiting edit mode
 
-**Commit:** `feat(C-18,C-39): handles usable as source and target simultaneously; no viewport zoom on label edit`
+**Commit:** `feat(C-39): no viewport zoom on label edit`
+
+---
+
+### Group 4o — Floating Boundary Connection (C-18, C-41, C-42)
+
+> **Before starting this group:** Update `ConceptEdge` in `src/types/index.ts` — the `sourceHandle` and `targetHandle` fields must change from named cardinal string values to a representation that stores a floating boundary position (e.g. `{ side: 'top' | 'right' | 'bottom' | 'left', offset: number }` where `offset` is 0–1 along that side, or an equivalent perimeter fraction). Choose a representation that can be serialised/deserialised in JSON and computed geometrically from node position and dimensions.
+
+- [ ] **C-18 — Floating boundary connection:**
+  - Replace the fixed four-handle system in `ConceptNode.tsx` with a floating-point boundary attachment model
+  - When the user begins dragging an edge from a node, compute the nearest point on the node's boundary rectangle to the current cursor position and use that as the connection origin; update dynamically as the cursor moves
+  - When the user drops an edge onto a target node, attach it at the nearest boundary point to the drop position
+  - React Flow approach: use a large number of invisible handles distributed around the boundary perimeter (e.g. one per pixel or a fine grid per side), or use React Flow's `connectionRadius` and a single centre handle with custom SVG edge routing to nearest boundary intersection; choose whichever approach renders correctly and performs well
+  - No visible handles at any time
+
+- [ ] **C-41 — Dynamic endpoint repositioning on node move:**
+  - When a node is moved (via drag or keyboard nudge), recompute the connection points of all edges attached to that node
+  - For each attached edge endpoint, find the nearest boundary point of the moved node that faces the opposite connected node (i.e. the point on the boundary closest to the line between the two node centres)
+  - Update edge `sourceHandle` / `targetHandle` data via `setEdges` so the recalculated position is stored in state
+  - This applies to: source endpoints on edges leaving the moved node, target endpoints on edges arriving at the moved node, stem edges of branching edges, and branch arrows of branching edges
+
+- [ ] **C-42 — Migration of cardinal handle values on map load:**
+  - In `Canvas.tsx` `setMapData()`, after restoring edges from JSON, iterate all edges and check `sourceHandle` / `targetHandle` values
+  - If a value is a named cardinal identifier (`"left"`, `"right"`, `"top"`, `"bottom"`, `null`, or `undefined`), recalculate it to the optimal floating boundary position relative to the opposite connected node (using the same geometry as C-41)
+  - Store the recalculated value and continue — do not throw or display an error for legacy handle values
+  - After migration, all edges must render with correct floating boundary positions regardless of whether the map was saved under the old or new format
+
+**Commit:** `feat(C-18,C-41,C-42): floating boundary edge connections — nearest boundary snap, dynamic repositioning, legacy map migration`
 
 ---
 
