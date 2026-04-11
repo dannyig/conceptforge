@@ -3,10 +3,12 @@ import {
   BaseEdge,
   EdgeLabelRenderer,
   getStraightPath,
+  useInternalNode,
   useReactFlow,
   type Edge,
   type EdgeProps,
 } from '@xyflow/react'
+import { rectBoundaryPoint } from '@/lib/geometry'
 import {
   COLOR_EDGE_SELECTED,
   COLOR_NODE_BG,
@@ -27,6 +29,8 @@ export type ConceptFlowEdge = Edge<EdgeData>
 
 export function ConceptEdge({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   targetX,
@@ -42,29 +46,84 @@ export function ConceptEdge({
   const inputRef = useRef<HTMLInputElement>(null)
   const dragging = useRef(false)
 
-  // Resolve label position: custom waypoint or default midpoint (C-20, C-21)
+  // C-18 / C-41 / C-42: compute floating boundary intersection points so edges always
+  // attach at the exact boundary point nearest to the opposite node (or to the label
+  // waypoint when the label has been repositioned). This makes edges dynamic — they
+  // reposition automatically when nodes move, and handle values ("left", "top", etc.)
+  // stored in old maps are rendered correctly without any migration step (C-42).
+  const sourceNode = useInternalNode(source)
+  const targetNode = useInternalNode(target)
+
   const customPos = data?.labelPosition
+
+  // The "toward" point for the source boundary: the label waypoint if repositioned,
+  // otherwise the target node center (or the RF handle position as a fallback).
+  const towardFromSource = customPos
+    ? customPos
+    : targetNode
+      ? {
+          x: targetNode.internals.positionAbsolute.x + (targetNode.measured.width ?? 0) / 2,
+          y: targetNode.internals.positionAbsolute.y + (targetNode.measured.height ?? 0) / 2,
+        }
+      : { x: targetX, y: targetY }
+
+  // The "toward" point for the target boundary: the label waypoint if repositioned,
+  // otherwise the source node center (or the RF handle position as a fallback).
+  const towardFromTarget = customPos
+    ? customPos
+    : sourceNode
+      ? {
+          x: sourceNode.internals.positionAbsolute.x + (sourceNode.measured.width ?? 0) / 2,
+          y: sourceNode.internals.positionAbsolute.y + (sourceNode.measured.height ?? 0) / 2,
+        }
+      : { x: sourceX, y: sourceY }
+
+  let sx = sourceX
+  let sy = sourceY
+  if (sourceNode) {
+    const sw = sourceNode.measured.width ?? 0
+    const sh = sourceNode.measured.height ?? 0
+    const scx = sourceNode.internals.positionAbsolute.x + sw / 2
+    const scy = sourceNode.internals.positionAbsolute.y + sh / 2
+    const pt = rectBoundaryPoint(scx, scy, sw / 2, sh / 2, towardFromSource.x, towardFromSource.y)
+    sx = pt.x
+    sy = pt.y
+  }
+
+  let tx = targetX
+  let ty = targetY
+  if (targetNode) {
+    const tw = targetNode.measured.width ?? 0
+    const th = targetNode.measured.height ?? 0
+    const tcx = targetNode.internals.positionAbsolute.x + tw / 2
+    const tcy = targetNode.internals.positionAbsolute.y + th / 2
+    const pt = rectBoundaryPoint(tcx, tcy, tw / 2, th / 2, towardFromTarget.x, towardFromTarget.y)
+    tx = pt.x
+    ty = pt.y
+  }
+
+  // Resolve label position: custom waypoint or midpoint of the boundary-computed path
   const [defaultPath, defaultLabelX, defaultLabelY] = getStraightPath({
-    sourceX,
-    sourceY,
-    targetX,
-    targetY,
+    sourceX: sx,
+    sourceY: sy,
+    targetX: tx,
+    targetY: ty,
   })
   const labelX = customPos ? customPos.x : defaultLabelX
   const labelY = customPos ? customPos.y : defaultLabelY
 
   // Two-segment paths used when label has been repositioned (C-21)
   const [stemPath] = getStraightPath({
-    sourceX,
-    sourceY,
+    sourceX: sx,
+    sourceY: sy,
     targetX: labelX,
     targetY: labelY,
   })
   const [arrowPath] = getStraightPath({
     sourceX: labelX,
     sourceY: labelY,
-    targetX,
-    targetY,
+    targetX: tx,
+    targetY: ty,
   })
 
   const startEdit = useCallback((): void => {
