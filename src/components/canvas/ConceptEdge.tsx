@@ -9,10 +9,8 @@ import {
   type EdgeProps,
 } from '@xyflow/react'
 import { rectBoundaryPoint } from '@/lib/geometry'
+import { useTheme } from '@/hooks/use-theme'
 import {
-  COLOR_EDGE_SELECTED,
-  COLOR_NODE_BG,
-  COLOR_NODE_TEXT,
   FONT_FAMILY,
   FONT_SIZE_EDGE_LABEL,
   FONT_SIZE_NODE_LABEL,
@@ -40,6 +38,7 @@ export function ConceptEdge({
   style,
   selected,
 }: EdgeProps<ConceptFlowEdge>): React.JSX.Element {
+  const { tokens } = useTheme()
   const { setEdges, screenToFlowPosition } = useReactFlow()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(data?.label ?? '')
@@ -229,10 +228,10 @@ export function ConceptEdge({
               autoFocus
               aria-label="Edit edge label"
               style={{
-                background: COLOR_NODE_BG,
-                border: `1px solid ${COLOR_EDGE_SELECTED}`,
+                background: tokens.COLOR_NODE_BG,
+                border: `1px solid ${tokens.COLOR_EDGE_SELECTED}`,
                 borderRadius: 3,
-                color: COLOR_NODE_TEXT,
+                color: tokens.COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_NODE_LABEL,
                 fontWeight: FONT_WEIGHT_NODE_LABEL,
@@ -246,9 +245,10 @@ export function ConceptEdge({
           ) : label ? (
             <span
               style={{
-                background: COLOR_NODE_BG,
+                background: tokens.COLOR_NODE_BG,
                 borderRadius: 3,
-                color: selected || data?.isHovered ? COLOR_EDGE_SELECTED : COLOR_NODE_TEXT,
+                color:
+                  selected || data?.isHovered ? tokens.COLOR_EDGE_SELECTED : tokens.COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_EDGE_LABEL,
                 fontWeight: FONT_WEIGHT_NODE_LABEL,

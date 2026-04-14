@@ -1,9 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useTheme } from '@/hooks/use-theme'
 import {
-  COLOR_NODE_SELECTED,
-  COLOR_TICKER_BG,
-  COLOR_TICKER_BORDER,
-  COLOR_TICKER_TEXT,
   FONT_FAMILY,
   TICKER_FADE_MS,
   TICKER_FONT_SIZE,
@@ -55,6 +52,7 @@ interface HintTickerProps {
 }
 
 export function HintTicker({ aiAssistEnabled = false }: HintTickerProps): React.JSX.Element {
+  const { tokens } = useTheme()
   const [visible, setVisible] = useState(true)
   const [index, setIndex] = useState(0)
   const [phase, setPhase] = useState<Phase>('idle')
@@ -142,8 +140,8 @@ export function HintTicker({ aiAssistEnabled = false }: HintTickerProps): React.
             left: 0,
             right: 0,
             height: TICKER_HEIGHT,
-            background: COLOR_TICKER_BG,
-            borderTop: `1px solid ${COLOR_TICKER_BORDER}`,
+            background: tokens.COLOR_TICKER_BG,
+            borderTop: `1px solid ${tokens.COLOR_TICKER_BORDER}`,
             overflow: 'hidden',
             zIndex: 10,
             userSelect: 'none',
@@ -159,13 +157,15 @@ export function HintTicker({ aiAssistEnabled = false }: HintTickerProps): React.
               fontFamily: FONT_FAMILY,
               fontSize: TICKER_FONT_SIZE,
               lineHeight: 1,
-              color: COLOR_TICKER_TEXT,
+              color: tokens.COLOR_TICKER_TEXT,
               letterSpacing: '0.03em',
               whiteSpace: 'nowrap',
               pointerEvents: 'none',
             }}
           >
-            <span style={{ color: COLOR_NODE_SELECTED, marginRight: 5, opacity: 0.75 }}>Tip:</span>
+            <span style={{ color: tokens.COLOR_NODE_SELECTED, marginRight: 5, opacity: 0.75 }}>
+              Tip:
+            </span>
             {HINTS[index]}
           </div>
         </div>
@@ -184,6 +184,7 @@ function AiAssistIndicator({
   enabled: boolean
   tickerVisible: boolean
 }): React.JSX.Element {
+  const { tokens } = useTheme()
   return (
     <div
       aria-label={enabled ? 'AI Assist on' : 'AI Assist off'}
@@ -196,14 +197,14 @@ function AiAssistIndicator({
         display: 'flex',
         alignItems: 'center',
         gap: 5,
-        borderLeft: `1px solid ${COLOR_TICKER_BORDER}`,
-        borderTop: tickerVisible ? `1px solid ${COLOR_TICKER_BORDER}` : 'none',
+        borderLeft: `1px solid ${tokens.COLOR_TICKER_BORDER}`,
+        borderTop: tickerVisible ? `1px solid ${tokens.COLOR_TICKER_BORDER}` : 'none',
         fontFamily: FONT_FAMILY,
         fontSize: TICKER_FONT_SIZE,
         fontWeight: 600,
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
-        color: enabled ? COLOR_NODE_SELECTED : COLOR_TICKER_TEXT,
+        color: enabled ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_TICKER_TEXT,
         opacity: enabled ? 1 : 0.35,
         pointerEvents: 'none',
         userSelect: 'none',
@@ -223,6 +224,7 @@ function TipsToggle({
   visible: boolean
   onToggle: () => void
 }): React.JSX.Element {
+  const { tokens } = useTheme()
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -248,14 +250,14 @@ function TipsToggle({
             ? 'rgba(255,255,255,0.04)'
             : 'transparent',
         border: 'none',
-        borderRight: `1px solid ${COLOR_TICKER_BORDER}`,
-        borderTop: visible ? `1px solid ${COLOR_TICKER_BORDER}` : 'none',
+        borderRight: `1px solid ${tokens.COLOR_TICKER_BORDER}`,
+        borderTop: visible ? `1px solid ${tokens.COLOR_TICKER_BORDER}` : 'none',
         cursor: 'pointer',
         fontFamily: FONT_FAMILY,
         fontSize: TICKER_FONT_SIZE,
         fontWeight: 600,
         letterSpacing: '0.08em',
-        color: visible ? COLOR_NODE_SELECTED : COLOR_TICKER_TEXT,
+        color: visible ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_TICKER_TEXT,
         opacity: visible ? 1 : hovered ? 0.6 : 0.35,
         transition: `opacity ${TRANSITION_FAST}, background ${TRANSITION_FAST}, color ${TRANSITION_FAST}`,
         zIndex: 11,

@@ -1,17 +1,8 @@
 // A-40 / A-41: interactive suggestion panel — selectable labels or concepts with Apply button
 import React, { useCallback, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import {
-  COLOR_NODE_BORDER,
-  COLOR_NODE_SELECTED,
-  COLOR_NODE_TEXT,
-  COLOR_SUMMARY_BORDER,
-  COLOR_TEXT_MUTED,
-  FONT_FAMILY,
-  FONT_SIZE_BASE,
-  FONT_SIZE_SMALL,
-  TRANSITION_FAST,
-} from '@/lib/theme'
+import { useTheme } from '@/hooks/use-theme'
+import { FONT_FAMILY, FONT_SIZE_BASE, FONT_SIZE_SMALL, TRANSITION_FAST } from '@/lib/theme'
 
 export interface SuggestionItem {
   label: string
@@ -87,6 +78,7 @@ export function SuggestionSelectPanel({
   onApply,
   onDismiss,
 }: SuggestionSelectPanelProps): React.JSX.Element {
+  const { tokens } = useTheme()
   const { diagram, items } = parseSuggestions(content)
   const [selected, setSelected] = useState<Set<number>>(new Set())
 
@@ -146,10 +138,10 @@ export function SuggestionSelectPanel({
     >
       <style>{`
         .cf-sugg-dismiss:hover { background-color: #21262d !important; }
-        .cf-sugg-dismiss:focus-visible { outline: 2px solid ${COLOR_NODE_SELECTED}; outline-offset: 2px; }
+        .cf-sugg-dismiss:focus-visible { outline: 2px solid ${tokens.COLOR_NODE_SELECTED}; outline-offset: 2px; }
         .cf-sugg-item:hover { background: #21262d !important; }
         .cf-sugg-apply:not(:disabled):hover { background: #f97316 !important; color: #fff !important; }
-        .cf-sugg-apply:focus-visible { outline: 2px solid ${COLOR_NODE_SELECTED}; outline-offset: 2px; }
+        .cf-sugg-apply:focus-visible { outline: 2px solid ${tokens.COLOR_NODE_SELECTED}; outline-offset: 2px; }
       `}</style>
 
       <div
@@ -157,7 +149,7 @@ export function SuggestionSelectPanel({
           width: '70vw',
           height: '70vh',
           backgroundColor: '#161b22',
-          border: `1px solid ${COLOR_SUMMARY_BORDER}`,
+          border: `1px solid ${tokens.COLOR_SUMMARY_BORDER}`,
           borderRadius: 10,
           display: 'flex',
           flexDirection: 'column',
@@ -169,7 +161,7 @@ export function SuggestionSelectPanel({
           style={{
             flexShrink: 0,
             padding: '12px 18px',
-            borderBottom: `1px solid ${COLOR_SUMMARY_BORDER}`,
+            borderBottom: `1px solid ${tokens.COLOR_SUMMARY_BORDER}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -180,7 +172,7 @@ export function SuggestionSelectPanel({
               fontFamily: FONT_FAMILY,
               fontSize: '10px',
               fontWeight: '600',
-              color: COLOR_TEXT_MUTED,
+              color: tokens.COLOR_TEXT_MUTED,
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
             }}
@@ -195,11 +187,11 @@ export function SuggestionSelectPanel({
               width: 24,
               height: 24,
               background: 'transparent',
-              border: `1px solid ${COLOR_NODE_BORDER}`,
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
               borderRadius: 4,
               fontFamily: FONT_FAMILY,
               fontSize: '16px',
-              color: COLOR_TEXT_MUTED,
+              color: tokens.COLOR_TEXT_MUTED,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -221,9 +213,9 @@ export function SuggestionSelectPanel({
               style={{
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_SMALL,
-                color: COLOR_TEXT_MUTED,
+                color: tokens.COLOR_TEXT_MUTED,
                 background: '#1c2128',
-                border: `1px solid ${COLOR_NODE_BORDER}`,
+                border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
                 borderRadius: 6,
                 padding: '8px 12px',
                 marginBottom: 18,
@@ -259,7 +251,7 @@ export function SuggestionSelectPanel({
                     gap: 12,
                     padding: '10px 12px',
                     borderRadius: 6,
-                    border: `1px solid ${isSelected ? COLOR_NODE_SELECTED : COLOR_NODE_BORDER}`,
+                    border: `1px solid ${isSelected ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_NODE_BORDER}`,
                     background: isSelected ? 'rgba(249,115,22,0.08)' : 'transparent',
                     cursor: 'pointer',
                     transition: `border-color ${TRANSITION_FAST}, background ${TRANSITION_FAST}`,
@@ -273,8 +265,8 @@ export function SuggestionSelectPanel({
                       width: 14,
                       height: 14,
                       borderRadius: mode === 'single' ? '50%' : 3,
-                      border: `2px solid ${isSelected ? COLOR_NODE_SELECTED : COLOR_TEXT_MUTED}`,
-                      background: isSelected ? COLOR_NODE_SELECTED : 'transparent',
+                      border: `2px solid ${isSelected ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_TEXT_MUTED}`,
+                      background: isSelected ? tokens.COLOR_NODE_SELECTED : 'transparent',
                       transition: `border-color ${TRANSITION_FAST}, background ${TRANSITION_FAST}`,
                     }}
                   />
@@ -284,7 +276,7 @@ export function SuggestionSelectPanel({
                         fontFamily: FONT_FAMILY,
                         fontSize: FONT_SIZE_BASE,
                         fontWeight: 600,
-                        color: isSelected ? COLOR_NODE_SELECTED : COLOR_NODE_TEXT,
+                        color: isSelected ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_NODE_TEXT,
                         marginBottom: item.explanation ? 4 : 0,
                         transition: `color ${TRANSITION_FAST}`,
                       }}
@@ -296,7 +288,7 @@ export function SuggestionSelectPanel({
                         style={{
                           fontFamily: FONT_FAMILY,
                           fontSize: FONT_SIZE_SMALL,
-                          color: COLOR_TEXT_MUTED,
+                          color: tokens.COLOR_TEXT_MUTED,
                           lineHeight: '1.6',
                         }}
                       >
@@ -315,7 +307,7 @@ export function SuggestionSelectPanel({
           style={{
             flexShrink: 0,
             padding: '12px 24px',
-            borderTop: `1px solid ${COLOR_SUMMARY_BORDER}`,
+            borderTop: `1px solid ${tokens.COLOR_SUMMARY_BORDER}`,
             display: 'flex',
             justifyContent: 'flex-end',
             gap: 10,
@@ -326,11 +318,11 @@ export function SuggestionSelectPanel({
             style={{
               padding: '6px 14px',
               background: 'transparent',
-              border: `1px solid ${COLOR_NODE_BORDER}`,
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
               borderRadius: 5,
               fontFamily: FONT_FAMILY,
               fontSize: FONT_SIZE_SMALL,
-              color: COLOR_TEXT_MUTED,
+              color: tokens.COLOR_TEXT_MUTED,
               cursor: 'pointer',
               transition: `background ${TRANSITION_FAST}`,
             }}
@@ -350,11 +342,11 @@ export function SuggestionSelectPanel({
             style={{
               padding: '6px 16px',
               background: canApply ? 'rgba(249,115,22,0.15)' : 'transparent',
-              border: `1px solid ${canApply ? COLOR_NODE_SELECTED : COLOR_NODE_BORDER}`,
+              border: `1px solid ${canApply ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_NODE_BORDER}`,
               borderRadius: 5,
               fontFamily: FONT_FAMILY,
               fontSize: FONT_SIZE_SMALL,
-              color: canApply ? COLOR_NODE_SELECTED : COLOR_TEXT_MUTED,
+              color: canApply ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_TEXT_MUTED,
               cursor: canApply ? 'pointer' : 'not-allowed',
               opacity: canApply ? 1 : 0.35,
               transition: `background ${TRANSITION_FAST}, border-color ${TRANSITION_FAST}, color ${TRANSITION_FAST}`,

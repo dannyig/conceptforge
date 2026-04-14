@@ -1,12 +1,13 @@
 import React from 'react'
 import { BaseEdge, getStraightPath, useInternalNode, type EdgeProps } from '@xyflow/react'
-import { COLOR_EDGE } from '@/lib/theme'
+import { useTheme } from '@/hooks/use-theme'
 import { rectBoundaryPoint } from '@/lib/geometry'
 
 // C-11: straight stem from source node → label hub. No arrowhead, no label editing.
 // The hub attachment point is computed as the free-form boundary intersection — the exact
 // point on the hub rectangle boundary that faces the source node (C-11, C-17).
 export function BranchStemEdge({ id, sourceX, sourceY, data }: EdgeProps): React.JSX.Element {
+  const { tokens } = useTheme()
   const beId = (data as { branchingEdgeId?: string } | undefined)?.branchingEdgeId
   const hubNode = useInternalNode(beId ? `hub-${beId}` : '')
 
@@ -24,5 +25,7 @@ export function BranchStemEdge({ id, sourceX, sourceY, data }: EdgeProps): React
   }
 
   const [edgePath] = getStraightPath({ sourceX, sourceY, targetX: endX, targetY: endY })
-  return <BaseEdge id={id} path={edgePath} style={{ stroke: COLOR_EDGE, strokeWidth: 1.5 }} />
+  return (
+    <BaseEdge id={id} path={edgePath} style={{ stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 }} />
+  )
 }

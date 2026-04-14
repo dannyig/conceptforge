@@ -36,22 +36,6 @@ import type { BranchingEdge, ConceptNode as ConceptNodeType, MapData, NoteData }
 import {
   BG_DOT_GAP,
   BG_DOT_SIZE,
-  COLOR_BG_DOT,
-  COLOR_CANVAS_BG,
-  COLOR_CONTROLS_BG,
-  COLOR_CONTROLS_BORDER,
-  COLOR_CONTROLS_HOVER_BG,
-  COLOR_CONTROLS_TEXT,
-  COLOR_EDGE,
-  COLOR_EDGE_SELECTED,
-  COLOR_MINIMAP_BORDER,
-  COLOR_MINIMAP_MASK,
-  COLOR_NODE_BG,
-  COLOR_NODE_BORDER,
-  COLOR_NODE_SELECTED,
-  COLOR_NODE_TEXT,
-  FONT_FAMILY,
-  FONT_SIZE_NODE_LABEL,
   NOTE_COLORS,
   NOTE_DEFAULT_COLOR,
   NOTE_DEFAULT_HEIGHT,
@@ -59,14 +43,13 @@ import {
   NOTE_TEXT_SIZES,
   TICKER_HEIGHT,
   TRANSITION_FAST,
+  FONT_FAMILY,
+  FONT_SIZE_NODE_LABEL,
   FONT_WEIGHT_NODE_LABEL,
-  COLOR_TEXT_MUTED,
-  COLOR_STATUS_ERROR,
   FIT_VIEW_DURATION_MS,
-  COLOR_THINKING_BORDER_DEEP,
-  COLOR_THINKING_BORDER_SKY,
   THINKING_BORDER_DURATION_MS,
 } from '@/lib/theme'
+import { useTheme } from '@/hooks/use-theme'
 import { expandNode, suggestEdgeConcepts, suggestEdgeLabels, explainEdgeLabel } from '@/lib/claude'
 import { getApiKey, OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
 import { getEdgeLabelPrompt } from '@/lib/edgeLabelPrompts'
@@ -166,23 +149,8 @@ const EDGE_TYPES: Record<string, React.ComponentType<any>> = {
   branchStem: BranchStemEdge,
   branchArrow: BranchArrowEdge,
 }
-const MARKER_END_DEFAULT = {
-  type: MarkerType.ArrowClosed,
-  color: COLOR_EDGE,
-  width: 22,
-  height: 22,
-}
-const MARKER_END_SELECTED = {
-  type: MarkerType.ArrowClosed,
-  color: COLOR_EDGE_SELECTED,
-  width: 22,
-  height: 22,
-}
-
-const DEFAULT_EDGE_OPTIONS = {
-  markerEnd: MARKER_END_DEFAULT,
-  style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
-}
+// MARKER_END_DEFAULT, MARKER_END_SELECTED, and DEFAULT_EDGE_OPTIONS are computed
+// as useMemo inside CanvasFlow so they react to theme changes (T-02).
 
 export interface CanvasHandle {
   getMapData: () => MapData
@@ -222,8 +190,35 @@ function CanvasFlow({
   onChatNode,
 }: CanvasFlowProps): React.JSX.Element {
   const { screenToFlowPosition, fitView } = useReactFlow()
+  const { tokens } = useTheme()
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasFlowNode>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasFlowEdge>([])
+  // T-02: reactive marker colours — shadow the module-level fallbacks above
+  const MARKER_END_DEFAULT = useMemo(
+    () => ({
+      type: MarkerType.ArrowClosed,
+      color: tokens.COLOR_EDGE,
+      width: 22,
+      height: 22,
+    }),
+    [tokens.COLOR_EDGE]
+  )
+  const MARKER_END_SELECTED = useMemo(
+    () => ({
+      type: MarkerType.ArrowClosed,
+      color: tokens.COLOR_EDGE_SELECTED,
+      width: 22,
+      height: 22,
+    }),
+    [tokens.COLOR_EDGE_SELECTED]
+  )
+  const DEFAULT_EDGE_OPTIONS = useMemo(
+    () => ({
+      markerEnd: MARKER_END_DEFAULT,
+      style: { stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 },
+    }),
+    [MARKER_END_DEFAULT, tokens.COLOR_EDGE]
+  )
 
   // Stable refs so callbacks never close over stale state
   const nodesRef = useRef(nodes)
@@ -268,6 +263,8 @@ function CanvasFlow({
       // Selected non-stem edges get a larger orange arrowhead to mark the reconnect endpoint.
       const markerEnd =
         edge.selected && !edge.data?.isStem ? MARKER_END_SELECTED : MARKER_END_DEFAULT
+      // Inject current theme stroke so all edges update immediately on theme switch (T-02)
+      const edgeStyle = { stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 }
 
       // C-11/C-17: BranchStemEdge and BranchArrowEdge compute the free-form boundary
       // intersection themselves via useInternalNode — no handle override needed here.
@@ -277,15 +274,27 @@ function CanvasFlow({
       // Also check markerEnd: RF's batch queue can bake computed markerEnd back into edges
       // state via "replace" changes, so we must detect a stale value here too.
       const markerEndChanged = edge.markerEnd !== markerEnd
-      if (!reconnectableChanged && !hoverChanged && !markerEndChanged) return edge
       return {
         ...edge,
         reconnectable,
         markerEnd,
-        data: hoverChanged ? { ...edge.data, isHovered } : edge.data,
+        style: edgeStyle,
+        data:
+          reconnectableChanged || hoverChanged || markerEndChanged
+            ? hoverChanged
+              ? { ...edge.data, isHovered }
+              : edge.data
+            : edge.data,
       }
     })
-  }, [edges, hasClickSelectedEdge, hoveredEdgeId])
+  }, [
+    edges,
+    hasClickSelectedEdge,
+    hoveredEdgeId,
+    MARKER_END_DEFAULT,
+    MARKER_END_SELECTED,
+    tokens.COLOR_EDGE,
+  ])
 
   const [contextMenu, setContextMenu] = useState<{
     edgeId: string
@@ -452,7 +461,7 @@ function CanvasFlow({
           targetHandle: e.targetHandle ?? null,
           data: { label: e.label, labelPosition: e.labelPosition },
           markerEnd: MARKER_END_DEFAULT,
-          style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+          style: { stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 },
         }))
         if (data.branchingEdges) {
           for (const be of data.branchingEdges) {
@@ -482,7 +491,7 @@ function CanvasFlow({
                 type: 'branchArrow',
                 data: { branchingEdgeId: be.id, isBranch: true },
                 markerEnd: MARKER_END_DEFAULT,
-                style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+                style: { stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 },
               })
             }
           }
@@ -578,7 +587,7 @@ function CanvasFlow({
           type: 'branchArrow',
           data: { branchingEdgeId: beId, isBranch: true },
           markerEnd: MARKER_END_DEFAULT,
-          style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+          style: { stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 },
         },
       ])
     },
@@ -610,7 +619,7 @@ function CanvasFlow({
             type: 'branchArrow',
             data: { branchingEdgeId: beId, isBranch: true },
             markerEnd: MARKER_END_DEFAULT,
-            style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+            style: { stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 },
           },
         ])
         return
@@ -622,7 +631,7 @@ function CanvasFlow({
             id: crypto.randomUUID(),
             data: { label: '?' },
             markerEnd: MARKER_END_DEFAULT,
-            style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+            style: { stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 },
           },
           eds
         )
@@ -677,7 +686,7 @@ function CanvasFlow({
             type: 'branchArrow',
             data: { branchingEdgeId: beId, isBranch: true },
             markerEnd: MARKER_END_DEFAULT,
-            style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+            style: { stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 },
           },
         ])
         return
@@ -706,7 +715,7 @@ function CanvasFlow({
             type: 'default',
             data: { label: '?' },
             markerEnd: MARKER_END_DEFAULT,
-            style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+            style: { stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 },
           },
         ])
       }
@@ -812,7 +821,7 @@ function CanvasFlow({
                   type: 'default',
                   data: { label: hubNode.data.label },
                   markerEnd: MARKER_END_DEFAULT,
-                  style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+                  style: { stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 },
                 },
               ])
               return
@@ -1015,7 +1024,7 @@ function CanvasFlow({
             type: 'concept' as const,
             data: { label: e.label },
             markerEnd: MARKER_END_DEFAULT,
-            style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+            style: { stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 },
           }))
 
         setNodes(nds => [...nds, ...newFlowNodes])
@@ -1260,7 +1269,7 @@ function CanvasFlow({
           type: 'branchArrow',
           data: { branchingEdgeId: beId, isBranch: true },
           markerEnd: MARKER_END_DEFAULT,
-          style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+          style: { stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 },
         },
         ...newNodeIds.map(nid => ({
           id: branchEdgeId(beId, nid),
@@ -1269,7 +1278,7 @@ function CanvasFlow({
           type: 'branchArrow',
           data: { branchingEdgeId: beId, isBranch: true },
           markerEnd: MARKER_END_DEFAULT,
-          style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+          style: { stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 },
         })),
       ])
       setEdgeLabelPanel(null)
@@ -1308,7 +1317,7 @@ function CanvasFlow({
           type: 'branchArrow',
           data: { branchingEdgeId: beId, isBranch: true },
           markerEnd: MARKER_END_DEFAULT,
-          style: { stroke: COLOR_EDGE, strokeWidth: 1.5 },
+          style: { stroke: tokens.COLOR_EDGE, strokeWidth: 1.5 },
         })),
       ])
       setEdgeLabelPanel(null)
@@ -1601,19 +1610,19 @@ function CanvasFlow({
       style={{
         width: '100%',
         height: '100%',
-        backgroundColor: COLOR_CANVAS_BG,
+        backgroundColor: tokens.COLOR_CANVAS_BG,
         touchAction: 'manipulation',
       }}
     >
       <style>{`
-        .react-flow__edge-path { stroke: ${COLOR_EDGE}; stroke-width: 1.5px; transition: stroke ${TRANSITION_FAST}; }
+        .react-flow__edge-path { stroke: ${tokens.COLOR_EDGE}; stroke-width: 1.5px; transition: stroke ${TRANSITION_FAST}; }
         .react-flow__edge.selected .react-flow__edge-path,
-        .react-flow__edge:focus .react-flow__edge-path { stroke: ${COLOR_EDGE_SELECTED}; }
-        .react-flow__controls { background-color: ${COLOR_CONTROLS_BG}; border: 1px solid ${COLOR_CONTROLS_BORDER}; border-radius: 6px; overflow: hidden; }
-        .react-flow__controls-button { background-color: ${COLOR_CONTROLS_BG}; border-bottom: 1px solid ${COLOR_CONTROLS_BORDER}; color: ${COLOR_CONTROLS_TEXT}; fill: ${COLOR_CONTROLS_TEXT}; transition: background-color ${TRANSITION_FAST}; }
-        .react-flow__controls-button:hover { background-color: ${COLOR_CONTROLS_HOVER_BG}; }
-        .react-flow__controls-button svg { fill: ${COLOR_CONTROLS_TEXT}; }
-        .react-flow__minimap { border: 1px solid ${COLOR_MINIMAP_BORDER}; border-radius: 6px; overflow: hidden; }
+        .react-flow__edge:focus .react-flow__edge-path { stroke: ${tokens.COLOR_EDGE_SELECTED}; }
+        .react-flow__controls { background-color: ${tokens.COLOR_CONTROLS_BG}; border: 1px solid ${tokens.COLOR_CONTROLS_BORDER}; border-radius: 6px; overflow: hidden; }
+        .react-flow__controls-button { background-color: ${tokens.COLOR_CONTROLS_BG}; border-bottom: 1px solid ${tokens.COLOR_CONTROLS_BORDER}; color: ${tokens.COLOR_CONTROLS_TEXT}; fill: ${tokens.COLOR_CONTROLS_TEXT}; transition: background-color ${TRANSITION_FAST}; }
+        .react-flow__controls-button:hover { background-color: ${tokens.COLOR_CONTROLS_HOVER_BG}; }
+        .react-flow__controls-button svg { fill: ${tokens.COLOR_CONTROLS_TEXT}; }
+        .react-flow__minimap { border: 1px solid ${tokens.COLOR_MINIMAP_BORDER}; border-radius: 6px; overflow: hidden; }
         .react-flow__node-note { z-index: -1 !important; }
         .react-flow__node-note.react-flow__node-dragging { z-index: -1 !important; }
         .react-flow__selection { border: 1px solid rgba(249,115,22,0.5) !important; background: rgba(249,115,22,0.05) !important; box-shadow: none !important; }
@@ -1649,21 +1658,21 @@ function CanvasFlow({
         proOptions={{ hideAttribution: true }}
         selectionOnDrag={selectionMode && !spacePanning}
         panOnDrag={!selectionMode || spacePanning}
-        style={{ backgroundColor: COLOR_CANVAS_BG }}
+        style={{ backgroundColor: tokens.COLOR_CANVAS_BG }}
         aria-label="Concept map canvas"
       >
         <Background
           variant={BackgroundVariant.Dots}
-          color={COLOR_BG_DOT}
+          color={tokens.COLOR_BG_DOT}
           size={BG_DOT_SIZE}
           gap={BG_DOT_GAP}
         />
         <Controls aria-label="Canvas controls" style={{ bottom: TICKER_HEIGHT + 2 }} />
         <MiniMap
-          nodeColor={COLOR_NODE_BG}
-          nodeStrokeColor={COLOR_NODE_BORDER}
-          maskColor={COLOR_MINIMAP_MASK}
-          style={{ backgroundColor: COLOR_CANVAS_BG, bottom: TICKER_HEIGHT + 2 }}
+          nodeColor={tokens.COLOR_NODE_BG}
+          nodeStrokeColor={tokens.COLOR_NODE_BORDER}
+          maskColor={tokens.COLOR_MINIMAP_MASK}
+          style={{ backgroundColor: tokens.COLOR_CANVAS_BG, bottom: TICKER_HEIGHT + 2 }}
           aria-label="Minimap"
           pannable
           zoomable
@@ -1680,7 +1689,7 @@ function CanvasFlow({
             transform: 'translate(-50%, -50%)',
             pointerEvents: 'none',
             opacity: 0.25,
-            color: COLOR_NODE_TEXT,
+            color: tokens.COLOR_NODE_TEXT,
             fontFamily: FONT_FAMILY,
             fontSize: FONT_SIZE_NODE_LABEL,
             fontWeight: FONT_WEIGHT_NODE_LABEL,
@@ -1710,8 +1719,8 @@ function CanvasFlow({
               left: contextMenu.x,
               top: contextMenu.y,
               zIndex: 1000,
-              background: COLOR_NODE_BG,
-              border: `1px solid ${COLOR_NODE_BORDER}`,
+              background: tokens.COLOR_NODE_BG,
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
               borderRadius: 6,
               overflow: 'hidden',
               boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
@@ -1733,7 +1742,7 @@ function CanvasFlow({
                 padding: '8px 16px',
                 background: 'none',
                 border: 'none',
-                color: COLOR_NODE_TEXT,
+                color: tokens.COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_NODE_LABEL,
                 textAlign: 'left',
@@ -1744,7 +1753,8 @@ function CanvasFlow({
               }}
               onMouseEnter={(e): void => {
                 if (aiAssistEnabled && !edgeLabelLoading)
-                  (e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+                  (e.currentTarget as HTMLButtonElement).style.background =
+                    tokens.COLOR_BUTTON_GHOST_HOVER_BG
               }}
               onMouseLeave={(e): void => {
                 ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
@@ -1769,7 +1779,7 @@ function CanvasFlow({
                   padding: '8px 16px',
                   background: 'none',
                   border: 'none',
-                  color: COLOR_NODE_TEXT,
+                  color: tokens.COLOR_NODE_TEXT,
                   fontFamily: FONT_FAMILY,
                   fontSize: FONT_SIZE_NODE_LABEL,
                   textAlign: 'left',
@@ -1780,7 +1790,8 @@ function CanvasFlow({
                 }}
                 onMouseEnter={(e): void => {
                   if (aiAssistEnabled && !edgeLabelLoading)
-                    (e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+                    (e.currentTarget as HTMLButtonElement).style.background =
+                      tokens.COLOR_BUTTON_GHOST_HOVER_BG
                 }}
                 onMouseLeave={(e): void => {
                   ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
@@ -1812,7 +1823,7 @@ function CanvasFlow({
                 padding: '8px 16px',
                 background: 'none',
                 border: 'none',
-                color: COLOR_NODE_TEXT,
+                color: tokens.COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_NODE_LABEL,
                 textAlign: 'left',
@@ -1842,7 +1853,9 @@ function CanvasFlow({
                   edgeLabelLoading ||
                   !contextMenu.edgeLabel ||
                   contextMenu.edgeLabel === '?'
-                if (!disabled) (e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+                if (!disabled)
+                  (e.currentTarget as HTMLButtonElement).style.background =
+                    tokens.COLOR_BUTTON_GHOST_HOVER_BG
               }}
               onMouseLeave={(e): void => {
                 ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
@@ -1851,7 +1864,7 @@ function CanvasFlow({
             >
               Suggest Concepts
             </button>
-            <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
+            <div style={{ height: 1, backgroundColor: tokens.COLOR_NODE_BORDER }} />
             {/* C-10: Branch — only when label exists */}
             {contextMenu.edgeLabel && (
               <button
@@ -1863,7 +1876,7 @@ function CanvasFlow({
                   padding: '8px 16px',
                   background: 'none',
                   border: 'none',
-                  color: COLOR_NODE_TEXT,
+                  color: tokens.COLOR_NODE_TEXT,
                   fontFamily: FONT_FAMILY,
                   fontSize: FONT_SIZE_NODE_LABEL,
                   textAlign: 'left',
@@ -1871,7 +1884,8 @@ function CanvasFlow({
                   transition: `background ${TRANSITION_FAST}`,
                 }}
                 onMouseEnter={(e): void => {
-                  ;(e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+                  ;(e.currentTarget as HTMLButtonElement).style.background =
+                    tokens.COLOR_BUTTON_GHOST_HOVER_BG
                 }}
                 onMouseLeave={(e): void => {
                   ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
@@ -1904,8 +1918,8 @@ function CanvasFlow({
               left: hubMenu.x,
               top: hubMenu.y,
               zIndex: 1000,
-              background: COLOR_NODE_BG,
-              border: `1px solid ${COLOR_NODE_BORDER}`,
+              background: tokens.COLOR_NODE_BG,
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
               borderRadius: 6,
               overflow: 'hidden',
               boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
@@ -1943,7 +1957,7 @@ function CanvasFlow({
                 padding: '8px 16px',
                 background: 'none',
                 border: 'none',
-                color: COLOR_NODE_TEXT,
+                color: tokens.COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_NODE_LABEL,
                 textAlign: 'left',
@@ -1954,7 +1968,8 @@ function CanvasFlow({
               }}
               onMouseEnter={(e): void => {
                 if (aiAssistEnabled && !edgeLabelLoading)
-                  (e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+                  (e.currentTarget as HTMLButtonElement).style.background =
+                    tokens.COLOR_BUTTON_GHOST_HOVER_BG
               }}
               onMouseLeave={(e): void => {
                 ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
@@ -1986,8 +2001,8 @@ function CanvasFlow({
               left: nodeMenu.x,
               top: nodeMenu.y,
               zIndex: 1000,
-              background: COLOR_NODE_BG,
-              border: `1px solid ${COLOR_NODE_BORDER}`,
+              background: tokens.COLOR_NODE_BG,
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
               borderRadius: 6,
               overflow: 'hidden',
               boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
@@ -2008,7 +2023,7 @@ function CanvasFlow({
                 padding: '8px 16px',
                 background: 'none',
                 border: 'none',
-                color: COLOR_NODE_TEXT,
+                color: tokens.COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_NODE_LABEL,
                 textAlign: 'left',
@@ -2019,7 +2034,8 @@ function CanvasFlow({
               }}
               onMouseEnter={(e): void => {
                 if (expandingNodeId === null && aiAssistEnabled)
-                  (e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+                  (e.currentTarget as HTMLButtonElement).style.background =
+                    tokens.COLOR_BUTTON_GHOST_HOVER_BG
               }}
               onMouseLeave={(e): void => {
                 ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
@@ -2028,7 +2044,7 @@ function CanvasFlow({
             >
               Expand
             </button>
-            <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
+            <div style={{ height: 1, backgroundColor: tokens.COLOR_NODE_BORDER }} />
             {/* A-26: Chat — always visible; dimmed when AI Assist off */}
             <button
               role="menuitem"
@@ -2045,7 +2061,7 @@ function CanvasFlow({
                 padding: '8px 16px',
                 background: 'none',
                 border: 'none',
-                color: COLOR_NODE_TEXT,
+                color: tokens.COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_NODE_LABEL,
                 textAlign: 'left',
@@ -2056,7 +2072,8 @@ function CanvasFlow({
               }}
               onMouseEnter={(e): void => {
                 if (aiAssistEnabled)
-                  (e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+                  (e.currentTarget as HTMLButtonElement).style.background =
+                    tokens.COLOR_BUTTON_GHOST_HOVER_BG
               }}
               onMouseLeave={(e): void => {
                 ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
@@ -2065,7 +2082,7 @@ function CanvasFlow({
             >
               Chat
             </button>
-            <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
+            <div style={{ height: 1, backgroundColor: tokens.COLOR_NODE_BORDER }} />
             <button
               role="menuitem"
               onClick={(): void => {
@@ -2085,7 +2102,7 @@ function CanvasFlow({
                 padding: '8px 16px',
                 background: 'none',
                 border: 'none',
-                color: COLOR_NODE_TEXT,
+                color: tokens.COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_NODE_LABEL,
                 textAlign: 'left',
@@ -2093,7 +2110,8 @@ function CanvasFlow({
                 transition: `background ${TRANSITION_FAST}`,
               }}
               onMouseEnter={(e): void => {
-                ;(e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+                ;(e.currentTarget as HTMLButtonElement).style.background =
+                  tokens.COLOR_BUTTON_GHOST_HOVER_BG
               }}
               onMouseLeave={(e): void => {
                 ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
@@ -2129,19 +2147,19 @@ function CanvasFlow({
               zIndex: 20,
               padding: 1,
               borderRadius: 8,
-              background: `conic-gradient(from var(--cf-thinking-angle), ${COLOR_THINKING_BORDER_DEEP}, ${COLOR_THINKING_BORDER_SKY}, ${COLOR_THINKING_BORDER_DEEP})`,
+              background: `conic-gradient(from var(--cf-thinking-angle), ${tokens.COLOR_THINKING_BORDER_DEEP}, ${tokens.COLOR_THINKING_BORDER_SKY}, ${tokens.COLOR_THINKING_BORDER_DEEP})`,
               animation: `cf-thinking-rotate ${THINKING_BORDER_DURATION_MS}ms linear infinite`,
               pointerEvents: 'none',
             }}
           >
             <div
               style={{
-                background: COLOR_NODE_BG,
+                background: tokens.COLOR_NODE_BG,
                 borderRadius: 7,
                 padding: '6px 14px',
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_NODE_LABEL,
-                color: COLOR_TEXT_MUTED,
+                color: tokens.COLOR_TEXT_MUTED,
               }}
             >
               Expanding…
@@ -2159,13 +2177,13 @@ function CanvasFlow({
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 20,
-            backgroundColor: COLOR_NODE_BG,
-            border: `1px solid ${COLOR_NODE_BORDER}`,
+            backgroundColor: tokens.COLOR_NODE_BG,
+            border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
             borderRadius: 6,
             padding: '6px 14px',
             fontFamily: FONT_FAMILY,
             fontSize: FONT_SIZE_NODE_LABEL,
-            color: COLOR_STATUS_ERROR,
+            color: tokens.COLOR_STATUS_ERROR,
             cursor: 'pointer',
             maxWidth: 360,
             textAlign: 'center',
@@ -2197,18 +2215,18 @@ function CanvasFlow({
               zIndex: 30,
               padding: 1,
               borderRadius: 8,
-              background: `conic-gradient(from var(--cf-thinking-angle), ${COLOR_THINKING_BORDER_DEEP}, ${COLOR_THINKING_BORDER_SKY}, ${COLOR_THINKING_BORDER_DEEP})`,
+              background: `conic-gradient(from var(--cf-thinking-angle), ${tokens.COLOR_THINKING_BORDER_DEEP}, ${tokens.COLOR_THINKING_BORDER_SKY}, ${tokens.COLOR_THINKING_BORDER_DEEP})`,
               animation: `cf-thinking-rotate ${THINKING_BORDER_DURATION_MS}ms linear infinite`,
             }}
           >
             <div
               style={{
-                background: COLOR_NODE_BG,
+                background: tokens.COLOR_NODE_BG,
                 borderRadius: 7,
                 padding: '8px 16px',
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_NODE_LABEL,
-                color: COLOR_TEXT_MUTED,
+                color: tokens.COLOR_TEXT_MUTED,
               }}
             >
               Thinking…
@@ -2228,13 +2246,13 @@ function CanvasFlow({
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 30,
-            background: COLOR_NODE_BG,
-            border: `1px solid ${COLOR_STATUS_ERROR}`,
+            background: tokens.COLOR_NODE_BG,
+            border: `1px solid ${tokens.COLOR_STATUS_ERROR}`,
             borderRadius: 6,
             padding: '8px 16px',
             fontFamily: FONT_FAMILY,
             fontSize: FONT_SIZE_NODE_LABEL,
-            color: COLOR_STATUS_ERROR,
+            color: tokens.COLOR_STATUS_ERROR,
             cursor: 'pointer',
             maxWidth: 360,
             textAlign: 'center',
@@ -2293,8 +2311,8 @@ function CanvasFlow({
             left: nodeInfoEdit.x,
             top: nodeInfoEdit.y,
             zIndex: 1000,
-            background: COLOR_NODE_BG,
-            border: `1px solid ${COLOR_NODE_BORDER}`,
+            background: tokens.COLOR_NODE_BG,
+            border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
             borderRadius: 6,
             boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
             padding: '10px 12px',
@@ -2309,7 +2327,7 @@ function CanvasFlow({
               fontSize: '10px',
               letterSpacing: '1px',
               textTransform: 'uppercase',
-              color: COLOR_TEXT_MUTED,
+              color: tokens.COLOR_TEXT_MUTED,
               fontFamily: FONT_FAMILY,
               marginBottom: 8,
             }}
@@ -2349,10 +2367,10 @@ function CanvasFlow({
             rows={3}
             style={{
               width: '100%',
-              background: COLOR_CANVAS_BG,
-              border: `1px solid ${COLOR_NODE_BORDER}`,
+              background: tokens.COLOR_CANVAS_BG,
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
               borderRadius: 4,
-              color: COLOR_NODE_TEXT,
+              color: tokens.COLOR_NODE_TEXT,
               fontFamily: FONT_FAMILY,
               fontSize: FONT_SIZE_NODE_LABEL,
               padding: '6px 8px',
@@ -2384,8 +2402,8 @@ function CanvasFlow({
               left: paneMenu.x,
               top: paneMenu.y,
               zIndex: 1000,
-              background: COLOR_NODE_BG,
-              border: `1px solid ${COLOR_NODE_BORDER}`,
+              background: tokens.COLOR_NODE_BG,
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
               borderRadius: 6,
               overflow: 'hidden',
               boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
@@ -2416,7 +2434,7 @@ function CanvasFlow({
                   padding: '8px 16px',
                   background: 'none',
                   border: 'none',
-                  color: COLOR_NODE_TEXT,
+                  color: tokens.COLOR_NODE_TEXT,
                   fontFamily: FONT_FAMILY,
                   fontSize: FONT_SIZE_NODE_LABEL,
                   textAlign: 'left',
@@ -2424,7 +2442,8 @@ function CanvasFlow({
                   transition: `background ${TRANSITION_FAST}`,
                 }}
                 onMouseEnter={(e): void => {
-                  ;(e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+                  ;(e.currentTarget as HTMLButtonElement).style.background =
+                    tokens.COLOR_BUTTON_GHOST_HOVER_BG
                 }}
                 onMouseLeave={(e): void => {
                   ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
@@ -2435,7 +2454,7 @@ function CanvasFlow({
               </button>
             ))}
             {/* C-23: Select mode toggle — active state shown with orange accent */}
-            <div style={{ borderTop: `1px solid ${COLOR_NODE_BORDER}`, margin: '2px 0' }} />
+            <div style={{ borderTop: `1px solid ${tokens.COLOR_NODE_BORDER}`, margin: '2px 0' }} />
             <button
               role="menuitem"
               onClick={(): void => {
@@ -2450,7 +2469,7 @@ function CanvasFlow({
                 padding: '8px 16px',
                 background: 'none',
                 border: 'none',
-                color: selectionMode ? COLOR_NODE_SELECTED : COLOR_NODE_TEXT,
+                color: selectionMode ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_NODE_LABEL,
                 textAlign: 'left',
@@ -2458,7 +2477,8 @@ function CanvasFlow({
                 transition: `background ${TRANSITION_FAST}, color ${TRANSITION_FAST}`,
               }}
               onMouseEnter={(e): void => {
-                ;(e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+                ;(e.currentTarget as HTMLButtonElement).style.background =
+                  tokens.COLOR_BUTTON_GHOST_HOVER_BG
               }}
               onMouseLeave={(e): void => {
                 ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
@@ -2472,7 +2492,7 @@ function CanvasFlow({
                   display: 'inline-block',
                   textAlign: 'center',
                   opacity: selectionMode ? 1 : 0,
-                  color: COLOR_NODE_SELECTED,
+                  color: tokens.COLOR_NODE_SELECTED,
                   transition: `opacity ${TRANSITION_FAST}`,
                 }}
                 aria-hidden="true"
@@ -2504,8 +2524,8 @@ function CanvasFlow({
               left: noteMenu.x,
               top: noteMenu.y,
               zIndex: 1000,
-              background: COLOR_NODE_BG,
-              border: `1px solid ${COLOR_NODE_BORDER}`,
+              background: tokens.COLOR_NODE_BG,
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
               borderRadius: 6,
               boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
               minWidth: noteMenu.mode === 'edit' ? 168 : 130,
@@ -2550,7 +2570,7 @@ function CanvasFlow({
                     padding: '8px 16px',
                     background: 'none',
                     border: 'none',
-                    color: 'danger' in item && item.danger ? '#f85149' : COLOR_NODE_TEXT,
+                    color: 'danger' in item && item.danger ? '#f85149' : tokens.COLOR_NODE_TEXT,
                     fontFamily: FONT_FAMILY,
                     fontSize: FONT_SIZE_NODE_LABEL,
                     textAlign: 'left',
@@ -2558,7 +2578,8 @@ function CanvasFlow({
                     transition: `background ${TRANSITION_FAST}`,
                   }}
                   onMouseEnter={(e): void => {
-                    ;(e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+                    ;(e.currentTarget as HTMLButtonElement).style.background =
+                      tokens.COLOR_BUTTON_GHOST_HOVER_BG
                   }}
                   onMouseLeave={(e): void => {
                     ;(e.currentTarget as HTMLButtonElement).style.background = 'none'
@@ -2584,7 +2605,7 @@ function CanvasFlow({
                     marginBottom: 10,
                     background: 'none',
                     border: 'none',
-                    color: COLOR_TEXT_MUTED,
+                    color: tokens.COLOR_TEXT_MUTED,
                     fontFamily: FONT_FAMILY,
                     fontSize: '11px',
                     cursor: 'pointer',
@@ -2599,7 +2620,7 @@ function CanvasFlow({
                     fontSize: '10px',
                     letterSpacing: '1px',
                     textTransform: 'uppercase',
-                    color: COLOR_TEXT_MUTED,
+                    color: tokens.COLOR_TEXT_MUTED,
                     fontFamily: FONT_FAMILY,
                   }}
                 >
@@ -2626,8 +2647,8 @@ function CanvasFlow({
                         backgroundColor: color,
                         border:
                           color === noteMenuCurrentColor
-                            ? `2px solid ${COLOR_NODE_SELECTED}`
-                            : `1px solid ${COLOR_NODE_BORDER}`,
+                            ? `2px solid ${tokens.COLOR_NODE_SELECTED}`
+                            : `1px solid ${tokens.COLOR_NODE_BORDER}`,
                         cursor: 'pointer',
                         padding: 0,
                         transition: `border-color ${TRANSITION_FAST}`,
@@ -2641,7 +2662,7 @@ function CanvasFlow({
                     fontSize: '10px',
                     letterSpacing: '1px',
                     textTransform: 'uppercase',
-                    color: COLOR_TEXT_MUTED,
+                    color: tokens.COLOR_TEXT_MUTED,
                     fontFamily: FONT_FAMILY,
                   }}
                 >
@@ -2656,10 +2677,16 @@ function CanvasFlow({
                       style={{
                         flex: 1,
                         padding: '4px 0',
-                        background: noteMenuCurrentSize === size ? COLOR_NODE_SELECTED : '#21262d',
+                        background:
+                          noteMenuCurrentSize === size
+                            ? tokens.COLOR_NODE_SELECTED
+                            : tokens.COLOR_BUTTON_GHOST_HOVER_BG,
                         border: 'none',
                         borderRadius: 3,
-                        color: noteMenuCurrentSize === size ? '#0d1117' : COLOR_NODE_TEXT,
+                        color:
+                          noteMenuCurrentSize === size
+                            ? tokens.COLOR_BUTTON_PRIMARY_TEXT
+                            : tokens.COLOR_NODE_TEXT,
                         fontFamily: FONT_FAMILY,
                         fontSize: NOTE_TEXT_SIZES[size],
                         cursor: 'pointer',

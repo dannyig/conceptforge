@@ -1,12 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { NodeResizer, useReactFlow, useViewport, type Node, type NodeProps } from '@xyflow/react'
-import {
-  COLOR_NODE_SELECTED,
-  FONT_FAMILY,
-  NOTE_TEXT_SIZES,
-  TRANSITION_FAST,
-  TRANSITION_NORMAL,
-} from '@/lib/theme'
+import { useTheme } from '@/hooks/use-theme'
+import { FONT_FAMILY, NOTE_TEXT_SIZES, TRANSITION_FAST, TRANSITION_NORMAL } from '@/lib/theme'
 
 export type NoteNodeData = {
   backgroundColor: string
@@ -26,6 +21,7 @@ export function getContrastText(hex: string): string {
 }
 
 export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React.JSX.Element {
+  const { tokens } = useTheme()
   const { setNodes } = useReactFlow()
   const { zoom } = useViewport()
   // Keep resize handles ~8px on screen regardless of zoom level. Clamped to [8, 24] in canvas space.
@@ -97,7 +93,7 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
           width: scaledHandle,
           height: scaledHandle,
           borderRadius: 2,
-          backgroundColor: COLOR_NODE_SELECTED,
+          backgroundColor: tokens.COLOR_NODE_SELECTED,
           border: 'none',
         }}
         onResizeEnd={(_event, params): void => {
@@ -119,7 +115,7 @@ export function NoteNode({ id, data, selected }: NodeProps<NoteFlowNode>): React
           height: '100%',
           backgroundColor: data.backgroundColor,
           border: selected
-            ? `1.5px solid ${COLOR_NODE_SELECTED}`
+            ? `1.5px solid ${tokens.COLOR_NODE_SELECTED}`
             : '1px solid rgba(255,255,255,0.06)',
           borderRadius: 6,
           padding: '8px 10px',

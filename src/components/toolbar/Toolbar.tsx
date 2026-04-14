@@ -6,17 +6,8 @@ import {
   saveMapToJson,
   saveMapToJsonNative,
 } from '@/lib/export'
-import {
-  COLOR_BUTTON_GHOST_HOVER_BG,
-  COLOR_NODE_BORDER,
-  COLOR_NODE_TEXT,
-  COLOR_PANEL_BG,
-  COLOR_STATUS_ERROR,
-  COLOR_TEXT_MUTED,
-  FONT_FAMILY,
-  FONT_SIZE_SMALL,
-  TRANSITION_FAST,
-} from '@/lib/theme'
+import { useTheme } from '@/hooks/use-theme'
+import { FONT_FAMILY, FONT_SIZE_SMALL, TRANSITION_FAST } from '@/lib/theme'
 import { FilenamePrompt } from './FilenamePrompt'
 
 interface ToolbarProps {
@@ -58,33 +49,34 @@ function LoadIcon(): React.JSX.Element {
   )
 }
 
-const BUTTON_BASE_STYLE: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 6,
-  padding: '7px 12px',
-  backgroundColor: COLOR_PANEL_BG,
-  border: `1px solid ${COLOR_NODE_BORDER}`,
-  borderRadius: 6,
-  color: COLOR_TEXT_MUTED,
-  fontFamily: FONT_FAMILY,
-  fontSize: FONT_SIZE_SMALL,
-  cursor: 'pointer',
-  transition: `background-color ${TRANSITION_FAST}, color ${TRANSITION_FAST}, opacity ${TRANSITION_FAST}`,
-}
-
 export function Toolbar({
   canvasRef,
   hasNodes,
   onFocusQuestionLoad,
   autoloadError = null,
 }: ToolbarProps): React.JSX.Element {
+  const { tokens } = useTheme()
   const [error, setError] = useState<string | null>(null)
   const displayedError = error ?? autoloadError
   const [promptOpen, setPromptOpen] = useState(false)
   const [lastFilename, setLastFilename] = useState('')
   // Snapshot map data at the moment Save is clicked; passed to saveMapToJson on fallback confirm
   const pendingDataRef = useRef<ReturnType<NonNullable<CanvasHandle>['getMapData']> | null>(null)
+
+  const buttonBaseStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '7px 12px',
+    backgroundColor: tokens.COLOR_PANEL_BG,
+    border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
+    borderRadius: 6,
+    color: tokens.COLOR_TEXT_MUTED,
+    fontFamily: FONT_FAMILY,
+    fontSize: FONT_SIZE_SMALL,
+    cursor: 'pointer',
+    transition: `background-color ${TRANSITION_FAST}, color ${TRANSITION_FAST}, opacity ${TRANSITION_FAST}`,
+  }
 
   const DEFAULT_FILENAME = 'concept-map'
 
@@ -139,7 +131,7 @@ export function Toolbar({
   return (
     <>
       <style>{`
-        .cf-toolbar-btn:hover:not(:disabled) { background-color: ${COLOR_BUTTON_GHOST_HOVER_BG} !important; color: ${COLOR_NODE_TEXT} !important; }
+        .cf-toolbar-btn:hover:not(:disabled) { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; color: ${tokens.COLOR_NODE_TEXT} !important; }
         .cf-toolbar-btn:focus-visible { outline: 2px solid #f97316; outline-offset: 2px; }
         .cf-toolbar-btn:disabled { opacity: 0.4; cursor: not-allowed; }
       `}</style>
@@ -158,7 +150,7 @@ export function Toolbar({
         <div style={{ display: 'flex', gap: 6 }}>
           <button
             className="cf-toolbar-btn"
-            style={BUTTON_BASE_STYLE}
+            style={buttonBaseStyle}
             onClick={(): void => {
               void handleSave()
             }}
@@ -170,7 +162,7 @@ export function Toolbar({
           </button>
           <button
             className="cf-toolbar-btn"
-            style={BUTTON_BASE_STYLE}
+            style={buttonBaseStyle}
             onClick={(): void => {
               void handleLoad()
             }}
@@ -186,7 +178,7 @@ export function Toolbar({
             style={{
               fontFamily: FONT_FAMILY,
               fontSize: FONT_SIZE_SMALL,
-              color: COLOR_STATUS_ERROR,
+              color: tokens.COLOR_STATUS_ERROR,
             }}
           >
             {displayedError}
