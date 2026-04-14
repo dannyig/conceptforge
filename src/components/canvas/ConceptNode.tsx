@@ -8,14 +8,8 @@ import {
   type Node,
   type NodeProps,
 } from '@xyflow/react'
+import { useTheme } from '@/hooks/use-theme'
 import {
-  COLOR_HANDLE_HOVER,
-  COLOR_NODE_BG,
-  COLOR_NODE_BORDER,
-  COLOR_NODE_GLOW,
-  COLOR_NODE_INFO_DOT,
-  COLOR_NODE_SELECTED,
-  COLOR_NODE_TEXT,
   FONT_FAMILY,
   FONT_SIZE_NODE_LABEL,
   FONT_WEIGHT_NODE_LABEL,
@@ -43,6 +37,7 @@ const SIDES = [
 ] as const
 
 export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>): React.JSX.Element {
+  const { tokens } = useTheme()
   const { setNodes } = useReactFlow()
   const { zoom } = useViewport()
   // Scale handle hit area inversely with zoom so it stays ~10px on screen at any zoom level.
@@ -100,12 +95,12 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
   }, [])
 
   const borderColor = selected
-    ? COLOR_NODE_SELECTED
+    ? tokens.COLOR_NODE_SELECTED
     : hovered
-      ? `${COLOR_NODE_SELECTED}99`
-      : COLOR_NODE_BORDER
+      ? `${tokens.COLOR_NODE_SELECTED}99`
+      : tokens.COLOR_NODE_BORDER
 
-  const boxShadow = selected ? `0 0 0 3px ${COLOR_NODE_GLOW}` : 'none'
+  const boxShadow = selected ? `0 0 0 3px ${tokens.COLOR_NODE_GLOW}` : 'none'
 
   // C-43: determine which side the cursor is closest to and within the proximity zone.
   // Returns null when the cursor is too far from all sides (i.e. in the node interior).
@@ -164,12 +159,12 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
       }}
       onMouseMove={onNodeMouseMove}
       style={{
-        backgroundColor: COLOR_NODE_BG,
+        backgroundColor: tokens.COLOR_NODE_BG,
         border: `1px solid ${borderColor}`,
         borderRadius: 6,
         padding: '10px 16px',
         minWidth: 120,
-        color: COLOR_NODE_TEXT,
+        color: tokens.COLOR_NODE_TEXT,
         fontFamily: FONT_FAMILY,
         fontSize: FONT_SIZE_NODE_LABEL,
         fontWeight: FONT_WEIGHT_NODE_LABEL,
@@ -205,7 +200,7 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
           width: scaledHandle,
           height: scaledHandle,
           opacity: handleOpacity,
-          background: COLOR_HANDLE_HOVER,
+          background: tokens.COLOR_HANDLE_HOVER,
           border: 'none',
           transition: 'opacity 120ms ease',
           ...flushStyle,
@@ -242,7 +237,7 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
           style={{
             background: 'transparent',
             border: 'none',
-            color: COLOR_NODE_TEXT,
+            color: tokens.COLOR_NODE_TEXT,
             fontFamily: FONT_FAMILY,
             fontSize: FONT_SIZE_NODE_LABEL,
             fontWeight: FONT_WEIGHT_NODE_LABEL,
@@ -275,7 +270,7 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
             width: 5,
             height: 5,
             borderRadius: '50%',
-            backgroundColor: COLOR_NODE_INFO_DOT,
+            backgroundColor: tokens.COLOR_NODE_INFO_DOT,
             pointerEvents: 'auto',
             zIndex: 10,
           }}
@@ -294,11 +289,11 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
               top: tooltipPos.y,
               left: tooltipPos.x + 8,
               transform: 'translateY(-100%)',
-              backgroundColor: COLOR_NODE_BG,
-              border: `1px solid ${COLOR_NODE_BORDER}`,
+              backgroundColor: tokens.COLOR_NODE_BG,
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
               borderRadius: 4,
               padding: '6px 10px',
-              color: COLOR_NODE_TEXT,
+              color: tokens.COLOR_NODE_TEXT,
               fontFamily: FONT_FAMILY,
               fontSize: FONT_SIZE_NODE_LABEL,
               whiteSpace: 'pre-wrap',
@@ -317,7 +312,7 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
 
       {/* C-43: handle opacity is managed via inline style; only input focus and motion styles here */}
       <style>{`
-        .react-flow__node input:focus-visible { outline: 1px solid ${COLOR_NODE_SELECTED}; outline-offset: 2px; border-radius: 2px; }
+        .react-flow__node input:focus-visible { outline: 1px solid ${tokens.COLOR_NODE_SELECTED}; outline-offset: 2px; border-radius: 2px; }
         @media (prefers-reduced-motion: reduce) {
           .react-flow__handle { transition: none !important; }
         }

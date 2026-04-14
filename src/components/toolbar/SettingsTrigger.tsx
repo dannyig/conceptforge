@@ -1,13 +1,6 @@
 import React from 'react'
-import {
-  COLOR_BUTTON_GHOST_HOVER_BG,
-  COLOR_NODE_BORDER,
-  COLOR_NODE_TEXT,
-  COLOR_PANEL_BG,
-  COLOR_TEXT_MUTED,
-  FONT_FAMILY,
-  TRANSITION_FAST,
-} from '@/lib/theme'
+import { useTheme } from '@/hooks/use-theme'
+import { FONT_FAMILY, TRANSITION_FAST } from '@/lib/theme'
 
 interface SettingsTriggerProps {
   onOpen: () => void
@@ -31,6 +24,7 @@ function GearIcon(): React.JSX.Element {
 }
 
 export function SettingsTrigger({ onOpen }: SettingsTriggerProps): React.JSX.Element {
+  const { tokens } = useTheme()
   return (
     <button
       onClick={onOpen}
@@ -45,10 +39,10 @@ export function SettingsTrigger({ onOpen }: SettingsTriggerProps): React.JSX.Ele
         alignItems: 'center',
         gap: 6,
         padding: '7px 12px',
-        backgroundColor: COLOR_PANEL_BG,
-        border: `1px solid ${COLOR_NODE_BORDER}`,
+        backgroundColor: tokens.COLOR_PANEL_BG,
+        border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
         borderRadius: 6,
-        color: COLOR_TEXT_MUTED,
+        color: tokens.COLOR_TEXT_MUTED,
         fontFamily: FONT_FAMILY,
         fontSize: '12px',
         cursor: 'pointer',
@@ -56,7 +50,7 @@ export function SettingsTrigger({ onOpen }: SettingsTriggerProps): React.JSX.Ele
       }}
     >
       <style>{`
-        .cf-settings-trigger:hover { background-color: ${COLOR_BUTTON_GHOST_HOVER_BG} !important; color: ${COLOR_NODE_TEXT} !important; }
+        .cf-settings-trigger:hover { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; color: ${tokens.COLOR_NODE_TEXT} !important; }
         .cf-settings-trigger:focus-visible { outline: 2px solid #f97316; outline-offset: 2px; }
       `}</style>
       <GearIcon />

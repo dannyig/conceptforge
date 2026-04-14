@@ -1,14 +1,6 @@
 import React from 'react'
-import {
-  COLOR_NODE_BORDER,
-  COLOR_NODE_TEXT,
-  COLOR_PANEL_BG,
-  COLOR_STATUS_ERROR,
-  COLOR_TEXT_MUTED,
-  FONT_FAMILY,
-  FONT_SIZE_SMALL,
-  TRANSITION_PANEL,
-} from '@/lib/theme'
+import { useTheme } from '@/hooks/use-theme'
+import { FONT_FAMILY, FONT_SIZE_SMALL, TRANSITION_PANEL } from '@/lib/theme'
 
 interface MissingKeyBannerProps {
   isVisible: boolean
@@ -21,6 +13,7 @@ export function MissingKeyBanner({
   onOpenSettings,
   onDismiss,
 }: MissingKeyBannerProps): React.JSX.Element {
+  const { tokens } = useTheme()
   return (
     <div
       role="status"
@@ -36,13 +29,13 @@ export function MissingKeyBanner({
         alignItems: 'center',
         gap: 12,
         padding: '10px 16px',
-        backgroundColor: COLOR_PANEL_BG,
-        border: `1px solid ${COLOR_NODE_BORDER}`,
-        borderLeft: `3px solid ${COLOR_STATUS_ERROR}`,
+        backgroundColor: tokens.COLOR_PANEL_BG,
+        border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
+        borderLeft: `3px solid ${tokens.COLOR_STATUS_ERROR}`,
         borderRadius: 6,
         fontFamily: FONT_FAMILY,
         fontSize: FONT_SIZE_SMALL,
-        color: COLOR_TEXT_MUTED,
+        color: tokens.COLOR_TEXT_MUTED,
         maxWidth: 480,
         whiteSpace: 'nowrap',
       }}
@@ -53,7 +46,7 @@ export function MissingKeyBanner({
         style={{
           background: 'none',
           border: 'none',
-          color: COLOR_NODE_TEXT,
+          color: tokens.COLOR_NODE_TEXT,
           fontFamily: FONT_FAMILY,
           fontSize: FONT_SIZE_SMALL,
           fontWeight: '600',
@@ -71,7 +64,7 @@ export function MissingKeyBanner({
         style={{
           background: 'none',
           border: 'none',
-          color: COLOR_TEXT_MUTED,
+          color: tokens.COLOR_TEXT_MUTED,
           cursor: 'pointer',
           fontSize: '14px',
           padding: '2px 4px',

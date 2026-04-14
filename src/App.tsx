@@ -10,6 +10,7 @@ import { AppMenu } from '@/components/toolbar/AppMenu'
 import { validateMapData } from '@/lib/export'
 import { getApiKey, OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
 import { useApiKey } from '@/hooks/useApiKey'
+import { useTheme } from '@/hooks/use-theme'
 import { generateMap, generateMapFromContent, suggestConcepts } from '@/lib/claude'
 import { fetchUrlContent } from '@/lib/jinaFetch'
 import { autoLayout, ringPositions } from '@/lib/graph'
@@ -18,6 +19,7 @@ import type { SummaryResource } from '@/types'
 export function App(): React.JSX.Element {
   const canvasRef = useRef<CanvasHandle>(null)
   const { aiAssistEnabled } = useApiKey()
+  const { tokens } = useTheme()
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [showMissingKeyBanner, setShowMissingKeyBanner] = useState(false)
   const [focusQuestion, setFocusQuestion] = useState('')
@@ -265,6 +267,7 @@ export function App(): React.JSX.Element {
         width: '100vw',
         height: '100vh',
         overflow: 'hidden',
+        backgroundColor: tokens.COLOR_CANVAS_BG,
       }}
     >
       <FocusQuestionBar

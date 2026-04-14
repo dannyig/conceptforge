@@ -6,19 +6,9 @@ import {
   saveMapToJson,
   saveMapToJsonNative,
 } from '@/lib/export'
+import { useTheme } from '@/hooks/use-theme'
 import { FilenamePrompt } from './FilenamePrompt'
 import {
-  COLOR_BUTTON_GHOST_HOVER_BG,
-  COLOR_BUTTON_PRIMARY_BG,
-  COLOR_BUTTON_PRIMARY_HOVER_BG,
-  COLOR_BUTTON_PRIMARY_TEXT,
-  COLOR_NODE_BG,
-  COLOR_NODE_BORDER,
-  COLOR_NODE_TEXT,
-  COLOR_PANEL_BG,
-  COLOR_STATUS_ERROR,
-  COLOR_STATUS_SUCCESS,
-  COLOR_TEXT_MUTED,
   FONT_FAMILY,
   FONT_SIZE_SMALL,
   FONT_SIZE_BASE,
@@ -116,24 +106,6 @@ function DownloadIcon(): React.JSX.Element {
   )
 }
 
-const MENU_ITEM_STYLE: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 10,
-  width: '100%',
-  padding: '8px 14px',
-  background: 'none',
-  border: 'none',
-  borderRadius: 4,
-  color: COLOR_TEXT_MUTED,
-  fontFamily: FONT_FAMILY,
-  fontSize: FONT_SIZE_SMALL,
-  cursor: 'pointer',
-  textAlign: 'left',
-  transition: `background-color ${TRANSITION_FAST}, color ${TRANSITION_FAST}`,
-  whiteSpace: 'nowrap',
-}
-
 export function AppMenu({
   canvasRef,
   hasNodes,
@@ -142,6 +114,7 @@ export function AppMenu({
   onOpenSettings,
   autoloadError = null,
 }: AppMenuProps): React.JSX.Element {
+  const { tokens } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
   const [skillVersion, setSkillVersion] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -152,6 +125,24 @@ export function AppMenu({
   const menuRef = useRef<HTMLDivElement>(null)
 
   const displayedError = error ?? autoloadError
+
+  const menuItemStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    width: '100%',
+    padding: '8px 14px',
+    background: 'none',
+    border: 'none',
+    borderRadius: 4,
+    color: tokens.COLOR_TEXT_MUTED,
+    fontFamily: FONT_FAMILY,
+    fontSize: FONT_SIZE_SMALL,
+    cursor: 'pointer',
+    textAlign: 'left',
+    transition: `background-color ${TRANSITION_FAST}, color ${TRANSITION_FAST}`,
+    whiteSpace: 'nowrap',
+  }
 
   // SK-04 — fetch skill manifest on mount
   useEffect((): void => {
@@ -276,9 +267,9 @@ export function AppMenu({
   return (
     <>
       <style>{`
-        .cf-menu-trigger:hover { background-color: ${COLOR_BUTTON_GHOST_HOVER_BG} !important; color: ${COLOR_NODE_TEXT} !important; }
+        .cf-menu-trigger:hover { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; color: ${tokens.COLOR_NODE_TEXT} !important; }
         .cf-menu-trigger:focus-visible { outline: 2px solid #f97316; outline-offset: 2px; }
-        .cf-menu-item:hover:not(:disabled) { background-color: ${COLOR_BUTTON_GHOST_HOVER_BG} !important; color: ${COLOR_NODE_TEXT} !important; }
+        .cf-menu-item:hover:not(:disabled) { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; color: ${tokens.COLOR_NODE_TEXT} !important; }
         .cf-menu-item:focus-visible { outline: 2px solid #f97316; outline-offset: 2px; }
         .cf-menu-item:disabled { opacity: 0.4; cursor: not-allowed; }
       `}</style>
@@ -295,10 +286,10 @@ export function AppMenu({
             alignItems: 'center',
             gap: 6,
             padding: '7px 12px',
-            backgroundColor: COLOR_PANEL_BG,
-            border: `1px solid ${COLOR_NODE_BORDER}`,
+            backgroundColor: tokens.COLOR_PANEL_BG,
+            border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
             borderRadius: 6,
-            color: COLOR_TEXT_MUTED,
+            color: tokens.COLOR_TEXT_MUTED,
             fontFamily: FONT_FAMILY,
             fontSize: FONT_SIZE_SMALL,
             cursor: 'pointer',
@@ -317,8 +308,8 @@ export function AppMenu({
               position: 'absolute',
               top: 'calc(100% + 6px)',
               right: 0,
-              backgroundColor: COLOR_NODE_BG,
-              border: `1px solid ${COLOR_NODE_BORDER}`,
+              backgroundColor: tokens.COLOR_NODE_BG,
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
               borderRadius: 6,
               padding: '4px',
               minWidth: 220,
@@ -331,7 +322,7 @@ export function AppMenu({
             <button
               className="cf-menu-item"
               role="menuitem"
-              style={MENU_ITEM_STYLE}
+              style={menuItemStyle}
               onClick={(): void => {
                 void handleSave()
               }}
@@ -345,7 +336,7 @@ export function AppMenu({
             <button
               className="cf-menu-item"
               role="menuitem"
-              style={MENU_ITEM_STYLE}
+              style={menuItemStyle}
               onClick={(): void => {
                 void handleLoad()
               }}
@@ -358,7 +349,7 @@ export function AppMenu({
             <div
               style={{
                 height: 1,
-                backgroundColor: COLOR_NODE_BORDER,
+                backgroundColor: tokens.COLOR_NODE_BORDER,
                 margin: '3px 10px',
               }}
             />
@@ -366,7 +357,7 @@ export function AppMenu({
             <button
               className="cf-menu-item"
               role="menuitem"
-              style={MENU_ITEM_STYLE}
+              style={menuItemStyle}
               onClick={handleSettings}
               aria-label="Open settings"
             >
@@ -377,7 +368,7 @@ export function AppMenu({
             <div
               style={{
                 height: 1,
-                backgroundColor: COLOR_NODE_BORDER,
+                backgroundColor: tokens.COLOR_NODE_BORDER,
                 margin: '3px 10px',
               }}
             />
@@ -385,7 +376,7 @@ export function AppMenu({
             <button
               className="cf-menu-item"
               role="menuitem"
-              style={MENU_ITEM_STYLE}
+              style={menuItemStyle}
               onClick={(): void => {
                 void handleSkillDownload()
               }}
@@ -415,7 +406,7 @@ export function AppMenu({
             zIndex: 30,
             fontFamily: FONT_FAMILY,
             fontSize: FONT_SIZE_SMALL,
-            color: COLOR_STATUS_ERROR,
+            color: tokens.COLOR_STATUS_ERROR,
           }}
         >
           {displayedError}
@@ -442,14 +433,14 @@ export function AppMenu({
         >
           <div
             style={{
-              backgroundColor: COLOR_NODE_BG,
-              border: `1px solid ${COLOR_NODE_BORDER}`,
+              backgroundColor: tokens.COLOR_NODE_BG,
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
               borderRadius: 8,
               padding: '28px 32px',
               maxWidth: 480,
               width: '90vw',
               fontFamily: FONT_FAMILY,
-              color: COLOR_NODE_TEXT,
+              color: tokens.COLOR_NODE_TEXT,
               boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
             }}
           >
@@ -461,7 +452,7 @@ export function AppMenu({
                 marginBottom: 20,
               }}
             >
-              <span style={{ color: COLOR_STATUS_SUCCESS, fontSize: 18 }}>✓</span>
+              <span style={{ color: tokens.COLOR_STATUS_SUCCESS, fontSize: 18 }}>✓</span>
               <span style={{ fontSize: FONT_SIZE_BASE, fontWeight: 500 }}>cmap.md downloaded</span>
             </div>
             <p
@@ -469,42 +460,42 @@ export function AppMenu({
                 margin: '0 0 16px',
                 fontSize: FONT_SIZE_SMALL,
                 lineHeight: 1.6,
-                color: COLOR_TEXT_MUTED,
+                color: tokens.COLOR_TEXT_MUTED,
               }}
             >
               Place the file in your Claude Code commands directory so Claude Code can find it:
             </p>
             <div style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: '10px', color: COLOR_TEXT_MUTED, marginBottom: 4 }}>
+              <div style={{ fontSize: '10px', color: tokens.COLOR_TEXT_MUTED, marginBottom: 4 }}>
                 macOS / Linux
               </div>
               <code
                 style={{
                   display: 'block',
                   backgroundColor: 'rgba(0,0,0,0.3)',
-                  border: `1px solid ${COLOR_NODE_BORDER}`,
+                  border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
                   borderRadius: 4,
                   padding: '7px 10px',
                   fontSize: FONT_SIZE_SMALL,
-                  color: COLOR_NODE_TEXT,
+                  color: tokens.COLOR_NODE_TEXT,
                 }}
               >
                 ~/.claude/commands/cmap.md
               </code>
             </div>
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: '10px', color: COLOR_TEXT_MUTED, marginBottom: 4 }}>
+              <div style={{ fontSize: '10px', color: tokens.COLOR_TEXT_MUTED, marginBottom: 4 }}>
                 Windows
               </div>
               <code
                 style={{
                   display: 'block',
                   backgroundColor: 'rgba(0,0,0,0.3)',
-                  border: `1px solid ${COLOR_NODE_BORDER}`,
+                  border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
                   borderRadius: 4,
                   padding: '7px 10px',
                   fontSize: FONT_SIZE_SMALL,
-                  color: COLOR_NODE_TEXT,
+                  color: tokens.COLOR_NODE_TEXT,
                 }}
               >
                 %USERPROFILE%\.claude\commands\cmap.md
@@ -515,20 +506,20 @@ export function AppMenu({
                 margin: '0 0 24px',
                 fontSize: FONT_SIZE_SMALL,
                 lineHeight: 1.6,
-                color: COLOR_TEXT_MUTED,
+                color: tokens.COLOR_TEXT_MUTED,
               }}
             >
-              Then use <strong style={{ color: COLOR_NODE_TEXT }}>/cmap your topic</strong> in any
-              Claude Code project to generate a concept map.
+              Then use <strong style={{ color: tokens.COLOR_NODE_TEXT }}>/cmap your topic</strong>{' '}
+              in any Claude Code project to generate a concept map.
             </p>
             <button
               onClick={(): void => setShowInstructions(false)}
               style={{
                 padding: '8px 20px',
-                backgroundColor: COLOR_BUTTON_PRIMARY_BG,
+                backgroundColor: tokens.COLOR_BUTTON_PRIMARY_BG,
                 border: 'none',
                 borderRadius: 6,
-                color: COLOR_BUTTON_PRIMARY_TEXT,
+                color: tokens.COLOR_BUTTON_PRIMARY_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_SMALL,
                 fontWeight: 500,
@@ -537,11 +528,11 @@ export function AppMenu({
               }}
               onMouseEnter={(e): void => {
                 ;(e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  COLOR_BUTTON_PRIMARY_HOVER_BG
+                  tokens.COLOR_BUTTON_PRIMARY_HOVER_BG
               }}
               onMouseLeave={(e): void => {
                 ;(e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  COLOR_BUTTON_PRIMARY_BG
+                  tokens.COLOR_BUTTON_PRIMARY_BG
               }}
             >
               Got it

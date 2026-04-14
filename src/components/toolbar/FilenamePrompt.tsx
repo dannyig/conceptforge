@@ -1,19 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import {
-  COLOR_INPUT_BG,
-  COLOR_INPUT_BORDER,
-  COLOR_INPUT_FOCUS_BORDER,
-  COLOR_NODE_BORDER,
-  COLOR_NODE_SELECTED,
-  COLOR_NODE_TEXT,
-  COLOR_SUMMARY_BG,
-  COLOR_SUMMARY_BORDER,
-  COLOR_TEXT_MUTED,
-  FONT_FAMILY,
-  FONT_SIZE_SMALL,
-  TRANSITION_FAST,
-} from '@/lib/theme'
+import { useTheme } from '@/hooks/use-theme'
+import { FONT_FAMILY, FONT_SIZE_SMALL, TRANSITION_FAST } from '@/lib/theme'
 
 interface FilenamePromptProps {
   defaultValue: string
@@ -28,6 +16,7 @@ export function FilenamePrompt({
   onConfirm,
   onCancel,
 }: FilenamePromptProps): React.JSX.Element {
+  const { tokens } = useTheme()
   const [value, setValue] = useState(defaultValue)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -60,17 +49,17 @@ export function FilenamePrompt({
     >
       <style>{`
         .cf-save-confirm:hover:not(:disabled) { background-color: #ea6c0a !important; }
-        .cf-save-confirm:focus-visible { outline: 2px solid ${COLOR_NODE_SELECTED}; outline-offset: 2px; }
+        .cf-save-confirm:focus-visible { outline: 2px solid ${tokens.COLOR_NODE_SELECTED}; outline-offset: 2px; }
         .cf-save-cancel:hover { background-color: #21262d !important; }
-        .cf-save-cancel:focus-visible { outline: 2px solid ${COLOR_NODE_SELECTED}; outline-offset: 2px; }
+        .cf-save-cancel:focus-visible { outline: 2px solid ${tokens.COLOR_NODE_SELECTED}; outline-offset: 2px; }
       `}</style>
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Save map as"
         style={{
-          backgroundColor: COLOR_SUMMARY_BG,
-          border: `1px solid ${COLOR_SUMMARY_BORDER}`,
+          backgroundColor: tokens.COLOR_SUMMARY_BG,
+          border: `1px solid ${tokens.COLOR_SUMMARY_BORDER}`,
           borderRadius: 8,
           padding: '20px 22px',
           width: 340,
@@ -86,7 +75,7 @@ export function FilenamePrompt({
             fontWeight: 600,
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
-            color: COLOR_TEXT_MUTED,
+            color: tokens.COLOR_TEXT_MUTED,
           }}
         >
           Save map as
@@ -102,10 +91,10 @@ export function FilenamePrompt({
             aria-label="Filename"
             style={{
               flex: 1,
-              background: COLOR_INPUT_BG,
-              border: `1px solid ${COLOR_INPUT_BORDER}`,
+              background: tokens.COLOR_INPUT_BG,
+              border: `1px solid ${tokens.COLOR_INPUT_BORDER}`,
               borderRadius: 4,
-              color: COLOR_NODE_TEXT,
+              color: tokens.COLOR_NODE_TEXT,
               fontFamily: FONT_FAMILY,
               fontSize: FONT_SIZE_SMALL,
               padding: '6px 8px',
@@ -113,17 +102,17 @@ export function FilenamePrompt({
               transition: `border-color ${TRANSITION_FAST}`,
             }}
             onFocus={(e): void => {
-              e.currentTarget.style.borderColor = COLOR_INPUT_FOCUS_BORDER
+              e.currentTarget.style.borderColor = tokens.COLOR_INPUT_FOCUS_BORDER
             }}
             onBlur={(e): void => {
-              e.currentTarget.style.borderColor = COLOR_INPUT_BORDER
+              e.currentTarget.style.borderColor = tokens.COLOR_INPUT_BORDER
             }}
           />
           <span
             style={{
               fontFamily: FONT_FAMILY,
               fontSize: FONT_SIZE_SMALL,
-              color: COLOR_TEXT_MUTED,
+              color: tokens.COLOR_TEXT_MUTED,
               userSelect: 'none',
               flexShrink: 0,
             }}
@@ -139,11 +128,11 @@ export function FilenamePrompt({
             style={{
               padding: '6px 14px',
               background: 'transparent',
-              border: `1px solid ${COLOR_NODE_BORDER}`,
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
               borderRadius: 4,
               fontFamily: FONT_FAMILY,
               fontSize: FONT_SIZE_SMALL,
-              color: COLOR_TEXT_MUTED,
+              color: tokens.COLOR_TEXT_MUTED,
               cursor: 'pointer',
               transition: `background-color ${TRANSITION_FAST}`,
             }}
@@ -158,7 +147,7 @@ export function FilenamePrompt({
             disabled={!canConfirm}
             style={{
               padding: '6px 14px',
-              background: COLOR_NODE_SELECTED,
+              background: tokens.COLOR_NODE_SELECTED,
               border: 'none',
               borderRadius: 4,
               fontFamily: FONT_FAMILY,

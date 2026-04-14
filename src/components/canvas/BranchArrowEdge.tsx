@@ -1,6 +1,6 @@
 import React from 'react'
 import { BaseEdge, getStraightPath, useInternalNode, type EdgeProps } from '@xyflow/react'
-import { COLOR_EDGE, COLOR_EDGE_SELECTED } from '@/lib/theme'
+import { useTheme } from '@/hooks/use-theme'
 import { rectBoundaryPoint } from '@/lib/geometry'
 
 // C-11: arrow from the label hub → a target node. Arrow only — no label editing.
@@ -14,6 +14,7 @@ export function BranchArrowEdge({
   selected,
   data,
 }: EdgeProps): React.JSX.Element {
+  const { tokens } = useTheme()
   const beId = (data as { branchingEdgeId?: string } | undefined)?.branchingEdgeId
   const hubNode = useInternalNode(beId ? `hub-${beId}` : '')
   const isHovered = (data as { isHovered?: boolean } | undefined)?.isHovered
@@ -39,7 +40,7 @@ export function BranchArrowEdge({
       path={edgePath}
       markerEnd={markerEnd}
       style={{
-        stroke: selected || isHovered ? COLOR_EDGE_SELECTED : COLOR_EDGE,
+        stroke: selected || isHovered ? tokens.COLOR_EDGE_SELECTED : tokens.COLOR_EDGE,
         strokeWidth: 1.5,
       }}
     />

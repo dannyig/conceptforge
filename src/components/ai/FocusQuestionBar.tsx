@@ -1,17 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useTheme } from '@/hooks/use-theme'
 import {
-  COLOR_BUTTON_PRIMARY_BG,
-  COLOR_BUTTON_PRIMARY_HOVER_BG,
-  COLOR_BUTTON_PRIMARY_TEXT,
-  COLOR_INPUT_BG,
-  COLOR_INPUT_BORDER,
-  COLOR_INPUT_FOCUS_BORDER,
-  COLOR_NODE_BORDER,
-  COLOR_NODE_SELECTED,
-  COLOR_NODE_TEXT,
-  COLOR_PANEL_BG,
-  COLOR_STATUS_ERROR,
-  COLOR_TEXT_MUTED,
   FOCUS_BAR_HEIGHT,
   FONT_FAMILY,
   FONT_SIZE_FOCUS_QUESTION,
@@ -42,6 +31,7 @@ export function FocusQuestionBar({
   onDismissError,
   aiAssistEnabled = true,
 }: FocusQuestionBarProps): React.JSX.Element {
+  const { tokens } = useTheme()
   const inputRef = useRef<HTMLInputElement>(null)
   const urlInputRef = useRef<HTMLInputElement>(null)
   // Snapshot of the committed value at focus time — used to revert on Escape
@@ -143,8 +133,8 @@ export function FocusQuestionBar({
       style={{
         flexShrink: 0,
         width: '100%',
-        backgroundColor: COLOR_PANEL_BG,
-        borderBottom: `1px solid ${isFocused ? COLOR_INPUT_FOCUS_BORDER : COLOR_NODE_BORDER}`,
+        backgroundColor: tokens.COLOR_PANEL_BG,
+        borderBottom: `1px solid ${isFocused ? tokens.COLOR_INPUT_FOCUS_BORDER : tokens.COLOR_NODE_BORDER}`,
         display: 'flex',
         flexDirection: 'column',
         boxSizing: 'border-box',
@@ -153,12 +143,12 @@ export function FocusQuestionBar({
       }}
     >
       <style>{`
-        .cf-fqb-input::placeholder { color: ${COLOR_TEXT_MUTED}; opacity: 1; }
-        .cf-fqb-btn-generate:hover:not(:disabled) { background-color: ${COLOR_BUTTON_PRIMARY_HOVER_BG} !important; }
+        .cf-fqb-input::placeholder { color: ${tokens.COLOR_TEXT_MUTED}; opacity: 1; }
+        .cf-fqb-btn-generate:hover:not(:disabled) { background-color: ${tokens.COLOR_BUTTON_PRIMARY_HOVER_BG} !important; }
         .cf-fqb-btn-suggest:hover:not(:disabled) { background-color: #21262d !important; }
         .cf-fqb-btn-url:hover:not(:disabled) { background-color: #21262d !important; }
-        .cf-fqb-btn-generate:focus-visible, .cf-fqb-btn-suggest:focus-visible, .cf-fqb-btn-url:focus-visible { outline: 2px solid ${COLOR_NODE_SELECTED}; outline-offset: 2px; }
-        .cf-fqb-url-input::placeholder { color: ${COLOR_TEXT_MUTED}; opacity: 1; }
+        .cf-fqb-btn-generate:focus-visible, .cf-fqb-btn-suggest:focus-visible, .cf-fqb-btn-url:focus-visible { outline: 2px solid ${tokens.COLOR_NODE_SELECTED}; outline-offset: 2px; }
+        .cf-fqb-url-input::placeholder { color: ${tokens.COLOR_TEXT_MUTED}; opacity: 1; }
       `}</style>
 
       {/* Main bar row */}
@@ -191,7 +181,7 @@ export function FocusQuestionBar({
             fontFamily: FONT_FAMILY,
             fontSize: FONT_SIZE_FOCUS_QUESTION,
             fontWeight: '600',
-            color: COLOR_NODE_SELECTED,
+            color: tokens.COLOR_NODE_SELECTED,
             cursor: 'text',
             padding: 0,
           }}
@@ -215,9 +205,9 @@ export function FocusQuestionBar({
                   ...btnBase,
                   backgroundColor:
                     hoveredBtn === 'generate' && !isGenerating
-                      ? COLOR_BUTTON_PRIMARY_HOVER_BG
-                      : COLOR_BUTTON_PRIMARY_BG,
-                  color: COLOR_BUTTON_PRIMARY_TEXT,
+                      ? tokens.COLOR_BUTTON_PRIMARY_HOVER_BG
+                      : tokens.COLOR_BUTTON_PRIMARY_BG,
+                  color: tokens.COLOR_BUTTON_PRIMARY_TEXT,
                 }}
               >
                 {isGenerating ? <SpinnerIcon /> : <MapIcon />}
@@ -236,8 +226,8 @@ export function FocusQuestionBar({
                   ...btnBase,
                   backgroundColor:
                     hoveredBtn === 'suggest' && !isGenerating ? '#21262d' : 'transparent',
-                  color: isGenerating ? COLOR_TEXT_MUTED : COLOR_NODE_TEXT,
-                  border: `1px solid ${COLOR_NODE_BORDER}`,
+                  color: isGenerating ? tokens.COLOR_TEXT_MUTED : tokens.COLOR_NODE_TEXT,
+                  border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
                 }}
               >
                 {isGenerating ? <SpinnerIcon /> : <BulbIcon />}
@@ -254,7 +244,7 @@ export function FocusQuestionBar({
             flexShrink: 0,
             fontFamily: FONT_FAMILY,
             fontSize: '10px',
-            color: COLOR_NODE_TEXT,
+            color: tokens.COLOR_NODE_TEXT,
             opacity: 0.35,
             pointerEvents: 'none',
             userSelect: 'none',
@@ -277,8 +267,8 @@ export function FocusQuestionBar({
             style={{
               ...btnBase,
               backgroundColor: showUrlInput || hoveredBtn === 'url' ? '#21262d' : 'transparent',
-              color: showUrlInput ? COLOR_NODE_SELECTED : COLOR_TEXT_MUTED,
-              border: `1px solid ${showUrlInput ? COLOR_NODE_SELECTED : COLOR_NODE_BORDER}`,
+              color: showUrlInput ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_TEXT_MUTED,
+              border: `1px solid ${showUrlInput ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_NODE_BORDER}`,
               padding: '5px 8px',
               marginLeft: 4,
             }}
@@ -311,28 +301,28 @@ export function FocusQuestionBar({
             aria-label="URL to ingest"
             style={{
               flex: 1,
-              background: COLOR_INPUT_BG,
-              border: `1px solid ${COLOR_INPUT_BORDER}`,
+              background: tokens.COLOR_INPUT_BG,
+              border: `1px solid ${tokens.COLOR_INPUT_BORDER}`,
               borderRadius: 4,
               outline: 'none',
               fontFamily: FONT_FAMILY,
               fontSize: FONT_SIZE_SMALL,
-              color: COLOR_NODE_TEXT,
+              color: tokens.COLOR_NODE_TEXT,
               padding: '4px 8px',
               transition: `border-color ${TRANSITION_FAST}`,
             }}
             onFocus={(e): void => {
-              e.currentTarget.style.borderColor = COLOR_INPUT_FOCUS_BORDER
+              e.currentTarget.style.borderColor = tokens.COLOR_INPUT_FOCUS_BORDER
             }}
             onBlur={(e): void => {
-              e.currentTarget.style.borderColor = COLOR_INPUT_BORDER
+              e.currentTarget.style.borderColor = tokens.COLOR_INPUT_BORDER
             }}
           />
           <span
             style={{
               fontFamily: FONT_FAMILY,
               fontSize: '11px',
-              color: COLOR_TEXT_MUTED,
+              color: tokens.COLOR_TEXT_MUTED,
               flexShrink: 0,
             }}
           >
@@ -358,7 +348,7 @@ export function FocusQuestionBar({
             style={{
               fontFamily: FONT_FAMILY,
               fontSize: FONT_SIZE_SMALL,
-              color: COLOR_STATUS_ERROR,
+              color: tokens.COLOR_STATUS_ERROR,
               flex: 1,
             }}
           >
@@ -371,7 +361,7 @@ export function FocusQuestionBar({
               style={{
                 background: 'none',
                 border: 'none',
-                color: COLOR_TEXT_MUTED,
+                color: tokens.COLOR_TEXT_MUTED,
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_SMALL,
                 cursor: 'pointer',

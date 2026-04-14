@@ -28,22 +28,8 @@ import {
   setJinaApiKey,
   setJinaTokenBudget,
 } from '@/lib/jinaFetch'
+import { useTheme } from '@/hooks/use-theme'
 import {
-  COLOR_BUTTON_GHOST_HOVER_BG,
-  COLOR_BUTTON_PRIMARY_BG,
-  COLOR_BUTTON_PRIMARY_HOVER_BG,
-  COLOR_BUTTON_PRIMARY_TEXT,
-  COLOR_INPUT_BG,
-  COLOR_INPUT_BORDER,
-  COLOR_INPUT_FOCUS_BORDER,
-  COLOR_NODE_BORDER,
-  COLOR_NODE_SELECTED,
-  COLOR_NODE_TEXT,
-  COLOR_PANEL_BG,
-  COLOR_PANEL_OVERLAY,
-  COLOR_STATUS_ERROR,
-  COLOR_STATUS_SUCCESS,
-  COLOR_TEXT_MUTED,
   FONT_FAMILY,
   FONT_SIZE_BASE,
   FONT_SIZE_SMALL,
@@ -61,6 +47,7 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JSX.Element {
+  const { theme, setTheme, tokens } = useTheme()
   const [draft, setDraft] = useState('')
   const [status, setStatus] = useState<KeyStatus>(() => (getApiKey() ? 'saved' : 'empty'))
   const [errorMsg, setErrorMsg] = useState('')
@@ -147,7 +134,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
         style={{
           position: 'fixed',
           inset: 0,
-          backgroundColor: COLOR_PANEL_OVERLAY,
+          backgroundColor: tokens.COLOR_PANEL_OVERLAY,
           opacity: isOpen ? 1 : 0,
           pointerEvents: isOpen ? 'auto' : 'none',
           transition: `opacity ${TRANSITION_PANEL}`,
@@ -167,24 +154,24 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
           right: 0,
           width: SETTINGS_PANEL_WIDTH,
           height: '100vh',
-          backgroundColor: COLOR_PANEL_BG,
-          borderLeft: `1px solid ${COLOR_NODE_BORDER}`,
+          backgroundColor: tokens.COLOR_PANEL_BG,
+          borderLeft: `1px solid ${tokens.COLOR_NODE_BORDER}`,
           display: 'flex',
           flexDirection: 'column',
           transform: isOpen ? 'translateX(0)' : `translateX(${SETTINGS_PANEL_WIDTH})`,
           transition: `transform ${TRANSITION_PANEL}`,
           zIndex: 50,
           fontFamily: FONT_FAMILY,
-          color: COLOR_NODE_TEXT,
+          color: tokens.COLOR_NODE_TEXT,
         }}
       >
         {/* Scoped button hover styles */}
         <style>{`
-          .cf-btn-primary:hover { background-color: ${COLOR_BUTTON_PRIMARY_HOVER_BG} !important; }
-          .cf-btn-ghost:hover { background-color: ${COLOR_BUTTON_GHOST_HOVER_BG} !important; }
-          .cf-btn-danger:hover { background-color: ${COLOR_BUTTON_GHOST_HOVER_BG} !important; color: ${COLOR_STATUS_ERROR} !important; }
-          .cf-input:focus { border-color: ${COLOR_INPUT_FOCUS_BORDER} !important; outline: none; }
-          .cf-settings-reset:hover { background-color: ${COLOR_BUTTON_GHOST_HOVER_BG} !important; }
+          .cf-btn-primary:hover { background-color: ${tokens.COLOR_BUTTON_PRIMARY_HOVER_BG} !important; }
+          .cf-btn-ghost:hover { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; }
+          .cf-btn-danger:hover { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; color: ${tokens.COLOR_STATUS_ERROR} !important; }
+          .cf-input:focus { border-color: ${tokens.COLOR_INPUT_FOCUS_BORDER} !important; outline: none; }
+          .cf-settings-reset:hover { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; }
           @media (prefers-reduced-motion: reduce) {
             .cf-btn-primary, .cf-btn-ghost, .cf-btn-danger, .cf-input { transition: none !important; }
           }
@@ -197,7 +184,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '20px 24px 16px',
-            borderBottom: `1px solid ${COLOR_NODE_BORDER}`,
+            borderBottom: `1px solid ${tokens.COLOR_NODE_BORDER}`,
           }}
         >
           <span style={{ fontSize: FONT_SIZE_BASE, fontWeight: '600' }}>Settings</span>
@@ -209,7 +196,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
             style={{
               background: 'none',
               border: 'none',
-              color: COLOR_TEXT_MUTED,
+              color: tokens.COLOR_TEXT_MUTED,
               cursor: 'pointer',
               padding: '4px 6px',
               borderRadius: 4,
@@ -238,7 +225,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
             <span
               style={{
                 fontSize: FONT_SIZE_SMALL,
-                color: COLOR_TEXT_MUTED,
+                color: tokens.COLOR_TEXT_MUTED,
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
                 fontWeight: '600',
@@ -262,13 +249,19 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 width: 7,
                 height: 7,
                 borderRadius: '50%',
-                backgroundColor: hasStoredKey ? COLOR_STATUS_SUCCESS : COLOR_TEXT_MUTED,
+                backgroundColor: hasStoredKey
+                  ? tokens.COLOR_STATUS_SUCCESS
+                  : tokens.COLOR_TEXT_MUTED,
                 flexShrink: 0,
                 transition: `background-color ${TRANSITION_NORMAL}`,
               }}
               aria-hidden="true"
             />
-            <span style={{ color: hasStoredKey ? COLOR_STATUS_SUCCESS : COLOR_TEXT_MUTED }}>
+            <span
+              style={{
+                color: hasStoredKey ? tokens.COLOR_STATUS_SUCCESS : tokens.COLOR_TEXT_MUTED,
+              }}
+            >
               {hasStoredKey ? 'Key saved' : 'No key stored'}
             </span>
           </div>
@@ -277,7 +270,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <label
               htmlFor="cf-api-key-input"
-              style={{ fontSize: FONT_SIZE_SMALL, color: COLOR_TEXT_MUTED }}
+              style={{ fontSize: FONT_SIZE_SMALL, color: tokens.COLOR_TEXT_MUTED }}
             >
               {hasStoredKey ? 'Replace key' : 'Enter key'}
             </label>
@@ -303,10 +296,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
               style={{
                 width: '100%',
                 padding: '9px 12px',
-                backgroundColor: COLOR_INPUT_BG,
-                border: `1px solid ${status === 'error' ? COLOR_STATUS_ERROR : COLOR_INPUT_BORDER}`,
+                backgroundColor: tokens.COLOR_INPUT_BG,
+                border: `1px solid ${status === 'error' ? tokens.COLOR_STATUS_ERROR : tokens.COLOR_INPUT_BORDER}`,
                 borderRadius: 6,
-                color: COLOR_NODE_TEXT,
+                color: tokens.COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_SMALL,
                 boxSizing: 'border-box',
@@ -318,7 +311,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 id="cf-key-error"
                 role="alert"
                 aria-live="polite"
-                style={{ fontSize: FONT_SIZE_SMALL, color: COLOR_STATUS_ERROR }}
+                style={{ fontSize: FONT_SIZE_SMALL, color: tokens.COLOR_STATUS_ERROR }}
               >
                 {errorMsg}
               </span>
@@ -333,8 +326,8 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
               style={{
                 flex: 1,
                 padding: '8px 16px',
-                backgroundColor: COLOR_BUTTON_PRIMARY_BG,
-                color: COLOR_BUTTON_PRIMARY_TEXT,
+                backgroundColor: tokens.COLOR_BUTTON_PRIMARY_BG,
+                color: tokens.COLOR_BUTTON_PRIMARY_TEXT,
                 border: 'none',
                 borderRadius: 6,
                 fontFamily: FONT_FAMILY,
@@ -354,8 +347,8 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 style={{
                   padding: '8px 16px',
                   backgroundColor: 'transparent',
-                  color: COLOR_TEXT_MUTED,
-                  border: `1px solid ${COLOR_INPUT_BORDER}`,
+                  color: tokens.COLOR_TEXT_MUTED,
+                  border: `1px solid ${tokens.COLOR_INPUT_BORDER}`,
                   borderRadius: 6,
                   fontFamily: FONT_FAMILY,
                   fontSize: FONT_SIZE_SMALL,
@@ -372,25 +365,25 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
           <p
             style={{
               fontSize: FONT_SIZE_SMALL,
-              color: COLOR_TEXT_MUTED,
+              color: tokens.COLOR_TEXT_MUTED,
               margin: 0,
               lineHeight: 1.6,
             }}
           >
             Your key is stored only in your browser&apos;s localStorage and sent directly to{' '}
-            <span style={{ color: COLOR_NODE_TEXT }}>api.anthropic.com</span>. It never touches any
-            server.
+            <span style={{ color: tokens.COLOR_NODE_TEXT }}>api.anthropic.com</span>. It never
+            touches any server.
           </p>
 
           {/* Divider */}
-          <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
+          <div style={{ height: 1, backgroundColor: tokens.COLOR_NODE_BORDER }} />
 
           {/* K-14: Claude Model selector */}
           <div>
             <span
               style={{
                 fontSize: FONT_SIZE_SMALL,
-                color: COLOR_TEXT_MUTED,
+                color: tokens.COLOR_TEXT_MUTED,
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
                 fontWeight: '600',
@@ -402,7 +395,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <label
               htmlFor="cf-model-select"
-              style={{ fontSize: FONT_SIZE_SMALL, color: COLOR_TEXT_MUTED }}
+              style={{ fontSize: FONT_SIZE_SMALL, color: tokens.COLOR_TEXT_MUTED }}
             >
               Model used for all AI operations
             </label>
@@ -418,10 +411,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
               style={{
                 width: '100%',
                 padding: '9px 12px',
-                backgroundColor: COLOR_INPUT_BG,
-                border: `1px solid ${COLOR_INPUT_BORDER}`,
+                backgroundColor: tokens.COLOR_INPUT_BG,
+                border: `1px solid ${tokens.COLOR_INPUT_BORDER}`,
                 borderRadius: 6,
-                color: COLOR_NODE_TEXT,
+                color: tokens.COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_SMALL,
                 cursor: 'pointer',
@@ -443,14 +436,74 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
           </div>
 
           {/* Divider */}
-          <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
+          <div style={{ height: 1, backgroundColor: tokens.COLOR_NODE_BORDER }} />
+
+          {/* T-01: Theme selector */}
+          <div>
+            <span
+              style={{
+                fontSize: FONT_SIZE_SMALL,
+                color: tokens.COLOR_TEXT_MUTED,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                fontWeight: '600',
+              }}
+            >
+              Appearance
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button
+              onClick={(): void => setTheme('dark')}
+              aria-pressed={theme === 'dark'}
+              style={{
+                flex: 1,
+                padding: '7px 0',
+                backgroundColor:
+                  theme === 'dark' ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_INPUT_BG,
+                border: `1px solid ${theme === 'dark' ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_INPUT_BORDER}`,
+                borderRadius: 6,
+                color: theme === 'dark' ? '#ffffff' : tokens.COLOR_TEXT_MUTED,
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_SMALL,
+                fontWeight: theme === 'dark' ? '600' : '400',
+                cursor: 'pointer',
+                transition: `background-color ${TRANSITION_FAST}, border-color ${TRANSITION_FAST}, color ${TRANSITION_FAST}`,
+              }}
+            >
+              Dark
+            </button>
+            <button
+              onClick={(): void => setTheme('light')}
+              aria-pressed={theme === 'light'}
+              style={{
+                flex: 1,
+                padding: '7px 0',
+                backgroundColor:
+                  theme === 'light' ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_INPUT_BG,
+                border: `1px solid ${theme === 'light' ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_INPUT_BORDER}`,
+                borderRadius: 6,
+                color: theme === 'light' ? '#ffffff' : tokens.COLOR_TEXT_MUTED,
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_SMALL,
+                fontWeight: theme === 'light' ? '600' : '400',
+                cursor: 'pointer',
+                transition: `background-color ${TRANSITION_FAST}, border-color ${TRANSITION_FAST}, color ${TRANSITION_FAST}`,
+              }}
+            >
+              Light
+            </button>
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: 1, backgroundColor: tokens.COLOR_NODE_BORDER }} />
 
           {/* K-05: AI Assist toggle */}
           <div>
             <span
               style={{
                 fontSize: FONT_SIZE_SMALL,
-                color: COLOR_TEXT_MUTED,
+                color: tokens.COLOR_TEXT_MUTED,
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
                 fontWeight: '600',
@@ -470,7 +523,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
             <span
               style={{
                 fontSize: FONT_SIZE_SMALL,
-                color: hasStoredKey ? COLOR_NODE_TEXT : COLOR_TEXT_MUTED,
+                color: hasStoredKey ? tokens.COLOR_NODE_TEXT : tokens.COLOR_TEXT_MUTED,
                 lineHeight: 1.5,
               }}
             >
@@ -493,7 +546,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 height: 22,
                 borderRadius: 11,
                 border: 'none',
-                backgroundColor: aiAssist ? COLOR_NODE_SELECTED : COLOR_INPUT_BORDER,
+                backgroundColor: aiAssist ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_INPUT_BORDER,
                 cursor: hasStoredKey ? 'pointer' : 'not-allowed',
                 opacity: hasStoredKey ? 1 : 0.4,
                 transition: `background-color ${TRANSITION_NORMAL}`,
@@ -517,7 +570,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
           </div>
 
           {/* Divider */}
-          <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
+          <div style={{ height: 1, backgroundColor: tokens.COLOR_NODE_BORDER }} />
 
           {/* K-09: Concept Chat system prompt */}
           <div>
@@ -532,7 +585,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
               <span
                 style={{
                   fontSize: FONT_SIZE_SMALL,
-                  color: COLOR_TEXT_MUTED,
+                  color: tokens.COLOR_TEXT_MUTED,
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
                   fontWeight: '600',
@@ -547,12 +600,12 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 }}
                 style={{
                   background: 'transparent',
-                  border: `1px solid ${COLOR_NODE_BORDER}`,
+                  border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
                   borderRadius: 4,
                   padding: '2px 8px',
                   fontFamily: FONT_FAMILY,
                   fontSize: '10px',
-                  color: COLOR_TEXT_MUTED,
+                  color: tokens.COLOR_TEXT_MUTED,
                   cursor: 'pointer',
                   transition: `background-color ${TRANSITION_FAST}`,
                 }}
@@ -571,10 +624,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
               rows={6}
               style={{
                 width: '100%',
-                background: COLOR_INPUT_BG,
-                border: `1px solid ${COLOR_INPUT_BORDER}`,
+                background: tokens.COLOR_INPUT_BG,
+                border: `1px solid ${tokens.COLOR_INPUT_BORDER}`,
                 borderRadius: 4,
-                color: COLOR_NODE_TEXT,
+                color: tokens.COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: '11px',
                 lineHeight: 1.6,
@@ -585,16 +638,16 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 transition: `border-color ${TRANSITION_FAST}`,
               }}
               onFocus={(e): void => {
-                e.currentTarget.style.borderColor = COLOR_INPUT_FOCUS_BORDER
+                e.currentTarget.style.borderColor = tokens.COLOR_INPUT_FOCUS_BORDER
               }}
               onBlur={(e): void => {
-                e.currentTarget.style.borderColor = COLOR_INPUT_BORDER
+                e.currentTarget.style.borderColor = tokens.COLOR_INPUT_BORDER
               }}
             />
           </div>
 
           {/* Divider */}
-          <div style={{ height: 1, backgroundColor: COLOR_NODE_BORDER }} />
+          <div style={{ height: 1, backgroundColor: tokens.COLOR_NODE_BORDER }} />
 
           {/* K-10: Edge Label system prompt */}
           <div>
@@ -609,7 +662,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
               <span
                 style={{
                   fontSize: FONT_SIZE_SMALL,
-                  color: COLOR_TEXT_MUTED,
+                  color: tokens.COLOR_TEXT_MUTED,
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
                   fontWeight: '600',
@@ -624,12 +677,12 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 }}
                 style={{
                   background: 'transparent',
-                  border: `1px solid ${COLOR_NODE_BORDER}`,
+                  border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
                   borderRadius: 4,
                   padding: '2px 8px',
                   fontFamily: FONT_FAMILY,
                   fontSize: '10px',
-                  color: COLOR_TEXT_MUTED,
+                  color: tokens.COLOR_TEXT_MUTED,
                   cursor: 'pointer',
                   transition: `background-color ${TRANSITION_FAST}`,
                 }}
@@ -648,10 +701,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
               rows={6}
               style={{
                 width: '100%',
-                background: COLOR_INPUT_BG,
-                border: `1px solid ${COLOR_INPUT_BORDER}`,
+                background: tokens.COLOR_INPUT_BG,
+                border: `1px solid ${tokens.COLOR_INPUT_BORDER}`,
                 borderRadius: 4,
-                color: COLOR_NODE_TEXT,
+                color: tokens.COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: '11px',
                 lineHeight: 1.6,
@@ -662,10 +715,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 transition: `border-color ${TRANSITION_FAST}`,
               }}
               onFocus={(e): void => {
-                e.currentTarget.style.borderColor = COLOR_INPUT_FOCUS_BORDER
+                e.currentTarget.style.borderColor = tokens.COLOR_INPUT_FOCUS_BORDER
               }}
               onBlur={(e): void => {
-                e.currentTarget.style.borderColor = COLOR_INPUT_BORDER
+                e.currentTarget.style.borderColor = tokens.COLOR_INPUT_BORDER
               }}
             />
           </div>
@@ -676,7 +729,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
               <span
                 style={{
                   fontSize: FONT_SIZE_SMALL,
-                  color: COLOR_TEXT_MUTED,
+                  color: tokens.COLOR_TEXT_MUTED,
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
                   fontWeight: '600',
@@ -691,12 +744,12 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 }}
                 style={{
                   background: 'transparent',
-                  border: `1px solid ${COLOR_NODE_BORDER}`,
+                  border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
                   borderRadius: 4,
                   padding: '2px 8px',
                   fontFamily: FONT_FAMILY,
                   fontSize: '10px',
-                  color: COLOR_TEXT_MUTED,
+                  color: tokens.COLOR_TEXT_MUTED,
                   cursor: 'pointer',
                   transition: `background-color ${TRANSITION_FAST}`,
                 }}
@@ -715,10 +768,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
               rows={6}
               style={{
                 width: '100%',
-                background: COLOR_INPUT_BG,
-                border: `1px solid ${COLOR_INPUT_BORDER}`,
+                background: tokens.COLOR_INPUT_BG,
+                border: `1px solid ${tokens.COLOR_INPUT_BORDER}`,
                 borderRadius: 4,
-                color: COLOR_NODE_TEXT,
+                color: tokens.COLOR_NODE_TEXT,
                 fontFamily: FONT_FAMILY,
                 fontSize: '11px',
                 lineHeight: 1.6,
@@ -729,10 +782,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 transition: `border-color ${TRANSITION_FAST}`,
               }}
               onFocus={(e): void => {
-                e.currentTarget.style.borderColor = COLOR_INPUT_FOCUS_BORDER
+                e.currentTarget.style.borderColor = tokens.COLOR_INPUT_FOCUS_BORDER
               }}
               onBlur={(e): void => {
-                e.currentTarget.style.borderColor = COLOR_INPUT_BORDER
+                e.currentTarget.style.borderColor = tokens.COLOR_INPUT_BORDER
               }}
             />
           </div>
@@ -740,7 +793,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
           {/* K-11, K-12: Jina.ai Reader settings for URL ingestion */}
           <div
             style={{
-              borderTop: `1px solid ${COLOR_NODE_BORDER}`,
+              borderTop: `1px solid ${tokens.COLOR_NODE_BORDER}`,
               paddingTop: 20,
               marginTop: 8,
               display: 'flex',
@@ -751,7 +804,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
             <span
               style={{
                 fontSize: FONT_SIZE_SMALL,
-                color: COLOR_TEXT_MUTED,
+                color: tokens.COLOR_TEXT_MUTED,
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
                 fontWeight: '600',
@@ -766,7 +819,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 style={{
                   fontFamily: FONT_FAMILY,
                   fontSize: FONT_SIZE_SMALL,
-                  color: COLOR_TEXT_MUTED,
+                  color: tokens.COLOR_TEXT_MUTED,
                 }}
               >
                 Jina API Key
@@ -783,10 +836,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                   aria-label="Jina API key"
                   style={{
                     flex: 1,
-                    background: COLOR_INPUT_BG,
-                    border: `1px solid ${COLOR_INPUT_BORDER}`,
+                    background: tokens.COLOR_INPUT_BG,
+                    border: `1px solid ${tokens.COLOR_INPUT_BORDER}`,
                     borderRadius: 4,
-                    color: COLOR_NODE_TEXT,
+                    color: tokens.COLOR_NODE_TEXT,
                     fontFamily: FONT_FAMILY,
                     fontSize: FONT_SIZE_SMALL,
                     padding: '6px 10px',
@@ -794,10 +847,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                     transition: `border-color ${TRANSITION_FAST}`,
                   }}
                   onFocus={(e): void => {
-                    e.currentTarget.style.borderColor = COLOR_INPUT_FOCUS_BORDER
+                    e.currentTarget.style.borderColor = tokens.COLOR_INPUT_FOCUS_BORDER
                   }}
                   onBlur={(e): void => {
-                    e.currentTarget.style.borderColor = COLOR_INPUT_BORDER
+                    e.currentTarget.style.borderColor = tokens.COLOR_INPUT_BORDER
                   }}
                   onKeyDown={(e): void => {
                     if (e.key === 'Enter') {
@@ -822,10 +875,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                     }}
                     aria-label="Save Jina API key"
                     style={{
-                      background: COLOR_BUTTON_PRIMARY_BG,
+                      background: tokens.COLOR_BUTTON_PRIMARY_BG,
                       border: 'none',
                       borderRadius: 4,
-                      color: COLOR_BUTTON_PRIMARY_TEXT,
+                      color: tokens.COLOR_BUTTON_PRIMARY_TEXT,
                       fontFamily: FONT_FAMILY,
                       fontSize: FONT_SIZE_SMALL,
                       padding: '6px 12px',
@@ -847,9 +900,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                     aria-label="Clear Jina API key"
                     style={{
                       background: 'transparent',
-                      border: `1px solid ${COLOR_NODE_BORDER}`,
+                      border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
                       borderRadius: 4,
-                      color: COLOR_TEXT_MUTED,
+                      color: tokens.COLOR_TEXT_MUTED,
                       fontFamily: FONT_FAMILY,
                       fontSize: FONT_SIZE_SMALL,
                       padding: '6px 12px',
@@ -867,7 +920,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                   style={{
                     fontFamily: FONT_FAMILY,
                     fontSize: '11px',
-                    color: COLOR_STATUS_SUCCESS,
+                    color: tokens.COLOR_STATUS_SUCCESS,
                   }}
                 >
                   Jina API key saved
@@ -881,7 +934,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 style={{
                   fontFamily: FONT_FAMILY,
                   fontSize: FONT_SIZE_SMALL,
-                  color: COLOR_TEXT_MUTED,
+                  color: tokens.COLOR_TEXT_MUTED,
                 }}
               >
                 Token Budget
@@ -905,10 +958,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 aria-label="Jina token budget"
                 style={{
                   width: 120,
-                  background: COLOR_INPUT_BG,
-                  border: `1px solid ${COLOR_INPUT_BORDER}`,
+                  background: tokens.COLOR_INPUT_BG,
+                  border: `1px solid ${tokens.COLOR_INPUT_BORDER}`,
                   borderRadius: 4,
-                  color: COLOR_NODE_TEXT,
+                  color: tokens.COLOR_NODE_TEXT,
                   fontFamily: FONT_FAMILY,
                   fontSize: FONT_SIZE_SMALL,
                   padding: '6px 10px',
@@ -916,10 +969,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                   transition: `border-color ${TRANSITION_FAST}`,
                 }}
                 onFocus={(e): void => {
-                  e.currentTarget.style.borderColor = COLOR_INPUT_FOCUS_BORDER
+                  e.currentTarget.style.borderColor = tokens.COLOR_INPUT_FOCUS_BORDER
                 }}
                 onBlur={(e): void => {
-                  e.currentTarget.style.borderColor = COLOR_INPUT_BORDER
+                  e.currentTarget.style.borderColor = tokens.COLOR_INPUT_BORDER
                 }}
               />
             </div>

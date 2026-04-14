@@ -1,11 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react'
 import { Handle, Position, useReactFlow, type NodeProps } from '@xyflow/react'
+import { useTheme } from '@/hooks/use-theme'
 import {
-  COLOR_EDGE_SELECTED,
-  COLOR_HANDLE,
-  COLOR_HANDLE_HOVER,
-  COLOR_NODE_BG,
-  COLOR_NODE_TEXT,
   FONT_FAMILY,
   FONT_SIZE_EDGE_LABEL,
   FONT_WEIGHT_NODE_LABEL,
@@ -33,6 +29,7 @@ const HUB_HANDLE_BASE: React.CSSProperties = {
 // BranchHubNode renders the shared relationship label hub for a branching edge (C-11, C-12, C-17).
 // The hub is a draggable React Flow node — React Flow handles position/drag natively.
 export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React.JSX.Element {
+  const { tokens } = useTheme()
   const data = rawData as { label: string; branchingEdgeId: string }
   const { setNodes, setEdges } = useReactFlow()
   const [editing, setEditing] = useState(false)
@@ -97,8 +94,8 @@ export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React
             style={{
               ...HUB_HANDLE_BASE,
               ...flushStyle,
-              background: COLOR_HANDLE,
-              border: `1px solid ${COLOR_HANDLE}`,
+              background: tokens.COLOR_HANDLE,
+              border: `1px solid ${tokens.COLOR_HANDLE}`,
             }}
             aria-label={`Drag to add a branch target (${side.replace('hub-', '')})`}
           />
@@ -108,13 +105,13 @@ export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React
       <div
         onDoubleClick={startEdit}
         style={{
-          background: COLOR_NODE_BG,
+          background: tokens.COLOR_NODE_BG,
           borderRadius: 3,
           padding: '2px 6px',
           fontFamily: FONT_FAMILY,
           fontSize: FONT_SIZE_EDGE_LABEL,
           fontWeight: FONT_WEIGHT_NODE_LABEL,
-          color: selected ? COLOR_EDGE_SELECTED : COLOR_NODE_TEXT,
+          color: selected ? tokens.COLOR_EDGE_SELECTED : tokens.COLOR_NODE_TEXT,
           cursor: 'grab',
           userSelect: 'none',
           transition: `color ${TRANSITION_FAST}`,
@@ -140,7 +137,7 @@ export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React
               fontFamily: FONT_FAMILY,
               fontSize: FONT_SIZE_EDGE_LABEL,
               fontWeight: FONT_WEIGHT_NODE_LABEL,
-              color: COLOR_NODE_TEXT,
+              color: tokens.COLOR_NODE_TEXT,
               width: Math.max(48, draft.length * 8),
               textAlign: 'center',
             }}
@@ -156,8 +153,8 @@ export function BranchHubNode({ id, data: rawData, selected }: NodeProps): React
         /* Source handles: hidden by default, revealed when hub is hovered (C-12) */
         .react-flow__node-branchHub .hub-source-handle { opacity: 0; transition: opacity ${TRANSITION_FAST}, background-color ${TRANSITION_FAST}; }
         .react-flow__node-branchHub:hover .hub-source-handle { opacity: 1 !important; }
-        .react-flow__node-branchHub .hub-source-handle:hover { background-color: ${COLOR_HANDLE_HOVER} !important; }
-        .react-flow__node-branchHub input:focus-visible { outline: 1px solid ${COLOR_EDGE_SELECTED}; outline-offset: 2px; border-radius: 2px; }
+        .react-flow__node-branchHub .hub-source-handle:hover { background-color: ${tokens.COLOR_HANDLE_HOVER} !important; }
+        .react-flow__node-branchHub input:focus-visible { outline: 1px solid ${tokens.COLOR_EDGE_SELECTED}; outline-offset: 2px; border-radius: 2px; }
         @media (prefers-reduced-motion: reduce) {
           .react-flow__node-branchHub .hub-source-handle { transition: none !important; }
         }
