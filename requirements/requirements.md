@@ -267,6 +267,16 @@
 
 ---
 
+### 4.15 Themes
+
+| Status | ID | Requirement |
+|---|---|---|
+|  | T-01 | Add a "Theme" selector to the Settings panel; offer two options: **Dark** and **Light**; persist the selected value to `localStorage` under a namespaced key; on first page load (no stored preference), default to the OS-level `prefers-color-scheme` setting — Dark if `prefers-color-scheme: dark`, Light otherwise |
+|  | T-02 | Apply the active theme globally across all app surfaces — canvas background, dot grid, nodes, edges, panels, toolbar, settings drawer, focus question bar, hint ticker, context menus, and any other visible UI element; all colour values for both themes must be defined in `src/lib/theme.ts`; the orange accent (`#f97316`) is preserved in both themes |
+|  | T-03 | Implement a Light theme variant that provides a clean, readable light-background alternative to the existing Dark theme; the existing Dark theme colour values remain unchanged; both themes must be visually intentional and consistent with the ConceptForge aesthetic |
+
+---
+
 ## 5. Nice to Have (Post-MVP)
 
 | Status | ID | Feature | Description |
@@ -417,3 +427,5 @@
 *Version 6.1 — April 2026 — Updated C-18 (floating boundary connection: edge start/end snaps to nearest boundary point on cursor position, replaces fixed four-handle system); updated C-31 (reconnect drops at nearest boundary point, not fixed handle); added C-41 (dynamic endpoint repositioning when a node is moved); added C-42 (migration of cardinal handle values to floating positions on map load)*
 
 *Version 6.2 — April 2026 — Added C-43 (proximity-triggered handle visibility: the static connection handle on the nearest side becomes visible at reduced opacity when the cursor is within ~16px of that side; all handles invisible otherwise; suppressed during inline label editing)*
+
+*Version 6.3 — April 2026 — Added section 4.15 Themes: T-01 (Theme selector in Settings with OS-level default and localStorage persistence), T-02 (global theme application across all app surfaces with theme.ts colour definitions), T-03 (Light theme variant — clean readable light-background alternative; Dark theme unchanged)*

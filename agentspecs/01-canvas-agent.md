@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-43, V-01 → V-10, G-01 → G-12, B-01 → B-02, and/or H-01 → H-06
+**Trigger:** Human assigns requirement IDs C-01 → C-43, V-01 → V-10, G-01 → G-12, B-01 → B-02, H-01 → H-06, and/or T-02 → T-03
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -576,6 +576,26 @@ interface MapData {
 
 ---
 
+### Group 4p — Theme Application (T-02, T-03)
+
+> **Dependency:** The Settings Agent must have implemented T-01 (Theme selector + `useTheme` hook) before this group can begin. Confirm the hook is available in `src/hooks/use-theme.ts` (or equivalent) before starting.
+
+- [ ] **T-02 — Global theme application:**
+  - Read the active theme from the hook provided by the Settings Agent (e.g. `useTheme()` returning `'dark' | 'light'`)
+  - Apply theme-appropriate colour tokens to every canvas surface: canvas background, dot grid (`<Background>`), `<MiniMap>`, `<Controls>`, `ConceptNode`, `ConceptEdge`, `BranchingEdge`, `NoteNode`, branching edge hub, edge label captions, pane context menu, node context menu, edge context menu, and any other visible UI element owned by the Canvas Agent
+  - All colour values for both themes must be defined in `src/lib/theme.ts` — no inline hardcoded hex values; no values outside `theme.ts`
+  - The orange accent (`#f97316`) must be preserved and used identically in both themes
+
+- [ ] **T-03 — Light theme variant:**
+  - Define a full Light theme palette in `theme.ts` — light canvas background, readable node labels, visible dot grid, and legible edge labels on a light surface; do not reuse dark values
+  - The existing Dark theme tokens in `theme.ts` must remain unchanged
+  - Both themes must look visually deliberate and consistent with the ConceptForge aesthetic (see CLAUDE.md Section 12 — Visual Design Intentionality)
+  - Verify that all CLAUDE.md anti-slop rules are honoured in the light palette: no pastel nodes, no generic white-card look, no random gradients
+
+**Commit:** `feat(T-02,T-03): global theme application and light theme palette on canvas`
+
+---
+
 ### Group 5 — UI Verification (Playwright MCP)
 
 Before committing Group 4, run the web design audit and the Playwright visual check:
@@ -620,7 +640,7 @@ Log any visual or interaction issues found as `/feedback` entries before committ
 |---|---|
 | Canvas, custom nodes, edge drawing, visual styling | Claude API calls — that is the AI Agent |
 | `ConceptNode` and `ConceptEdge` state management | JSON save/load, PNG export — that is the Persistence Agent |
-| Dark theme tokens in `src/lib/theme.ts` | Settings panel, API key handling — that is the Settings Agent |
+| Dark and Light theme tokens in `src/lib/theme.ts`; applying active theme to canvas surfaces (T-02, T-03) | Theme selector UI, localStorage persistence, OS default detection (T-01) — that is the Settings Agent |
 
 Do not implement anything outside the Canvas and Visual Design requirement IDs.
 
@@ -659,3 +679,5 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 ---
 
 *Canvas Agent Spec v1.17 — March 2026 (added Group 4l: C-32→C-33 — reconnect disambiguation: hover highlight and selection-gated draggability)*
+
+*Canvas Agent Spec v1.18 — April 2026 (added Group 4p: T-02/T-03 — global theme application and light theme palette; updated Trigger line and Scope Boundaries)*

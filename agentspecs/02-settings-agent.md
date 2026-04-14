@@ -2,7 +2,7 @@
 
 **Agent:** Settings Agent
 **Sequence:** 02 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs K-01 → K-14
+**Trigger:** Human assigns requirement IDs K-01 → K-14 and/or T-01
 **Branch:** `feature/K-01-api-key-settings`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Canvas Agent (01)
@@ -184,9 +184,30 @@ Complete all items below in order. Commit after each group.
 
 ---
 
-### Group 7 — UI Verification (Playwright MCP)
+### Group 7 — Theme Selector (T-01)
 
-Before committing Group 4, start the dev server and use Playwright MCP + Chrome to verify:
+- [ ] Add a "Theme" label and selector control (radio buttons or `<select>`) to `SettingsPanel.tsx`, positioned below the Claude Model selector (K-14) and above the AI Assist toggle (K-05); offer exactly two options: **Dark** and **Light**
+- [ ] Create `src/hooks/use-theme.ts`:
+  ```typescript
+  export const THEME_STORAGE_KEY = 'conceptforge:theme'
+  export type Theme = 'dark' | 'light'
+
+  export function useTheme(): { theme: Theme; setTheme: (t: Theme) => void }
+  ```
+  - On first call (no stored preference), read `window.matchMedia('(prefers-color-scheme: dark)').matches` to derive the default: `'dark'` if true, `'light'` otherwise
+  - Persist the value to `localStorage` under `THEME_STORAGE_KEY` whenever it changes
+  - On page load, restore the stored value if present; use the OS default only when no stored value exists
+  - Return the current theme and a setter — the setter writes to `localStorage` and triggers a re-render
+- [ ] Wire the Settings panel selector to call `setTheme` on change; the selector reflects the current theme value on open
+- [ ] Export `useTheme` so the Canvas Agent and all other components can consume it to apply the active theme palette
+
+**Commit:** `feat(T-01): theme selector in settings with OS-level default and localStorage persistence`
+
+---
+
+### Group 8 — UI Verification (Playwright MCP)
+
+Start the dev server and use Playwright MCP + Chrome to verify:
 
 - [ ] Settings trigger button is visible and clickable
 - [ ] Settings panel opens on trigger click and closes on Save/Cancel
@@ -207,6 +228,11 @@ Before committing Group 4, start the dev server and use Playwright MCP + Chrome 
 - [ ] Claude Model selector is visible in Settings below the API key input and above the AI Assist toggle
 - [ ] Dropdown shows three options: Sonnet 4.6, Opus 4.6, Haiku 4.5
 - [ ] Selecting a model and reloading the page — selection is restored
+- [ ] Theme selector is visible in Settings below the Claude Model selector
+- [ ] Selector shows two options: Dark and Light
+- [ ] Selecting Light switches the app to a light theme; selecting Dark switches back
+- [ ] Selected theme persists across page reloads
+- [ ] On a fresh session with no stored preference, the theme matches the OS `prefers-color-scheme` setting
 - [ ] No errors in browser console
 
 Log any visual or interaction issues found as `/feedback` entries before committing.
@@ -265,3 +291,5 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 ---
 
 *Settings Agent Spec v1.4 — April 2026 (added Group 6: Claude Model selector K-14; modelConfig.ts; applied to all claude.ts API calls)*
+
+*Settings Agent Spec v1.5 — April 2026 (added Group 7: T-01 theme selector; use-theme.ts hook with OS default detection, localStorage persistence; renamed old Group 7 to Group 8)*
