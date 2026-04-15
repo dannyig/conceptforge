@@ -71,9 +71,9 @@
 | ✅ | C-38 | Remap keyboard nudge: Ctrl+Arrow moves the currently selected node or edge by the canvas default nudge increment; plain arrow keys no longer move canvas items |
 | ✅ | C-39 | When the user enters or exits inline label edit mode on a concept node (via double-click, Enter, or F2), the canvas viewport must not zoom or scroll; the current position and zoom level must remain unchanged throughout the edit interaction |
 | ✅ | C-40 | When the user manually draws a new edge between two nodes (including the edge created via drag-to-empty-canvas, C-19), automatically set its label to `?`; the label is not placed in edit mode and remains `?` until the user double-clicks it to change it (C-09); AI-generated edges (from Generate Map, Suggest Concepts, and Expand) are unaffected and always receive the label produced by Claude |
-|  | C-41 | When a connected node is repositioned on the canvas, all edges attached to that node automatically reposition their connection endpoint to the nearest boundary point of the moved node that faces toward the opposite connected node; this applies to source and target endpoints of all edge types (single edges, branching stems, branching branch arrows) |
-|  | C-42 | When a map is loaded from JSON, any edge whose stored handle value is a named cardinal identifier (`"left"`, `"right"`, `"top"`, `"bottom"`, or `null`) must have its connection point recalculated to the optimal floating boundary position relative to the opposite connected node; the recalculation must not produce errors or visible artefacts |
-|  | C-43 | When the cursor is within the connection zone of a concept node (approximately 16px of any side), the static connection handle on that side becomes visible at reduced opacity; the other three handles remain invisible; when the cursor moves to a different side the corresponding handle becomes visible and the previous one returns to invisible; when the cursor leaves the node entirely all handles return to invisible; handles must not become visible during inline label editing |
+| ✅ | C-41 | When a connected node is repositioned on the canvas, all edges attached to that node automatically reposition their connection endpoint to the nearest boundary point of the moved node that faces toward the opposite connected node; this applies to source and target endpoints of all edge types (single edges, branching stems, branching branch arrows) |
+| ✅ | C-42 | When a map is loaded from JSON, any edge whose stored handle value is a named cardinal identifier (`"left"`, `"right"`, `"top"`, `"bottom"`, or `null`) must have its connection point recalculated to the optimal floating boundary position relative to the opposite connected node; the recalculation must not produce errors or visible artefacts |
+| ✅ | C-43 | When the cursor is within the connection zone of a concept node (approximately 16px of any side), the static connection handle on that side becomes visible at reduced opacity; the other three handles remain invisible; when the cursor moves to a different side the corresponding handle becomes visible and the previous one returns to invisible; when the cursor leaves the node entirely all handles return to invisible; handles must not become visible during inline label editing |
 
 ### 4.2 AI — Map Generation
 
@@ -174,7 +174,7 @@
 | ✅ | V-09 | The rubber-band selection rectangle must render as a subtle frame: a thin single-pixel border in the orange accent colour (`#f97316`) at low opacity, with a near-transparent fill of the same colour; no solid background, no drop shadow |
 | ✅ | V-10 | Each selected item (node or note) in a multi-selection must display the same orange border highlight used for single-item selection; when multiple items are selected, all selected items show this highlight simultaneously |
 | ✅ | V-11 | All edge arrowheads — on single concept edges and branching edge branch arrows — must render at a uniform size equal to the selected-state arrowhead size; arrowhead colour is unaffected by this change |
-|  | V-12 | While the "Thinking" indicator is visible (the AI processing state defined by A-04), animate its border with a continuously traveling blue gradient — a conic or linear gradient that sweeps around the border perimeter in a loop; the animation runs for the entire duration the indicator is visible and stops when the indicator is dismissed |
+| ✅ | V-12 | While the "Thinking" indicator is visible (the AI processing state defined by A-04), animate its border with a continuously traveling blue gradient — a conic or linear gradient that sweeps around the border perimeter in a loop; the animation runs for the entire duration the indicator is visible and stops when the indicator is dismissed |
 
 ### 4.8 Focus Question
 
@@ -271,9 +271,9 @@
 
 | Status | ID | Requirement |
 |---|---|---|
-|  | T-01 | Add a "Theme" selector to the Settings panel; offer two options: **Dark** and **Light**; persist the selected value to `localStorage` under a namespaced key; on first page load (no stored preference), default to the OS-level `prefers-color-scheme` setting — Dark if `prefers-color-scheme: dark`, Light otherwise |
-|  | T-02 | Apply the active theme globally across all app surfaces — canvas background, dot grid, nodes, edges, panels, toolbar, settings drawer, focus question bar, hint ticker, context menus, and any other visible UI element; all colour values for both themes must be defined in `src/lib/theme.ts`; the orange accent (`#f97316`) is preserved in both themes |
-|  | T-03 | Implement a Light theme variant that provides a clean, readable light-background alternative to the existing Dark theme; the existing Dark theme colour values remain unchanged; both themes must be visually intentional and consistent with the ConceptForge aesthetic |
+| ✅ | T-01 | Add a "Theme" selector to the Settings panel; offer two options: **Dark** and **Light**; persist the selected value to `localStorage` under a namespaced key; on first page load (no stored preference), default to the OS-level `prefers-color-scheme` setting — Dark if `prefers-color-scheme: dark`, Light otherwise |
+| ✅ | T-02 | Apply the active theme globally across all app surfaces — canvas background, dot grid, nodes, edges, panels, toolbar, settings drawer, focus question bar, hint ticker, context menus, and any other visible UI element; all colour values for both themes must be defined in `src/lib/theme.ts`; the orange accent (`#f97316`) is preserved in both themes |
+| ✅ | T-03 | Implement a Light theme variant that provides a clean, readable light-background alternative to the existing Dark theme; the existing Dark theme colour values remain unchanged; both themes must be visually intentional and consistent with the ConceptForge aesthetic |
 
 ---
 
