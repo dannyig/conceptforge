@@ -5,7 +5,7 @@ import type { ThemeTokens } from '@/lib/theme'
 import { FONT_FAMILY, FONT_SIZE_BASE, FONT_SIZE_SMALL, TRANSITION_FAST } from '@/lib/theme'
 
 // Renders inline spans: **bold**, *italic*, `code`
-function renderInline(text: string, baseKey: string): React.ReactNode[] {
+function renderInline(text: string, baseKey: string, tokens: ThemeTokens): React.ReactNode[] {
   const result: React.ReactNode[] = []
   const pattern = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g
   let last = 0
@@ -21,7 +21,7 @@ function renderInline(text: string, baseKey: string): React.ReactNode[] {
           key={`${baseKey}-ic-${idx}`}
           style={{
             fontFamily: FONT_FAMILY,
-            background: '#1c2128',
+            background: tokens.COLOR_CODE_BG,
             padding: '1px 4px',
             borderRadius: 3,
             fontSize: '0.9em',
@@ -64,7 +64,7 @@ function renderMarkdown(text: string, tokens: ThemeTokens): React.ReactNode[] {
 
   const codeBlockStyle: React.CSSProperties = {
     display: 'block',
-    background: '#1c2128',
+    background: tokens.COLOR_CODE_BG,
     border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
     borderRadius: 6,
     padding: '12px 14px',
@@ -125,7 +125,7 @@ function renderMarkdown(text: string, tokens: ThemeTokens): React.ReactNode[] {
         if (combined) {
           result.push(
             <p key={key++} style={pStyle}>
-              {renderInline(combined, `p-${key}`)}
+              {renderInline(combined, `p-${key}`, tokens)}
             </p>
           )
         }
@@ -136,7 +136,7 @@ function renderMarkdown(text: string, tokens: ThemeTokens): React.ReactNode[] {
           <ul key={key++} style={{ margin: '6px 0', paddingLeft: 22 }}>
             {items.map((item, j) => (
               <li key={j} style={liStyle}>
-                {renderInline(item, `ul-${key}-${j}`)}
+                {renderInline(item, `ul-${key}-${j}`, tokens)}
               </li>
             ))}
           </ul>
@@ -148,7 +148,7 @@ function renderMarkdown(text: string, tokens: ThemeTokens): React.ReactNode[] {
           <ol key={key++} style={{ margin: '6px 0', paddingLeft: 22 }}>
             {items.map((item, j) => (
               <li key={j} style={liStyle}>
-                {renderInline(item, `ol-${key}-${j}`)}
+                {renderInline(item, `ol-${key}-${j}`, tokens)}
               </li>
             ))}
           </ol>
@@ -189,7 +189,7 @@ function renderMarkdown(text: string, tokens: ThemeTokens): React.ReactNode[] {
                     <tr key={i}>
                       {row.map((cell, j) => (
                         <th key={j} style={thStyle}>
-                          {renderInline(cell, `th-${key}-${i}-${j}`)}
+                          {renderInline(cell, `th-${key}-${i}-${j}`, tokens)}
                         </th>
                       ))}
                     </tr>
@@ -201,7 +201,7 @@ function renderMarkdown(text: string, tokens: ThemeTokens): React.ReactNode[] {
                   <tr key={i}>
                     {row.map((cell, j) => (
                       <td key={j} style={tdStyle}>
-                        {renderInline(cell, `td-${key}-${i}-${j}`)}
+                        {renderInline(cell, `td-${key}-${i}-${j}`, tokens)}
                       </td>
                     ))}
                   </tr>
@@ -237,7 +237,7 @@ function renderMarkdown(text: string, tokens: ThemeTokens): React.ReactNode[] {
               fontWeight: 600,
             }}
           >
-            {renderInline(h3[1], `h3-${key}`)}
+            {renderInline(h3[1], `h3-${key}`, tokens)}
           </h3>
         )
         continue
@@ -256,7 +256,7 @@ function renderMarkdown(text: string, tokens: ThemeTokens): React.ReactNode[] {
               fontWeight: 600,
             }}
           >
-            {renderInline(h2[1], `h2-${key}`)}
+            {renderInline(h2[1], `h2-${key}`, tokens)}
           </h2>
         )
         continue
@@ -275,7 +275,7 @@ function renderMarkdown(text: string, tokens: ThemeTokens): React.ReactNode[] {
               fontWeight: 700,
             }}
           >
-            {renderInline(h1[1], `h1-${key}`)}
+            {renderInline(h1[1], `h1-${key}`, tokens)}
           </h1>
         )
         continue
@@ -373,7 +373,7 @@ export function ChatReadingPanel({
       }}
     >
       <style>{`
-        .cf-reading-dismiss:hover { background-color: #21262d !important; }
+        .cf-reading-dismiss:hover { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; }
         .cf-reading-dismiss:focus-visible { outline: 2px solid ${tokens.COLOR_NODE_SELECTED}; outline-offset: 2px; }
       `}</style>
 
@@ -381,7 +381,7 @@ export function ChatReadingPanel({
         style={{
           width: '70vw',
           height: '70vh',
-          backgroundColor: '#161b22',
+          backgroundColor: tokens.COLOR_PANEL_BG,
           border: `1px solid ${tokens.COLOR_SUMMARY_BORDER}`,
           borderRadius: 10,
           display: 'flex',

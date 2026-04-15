@@ -137,10 +137,10 @@ export function SuggestionSelectPanel({
       }}
     >
       <style>{`
-        .cf-sugg-dismiss:hover { background-color: #21262d !important; }
+        .cf-sugg-dismiss:hover { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; }
         .cf-sugg-dismiss:focus-visible { outline: 2px solid ${tokens.COLOR_NODE_SELECTED}; outline-offset: 2px; }
-        .cf-sugg-item:hover { background: #21262d !important; }
-        .cf-sugg-apply:not(:disabled):hover { background: #f97316 !important; color: #fff !important; }
+        .cf-sugg-item:hover { background: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; }
+        .cf-sugg-apply:not(:disabled):hover { background: ${tokens.COLOR_BUTTON_PRIMARY_HOVER_BG} !important; color: ${tokens.COLOR_BUTTON_PRIMARY_TEXT} !important; }
         .cf-sugg-apply:focus-visible { outline: 2px solid ${tokens.COLOR_NODE_SELECTED}; outline-offset: 2px; }
       `}</style>
 
@@ -148,7 +148,7 @@ export function SuggestionSelectPanel({
         style={{
           width: '70vw',
           height: '70vh',
-          backgroundColor: '#161b22',
+          backgroundColor: tokens.COLOR_PANEL_BG,
           border: `1px solid ${tokens.COLOR_SUMMARY_BORDER}`,
           borderRadius: 10,
           display: 'flex',
@@ -214,7 +214,7 @@ export function SuggestionSelectPanel({
                 fontFamily: FONT_FAMILY,
                 fontSize: FONT_SIZE_SMALL,
                 color: tokens.COLOR_TEXT_MUTED,
-                background: '#1c2128',
+                background: tokens.COLOR_CODE_BG,
                 border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
                 borderRadius: 6,
                 padding: '8px 12px',
@@ -327,7 +327,8 @@ export function SuggestionSelectPanel({
               transition: `background ${TRANSITION_FAST}`,
             }}
             onMouseEnter={(e): void => {
-              ;(e.currentTarget as HTMLButtonElement).style.background = '#21262d'
+              ;(e.currentTarget as HTMLButtonElement).style.background =
+                tokens.COLOR_BUTTON_GHOST_HOVER_BG
             }}
             onMouseLeave={(e): void => {
               ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
