@@ -139,11 +139,11 @@ export function ChatPanel({
       }}
     >
       <style>{`
-        .cf-chat-dismiss:hover { background-color: #21262d !important; }
+        .cf-chat-dismiss:hover { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; }
         .cf-chat-dismiss:focus-visible { outline: 2px solid ${tokens.COLOR_SUMMARY_LINK}; outline-offset: 2px; }
-        .cf-chat-send:hover:not(:disabled) { background-color: #ea6c0a !important; }
+        .cf-chat-send:hover:not(:disabled) { background-color: ${tokens.COLOR_BUTTON_PRIMARY_HOVER_BG} !important; }
         .cf-chat-send:focus-visible { outline: 2px solid ${tokens.COLOR_SUMMARY_LINK}; outline-offset: 2px; }
-        .cf-chat-read:hover { background-color: #21262d !important; }
+        .cf-chat-read:hover { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; }
         .cf-chat-read:focus-visible { outline: 2px solid ${tokens.COLOR_SUMMARY_LINK}; outline-offset: 2px; }
       `}</style>
 
@@ -257,7 +257,7 @@ export function ChatPanel({
             >
               <div
                 style={{
-                  backgroundColor: '#1c2128',
+                  backgroundColor: tokens.COLOR_CODE_BG,
                   border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
                   borderRadius: 6,
                   padding: '6px 10px',
@@ -415,7 +415,7 @@ export function ChatPanel({
             fontFamily: FONT_FAMILY,
             fontSize: FONT_SIZE_SMALL,
             fontWeight: 600,
-            color: '#0d1117',
+            color: tokens.COLOR_BUTTON_PRIMARY_TEXT,
             cursor: aiDisabled ? 'not-allowed' : 'pointer',
             opacity: aiDisabled ? 0.4 : 1,
             transition: `background-color ${TRANSITION_FAST}, opacity ${TRANSITION_FAST}`,

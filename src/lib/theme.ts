@@ -60,6 +60,8 @@ export interface ThemeTokens {
   COLOR_TICKER_BORDER: string
   COLOR_TICKER_TEXT: string
   COLOR_TICKER_RESTORE_BG: string
+  // Code blocks & secondary surfaces (AI bubbles, pre blocks)
+  COLOR_CODE_BG: string
   // Notes
   NOTE_COLORS: readonly string[]
   NOTE_DEFAULT_COLOR: string
@@ -108,6 +110,7 @@ export const DARK_TOKENS: ThemeTokens = {
   COLOR_TICKER_BORDER: '#21262d',
   COLOR_TICKER_TEXT: '#6e7681',
   COLOR_TICKER_RESTORE_BG: 'rgba(22,27,34,0.9)',
+  COLOR_CODE_BG: '#1c2128',
   NOTE_COLORS: [
     '#1e3a5f', // dark blue (default)
     '#166534', // dark green
@@ -167,6 +170,7 @@ export const LIGHT_TOKENS: ThemeTokens = {
   COLOR_TICKER_BORDER: '#c8cdd5',
   COLOR_TICKER_TEXT: '#57606a',
   COLOR_TICKER_RESTORE_BG: 'rgba(240,242,245,0.95)',
+  COLOR_CODE_BG: '#eaecef',
   NOTE_COLORS: [
     '#1e3a5f', // dark blue (default)
     '#166534', // dark green
@@ -231,6 +235,7 @@ export const COLOR_TICKER_BG = DARK_TOKENS.COLOR_TICKER_BG
 export const COLOR_TICKER_BORDER = DARK_TOKENS.COLOR_TICKER_BORDER
 export const COLOR_TICKER_TEXT = DARK_TOKENS.COLOR_TICKER_TEXT
 export const COLOR_TICKER_RESTORE_BG = DARK_TOKENS.COLOR_TICKER_RESTORE_BG
+export const COLOR_CODE_BG = DARK_TOKENS.COLOR_CODE_BG
 export const NOTE_COLORS: readonly string[] = DARK_TOKENS.NOTE_COLORS
 export const NOTE_DEFAULT_COLOR = DARK_TOKENS.NOTE_DEFAULT_COLOR
 
