@@ -10,9 +10,11 @@ import {
 } from '@xyflow/react'
 import { useTheme } from '@/hooks/use-theme'
 import {
+  COLOR_NODE_BORDER_HIGH_CONTRAST,
   FONT_FAMILY,
   FONT_SIZE_NODE_LABEL,
   FONT_WEIGHT_NODE_LABEL,
+  NODE_HIGH_CONTRAST_SHADOW,
   TRANSITION_NORMAL,
 } from '@/lib/theme'
 
@@ -37,7 +39,7 @@ const SIDES = [
 ] as const
 
 export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>): React.JSX.Element {
-  const { tokens } = useTheme()
+  const { tokens, theme, highContrastNodes } = useTheme()
   const { setNodes } = useReactFlow()
   const { zoom } = useViewport()
   // Scale handle hit area inversely with zoom so it stays ~10px on screen at any zoom level.
@@ -94,13 +96,22 @@ export function ConceptNode({ id, data, selected }: NodeProps<ConceptFlowNode>):
     }
   }, [])
 
+  // V-13: high contrast applies only in dark theme and only to the default (unselected) state
+  const highContrast = highContrastNodes && theme === 'dark'
+
   const borderColor = selected
     ? tokens.COLOR_NODE_SELECTED
     : hovered
       ? `${tokens.COLOR_NODE_SELECTED}99`
-      : tokens.COLOR_NODE_BORDER
+      : highContrast
+        ? COLOR_NODE_BORDER_HIGH_CONTRAST
+        : tokens.COLOR_NODE_BORDER
 
-  const boxShadow = selected ? `0 0 0 3px ${tokens.COLOR_NODE_GLOW}` : 'none'
+  const boxShadow = selected
+    ? `0 0 0 3px ${tokens.COLOR_NODE_GLOW}`
+    : highContrast
+      ? NODE_HIGH_CONTRAST_SHADOW
+      : 'none'
 
   // C-43: determine which side the cursor is closest to and within the proximity zone.
   // Returns null when the cursor is too far from all sides (i.e. in the node interior).
