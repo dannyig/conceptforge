@@ -47,7 +47,7 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JSX.Element {
-  const { theme, setTheme, tokens } = useTheme()
+  const { theme, setTheme, tokens, highContrastNodes, setHighContrastNodes } = useTheme()
   const [draft, setDraft] = useState('')
   const [status, setStatus] = useState<KeyStatus>(() => (getApiKey() ? 'saved' : 'empty'))
   const [errorMsg, setErrorMsg] = useState('')
@@ -494,6 +494,62 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
               Light
             </button>
           </div>
+
+          {/* K-15: High contrast nodes toggle — dark theme only */}
+          {theme === 'dark' && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: FONT_SIZE_SMALL,
+                  color: tokens.COLOR_NODE_TEXT,
+                  lineHeight: 1.5,
+                }}
+              >
+                High contrast nodes
+              </span>
+              <button
+                role="switch"
+                aria-checked={highContrastNodes}
+                aria-label="Toggle high contrast nodes"
+                onClick={(): void => setHighContrastNodes(!highContrastNodes)}
+                style={{
+                  flexShrink: 0,
+                  position: 'relative',
+                  width: 40,
+                  height: 22,
+                  borderRadius: 11,
+                  border: 'none',
+                  backgroundColor: highContrastNodes
+                    ? tokens.COLOR_NODE_SELECTED
+                    : tokens.COLOR_INPUT_BORDER,
+                  cursor: 'pointer',
+                  transition: `background-color ${TRANSITION_NORMAL}`,
+                  padding: 0,
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    top: 3,
+                    left: highContrastNodes ? 21 : 3,
+                    width: 16,
+                    height: 16,
+                    borderRadius: '50%',
+                    backgroundColor: '#ffffff',
+                    transition: `left ${TRANSITION_NORMAL}`,
+                  }}
+                />
+              </button>
+            </div>
+          )}
 
           {/* Divider */}
           <div style={{ height: 1, backgroundColor: tokens.COLOR_NODE_BORDER }} />

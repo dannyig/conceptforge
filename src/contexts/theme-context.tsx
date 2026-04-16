@@ -1,11 +1,14 @@
 import React, { createContext, useCallback, useMemo, useState } from 'react'
 import { type Theme, type ThemeTokens, getThemeTokens } from '@/lib/theme'
 import { THEME_STORAGE_KEY, getOsThemePreference } from '@/hooks/use-theme'
+import { getHighContrast, setHighContrast } from '@/lib/contrastConfig'
 
 export interface ThemeContextValue {
   theme: Theme
   setTheme: (t: Theme) => void
   tokens: ThemeTokens
+  highContrastNodes: boolean
+  setHighContrastNodes: (value: boolean) => void
 }
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null)
@@ -26,6 +29,7 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ children }: ThemeProviderProps): React.JSX.Element {
   const [theme, setThemeState] = useState<Theme>(readStoredTheme)
+  const [highContrastNodes, setHighContrastState] = useState<boolean>(getHighContrast)
 
   const setTheme = useCallback((t: Theme): void => {
     setThemeState(t)
@@ -36,11 +40,16 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.JSX.Eleme
     }
   }, [])
 
+  const setHighContrastNodes = useCallback((value: boolean): void => {
+    setHighContrastState(value)
+    setHighContrast(value)
+  }, [])
+
   const tokens = useMemo(() => getThemeTokens(theme), [theme])
 
   const value = useMemo(
-    (): ThemeContextValue => ({ theme, setTheme, tokens }),
-    [theme, setTheme, tokens]
+    (): ThemeContextValue => ({ theme, setTheme, tokens, highContrastNodes, setHighContrastNodes }),
+    [theme, setTheme, tokens, highContrastNodes, setHighContrastNodes]
   )
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

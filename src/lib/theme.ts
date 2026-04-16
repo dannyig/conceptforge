@@ -276,6 +276,10 @@ export const FIT_VIEW_DURATION_MS = 400
 // V-12: Thinking/Expanding indicator animated gradient border
 export const THINKING_BORDER_DURATION_MS = 2000
 
+// V-13: High contrast node style (dark theme only — K-15)
+export const COLOR_NODE_BORDER_HIGH_CONTRAST = '#6b7280'
+export const NODE_HIGH_CONTRAST_SHADOW = '0 2px 8px rgba(0,0,0,0.6)'
+
 // Summary Panel (A-16 → A-22)
 export const SUMMARY_PANEL_WIDTH = 300
 export const TYPEWRITER_CHAR_DELAY_MS = 18
