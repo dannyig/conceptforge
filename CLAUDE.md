@@ -467,6 +467,7 @@ Agents do not modify code outside their defined scope without explicit instructi
 | **QA Agent** | Vitest unit tests and Playwright E2E tests after each feature agent | `agentspecs/05-qa-agent.md` | All |
 | **Improvement Agent** | Processes feedback, updates CLAUDE.md/agentspecs/tooling, records ADRs — triggered by `/improve` | `agentspecs/06-improvement-agent.md` | — |
 | **Requirements Agent** | Discovers and formalises requirements via Q&A; updates requirements.md/.html and downstream docs — triggered by `/requirements`; runs before any implementation agent | `agentspecs/07-requirements-agent.md` | — |
+| **Voice Agent** | Voice Chat panel, Web Speech API STT loop, TTS service (ElevenLabs + speechSynthesis fallback), voice icon in Chat panel header | `agentspecs/08-voice-agent.md` | VC-01 → VC-07 |
 
 **Scope rules:**
 - Each agent reads this file, their requirement IDs in `requirements/requirements.md`, and `src/types/index.ts` before writing a single line of code
