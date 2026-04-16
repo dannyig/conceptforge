@@ -32,6 +32,7 @@ ConceptForge is developed exclusively by AI agents using Claude Code. No human w
 | **QA Agent** | Vitest unit tests, Playwright E2E tests across all features | All |
 | **Improvement Agent** | Processes feedback, updates CLAUDE.md/agentspecs/tooling, records ADRs, updates LESSONS.md | — |
 | **Requirements Agent** | Discovers and formalises requirements through Q&A with the human; updates requirements.md/.html, agentspecs, and devmethod | — |
+| **Voice Agent** | Voice Chat panel, Web Speech API STT loop, TTS service (ElevenLabs + speechSynthesis fallback), voice icon in Chat panel header | VC-01 → VC-07 |
 
 Each agent is self-contained. Agents coordinate through shared TypeScript types and CLAUDE.md — not through direct communication.
 
@@ -131,7 +132,8 @@ conceptforge/
 │   ├── 04-persistence-agent.md
 │   ├── 05-qa-agent.md
 │   ├── 06-improvement-agent.md
-│   └── 07-requirements-agent.md
+│   ├── 07-requirements-agent.md
+│   └── 08-voice-agent.md
 ├── decisions/                 # Architecture Decision Records (ADRs)
 ├── devmethod/                 # this folder — development strategy docs
 ├── feedback/                  # open feedback entries from agents and humans
@@ -300,7 +302,9 @@ Agents are tasked in this order to manage dependencies:
 4. AI Agent           → map generation + expansion (depends on: canvas + settings)
 5. Persistence Agent  → save/load/export (depends on: canvas) [parallel with AI Agent]
                          run /improve before proceeding
-6. QA Agent           → tests across all features (depends on: all above)
+6. Voice Agent        → voice chat panel + TTS (depends on: AI Agent — Chat panel must exist)
+                         run /improve before proceeding
+7. QA Agent           → tests across all features (depends on: all above)
                          run /improve after QA completes
 
 Improvement Agent runs between each stage — not as a sequential step,

@@ -2,7 +2,7 @@
 
 **Agent:** Settings Agent
 **Sequence:** 02 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs K-01 → K-15 and/or T-01
+**Trigger:** Human assigns requirement IDs K-01 → K-16 and/or T-01
 **Branch:** `feature/K-01-api-key-settings`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Canvas Agent (01)
@@ -230,7 +230,27 @@ Complete all items below in order. Commit after each group.
 
 ---
 
-### Group 9 — UI Verification (Playwright MCP)
+### Group 9 — ElevenLabs API Key (K-16)
+
+- [ ] Add an "ElevenLabs API Key" label and `<input type="password">` to `SettingsPanel.tsx`, positioned below the High contrast nodes toggle (K-15)
+- [ ] Include a "Clear" button that removes the stored key and resets the input to empty
+- [ ] Create or extend `src/lib/elevenlabsConfig.ts`:
+  ```typescript
+  export const ELEVENLABS_KEY_STORAGE_KEY = 'conceptforge:elevenlabs-api-key'
+  export function getElevenLabsKey(): string | null
+  export function setElevenLabsKey(key: string): void
+  export function clearElevenLabsKey(): void
+  ```
+- [ ] `getElevenLabsKey`: reads from `localStorage`; returns `null` if no entry is present
+- [ ] `setElevenLabsKey` / `clearElevenLabsKey`: write/remove from `localStorage`
+- [ ] The key is optional — no validation required beyond non-empty string; never logged or exposed
+- [ ] Show current key status: `Key saved` (masked) or `No key stored`
+
+**Commit:** `feat(K-16): ElevenLabs API key input in settings with localStorage persistence`
+
+---
+
+### Group 10 — UI Verification (Playwright MCP)
 
 Start the dev server and use Playwright MCP + Chrome to verify:
 
@@ -262,6 +282,8 @@ Start the dev server and use Playwright MCP + Chrome to verify:
 - [ ] Toggle defaults to off; toggling it on immediately applies the visual changes to all concept nodes on canvas (no panel close required)
 - [ ] High contrast state persists across page reloads
 - [ ] Toggle is hidden or disabled when the Light theme is active
+- [ ] ElevenLabs API key input is visible in Settings below the High contrast nodes toggle
+- [ ] Entering a key shows `Key saved` status; Clear button removes it and shows `No key stored`
 - [ ] No errors in browser console
 
 Log any visual or interaction issues found as `/feedback` entries before committing.
@@ -324,3 +346,5 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 *Settings Agent Spec v1.5 — April 2026 (added Group 7: T-01 theme selector; use-theme.ts hook with OS default detection, localStorage persistence; renamed old Group 7 to Group 8)*
 
 *Settings Agent Spec v1.6 — April 2026 (added Group 8: K-15 high contrast nodes toggle; contrastConfig.ts; live preview; dark-theme-only; renamed old Group 8 to Group 9)*
+
+*Settings Agent Spec v1.7 — April 2026 (added Group 9: K-16 ElevenLabs API key input; elevenlabsConfig.ts; optional, no validation; renamed old Group 9 to Group 10)*

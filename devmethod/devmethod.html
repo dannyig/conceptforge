@@ -115,6 +115,7 @@
         <tr><td><span class="agent-name">QA Agent</span></td><td>Vitest unit tests, Playwright E2E tests across all features</td><td><span class="req-range">All</span></td></tr>
         <tr style="background:#1a1208"><td><span class="agent-name">Improvement Agent</span> <span class="new-badge">NEW</span></td><td>Processes feedback, updates CLAUDE.md/agentspecs/tooling, records ADRs, updates LESSONS.md</td><td><span class="req-range">—</span></td></tr>
         <tr style="background:#1a1208"><td><span class="agent-name">Requirements Agent</span> <span class="new-badge">NEW</span></td><td>Discovers and formalises requirements through Q&amp;A with the human; updates requirements.md/.html, agentspecs, and devmethod</td><td><span class="req-range">—</span></td></tr>
+        <tr style="background:#1a1208"><td><span class="agent-name">Voice Agent</span> <span class="new-badge">NEW</span></td><td>Voice Chat panel, Web Speech API STT loop, TTS service (ElevenLabs + speechSynthesis fallback), voice icon in Chat panel header</td><td><span class="req-range">VC-01 → VC-07</span></td></tr>
       </tbody>
     </table>
     <p>Each agent is self-contained. Agents coordinate through shared TypeScript types and CLAUDE.md — not through direct communication.</p>
@@ -402,6 +403,15 @@ export interface ExpandNodeRequest {
       <li>
         <div class="seq-num">6</div>
         <div>
+          <div class="seq-agent">Voice Agent <span class="new-badge">NEW</span></div>
+          <div>Voice Chat panel + TTS service (Web Speech API + ElevenLabs fallback)</div>
+          <div class="seq-dep">Depends on: AI Agent (Chat panel must exist)</div>
+          <div class="seq-improve">→ run /improve before proceeding</div>
+        </div>
+      </li>
+      <li>
+        <div class="seq-num">7</div>
+        <div>
           <div class="seq-agent">QA Agent</div>
           <div>Vitest unit tests + Playwright E2E across all features</div>
           <div class="seq-dep">Depends on: all agents above</div>
@@ -466,6 +476,7 @@ export interface ExpandNodeRequest {
         <tr><td>LESSONS.md</td><td>Dated log of improvements and patterns identified</td></tr>
         <tr><td>agentspecs/06-improvement-agent.md</td><td>Improvement Agent full task spec</td></tr>
         <tr><td>agentspecs/07-requirements-agent.md</td><td>Requirements Agent full task spec</td></tr>
+        <tr><td>agentspecs/08-voice-agent.md</td><td>Voice Agent full task spec</td></tr>
         <tr><td>.claude/commands/improve.md</td><td><code>/improve</code> slash command</td></tr>
         <tr><td>.claude/commands/feedback.md</td><td><code>/feedback</code> slash command</td></tr>
         <tr><td>.claude/commands/requirements.md</td><td><code>/requirements</code> slash command</td></tr>
