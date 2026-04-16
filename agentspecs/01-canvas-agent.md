@@ -2,7 +2,7 @@
 
 **Agent:** Canvas Agent
 **Sequence:** 01 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs C-01 → C-43, V-01 → V-10, G-01 → G-12, B-01 → B-02, H-01 → H-06, and/or T-02 → T-03
+**Trigger:** Human assigns requirement IDs C-01 → C-43, V-01 → V-13, G-01 → G-12, B-01 → B-02, H-01 → H-06, and/or T-02 → T-03
 **Branch:** `feature/C-01-react-flow-canvas`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Settings Agent (02)
@@ -596,6 +596,28 @@ interface MapData {
 
 ---
 
+### Group 4q — High Contrast Node Rendering (V-13)
+
+> **Dependency:** The Settings Agent must have implemented K-15 (high contrast nodes toggle + hook) before this group can begin. Confirm the hook is available before starting.
+
+- [ ] **V-13 — High contrast concept node style:**
+  - Add two new named constants to `src/lib/theme.ts`:
+    ```ts
+    export const COLOR_NODE_BORDER_HIGH_CONTRAST = '#6b7280'  // or similar brighter value — lighter than COLOR_NODE_BORDER
+    export const NODE_HIGH_CONTRAST_SHADOW = '0 2px 8px rgba(0,0,0,0.6)'  // subtle drop shadow
+    ```
+  - In `ConceptNode.tsx`, read the high contrast setting from the hook provided by the Settings Agent (e.g. `useHighContrast()` or equivalent)
+  - When high contrast is enabled **and** the active theme is Dark, apply to the node's default (unselected) style:
+    - Border colour: `COLOR_NODE_BORDER_HIGH_CONTRAST` (replaces `COLOR_NODE_BORDER`)
+    - Box shadow: `NODE_HIGH_CONTRAST_SHADOW` (in addition to the existing selected-state glow, which is unchanged)
+  - When high contrast is disabled or the Light theme is active, render with the standard `COLOR_NODE_BORDER` and no additional shadow
+  - The selected-state style (orange border + `COLOR_NODE_GLOW` glow) must remain fully unchanged regardless of this setting
+  - `NoteNode.tsx` and `BranchHubNode.tsx` must not receive any style changes from this setting
+
+**Commit:** `feat(V-13): high contrast node rendering — brighter border and drop shadow when enabled in dark theme`
+
+---
+
 ### Group 5 — UI Verification (Playwright MCP)
 
 Before committing Group 4, run the web design audit and the Playwright visual check:
@@ -681,3 +703,5 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 *Canvas Agent Spec v1.17 — March 2026 (added Group 4l: C-32→C-33 — reconnect disambiguation: hover highlight and selection-gated draggability)*
 
 *Canvas Agent Spec v1.18 — April 2026 (added Group 4p: T-02/T-03 — global theme application and light theme palette; updated Trigger line and Scope Boundaries)*
+
+*Canvas Agent Spec v1.19 — April 2026 (added Group 4q: V-13 — high contrast node rendering: brighter border and drop shadow when K-15 enabled in dark theme; theme.ts constants; notes and hub nodes unaffected; updated Trigger line to V-01 → V-13)*
