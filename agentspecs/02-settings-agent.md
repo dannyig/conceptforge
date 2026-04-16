@@ -2,7 +2,7 @@
 
 **Agent:** Settings Agent
 **Sequence:** 02 — runs after Scaffolder completes
-**Trigger:** Human assigns requirement IDs K-01 → K-14 and/or T-01
+**Trigger:** Human assigns requirement IDs K-01 → K-15 and/or T-01
 **Branch:** `feature/K-01-api-key-settings`
 **Depends on:** `chore/scaffold-project-setup` merged to main
 **Parallel with:** Canvas Agent (01)
@@ -205,7 +205,32 @@ Complete all items below in order. Commit after each group.
 
 ---
 
-### Group 8 — UI Verification (Playwright MCP)
+### Group 8 — High Contrast Nodes Toggle (K-15)
+
+- [ ] Add a "High contrast nodes" toggle to `SettingsPanel.tsx`, positioned below the Theme selector (T-01) and above the AI Assist toggle (K-05):
+  - Label: "High contrast nodes"
+  - Default state: off (no `localStorage` entry present)
+  - The toggle is only shown when the active theme is Dark; hide or disable it when the Light theme is active (K-15 applies to dark theme only)
+- [ ] Create or extend `src/lib/contrastConfig.ts`:
+  ```typescript
+  export const HIGH_CONTRAST_KEY = 'conceptforge:high-contrast-nodes'
+  export function getHighContrast(): boolean
+  export function setHighContrast(value: boolean): void
+  ```
+  - `getHighContrast`: reads from `localStorage`; returns `false` if no entry is present
+  - `setHighContrast`: writes the boolean to `localStorage` under `HIGH_CONTRAST_KEY`
+- [ ] Expose the high contrast state via a hook (extend `useTheme` or create `useHighContrast`):
+  ```typescript
+  highContrastNodes: boolean
+  setHighContrastNodes: (value: boolean) => void
+  ```
+- [ ] Toggling the control must update `localStorage` and trigger a re-render immediately — no Settings panel close required (live preview)
+
+**Commit:** `feat(K-15): high contrast nodes toggle in settings with localStorage persistence and live preview`
+
+---
+
+### Group 9 — UI Verification (Playwright MCP)
 
 Start the dev server and use Playwright MCP + Chrome to verify:
 
@@ -233,6 +258,10 @@ Start the dev server and use Playwright MCP + Chrome to verify:
 - [ ] Selecting Light switches the app to a light theme; selecting Dark switches back
 - [ ] Selected theme persists across page reloads
 - [ ] On a fresh session with no stored preference, the theme matches the OS `prefers-color-scheme` setting
+- [ ] High contrast nodes toggle is visible in Settings below the Theme selector
+- [ ] Toggle defaults to off; toggling it on immediately applies the visual changes to all concept nodes on canvas (no panel close required)
+- [ ] High contrast state persists across page reloads
+- [ ] Toggle is hidden or disabled when the Light theme is active
 - [ ] No errors in browser console
 
 Log any visual or interaction issues found as `/feedback` entries before committing.
@@ -293,3 +322,5 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 *Settings Agent Spec v1.4 — April 2026 (added Group 6: Claude Model selector K-14; modelConfig.ts; applied to all claude.ts API calls)*
 
 *Settings Agent Spec v1.5 — April 2026 (added Group 7: T-01 theme selector; use-theme.ts hook with OS default detection, localStorage persistence; renamed old Group 7 to Group 8)*
+
+*Settings Agent Spec v1.6 — April 2026 (added Group 8: K-15 high contrast nodes toggle; contrastConfig.ts; live preview; dark-theme-only; renamed old Group 8 to Group 9)*
