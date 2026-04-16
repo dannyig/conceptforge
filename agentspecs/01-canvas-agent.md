@@ -601,20 +601,24 @@ interface MapData {
 > **Dependency:** The Settings Agent must have implemented K-15 (high contrast nodes toggle + hook) before this group can begin. Confirm the hook is available before starting.
 
 - [ ] **V-13 — High contrast concept node style:**
-  - Add two new named constants to `src/lib/theme.ts`:
+  - Add per-theme named constants to `src/lib/theme.ts` for both dark and light themes (exact values at implementer's discretion — must improve contrast against each theme's canvas background):
     ```ts
-    export const COLOR_NODE_BORDER_HIGH_CONTRAST = '#6b7280'  // or similar brighter value — lighter than COLOR_NODE_BORDER
-    export const NODE_HIGH_CONTRAST_SHADOW = '0 2px 8px rgba(0,0,0,0.6)'  // subtle drop shadow
+    // Dark theme
+    export const COLOR_NODE_BORDER_HIGH_CONTRAST = '#6b7280'
+    export const NODE_HIGH_CONTRAST_SHADOW = '0 2px 8px rgba(0,0,0,0.6)'
+    // Light theme
+    export const COLOR_NODE_BORDER_HIGH_CONTRAST_LIGHT = '<appropriate darker value>'
+    export const NODE_HIGH_CONTRAST_SHADOW_LIGHT = '<appropriate shadow for light bg>'
     ```
-  - In `ConceptNode.tsx`, read the high contrast setting from the hook provided by the Settings Agent (e.g. `useHighContrast()` or equivalent)
-  - When high contrast is enabled **and** the active theme is Dark, apply to the node's default (unselected) style:
-    - Border colour: `COLOR_NODE_BORDER_HIGH_CONTRAST` (replaces `COLOR_NODE_BORDER`)
-    - Box shadow: `NODE_HIGH_CONTRAST_SHADOW` (in addition to the existing selected-state glow, which is unchanged)
-  - When high contrast is disabled or the Light theme is active, render with the standard `COLOR_NODE_BORDER` and no additional shadow
+  - In `ConceptNode.tsx`, read the high contrast setting from the hook provided by the Settings Agent (e.g. `highContrastNodes` from `useTheme()`)
+  - When high contrast is enabled, apply to the node's default (unselected) style for the active theme:
+    - Border colour: theme-appropriate high contrast border constant (replaces `COLOR_NODE_BORDER`)
+    - Box shadow: theme-appropriate high contrast shadow constant
+  - When high contrast is disabled, render with the standard `COLOR_NODE_BORDER` and no additional shadow
   - The selected-state style (orange border + `COLOR_NODE_GLOW` glow) must remain fully unchanged regardless of this setting
   - `NoteNode.tsx` and `BranchHubNode.tsx` must not receive any style changes from this setting
 
-**Commit:** `feat(V-13): high contrast node rendering — brighter border and drop shadow when enabled in dark theme`
+**Commit:** `feat(V-13): high contrast node rendering — brighter border and drop shadow in both themes when enabled`
 
 ---
 
@@ -705,3 +709,5 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 *Canvas Agent Spec v1.18 — April 2026 (added Group 4p: T-02/T-03 — global theme application and light theme palette; updated Trigger line and Scope Boundaries)*
 
 *Canvas Agent Spec v1.19 — April 2026 (added Group 4q: V-13 — high contrast node rendering: brighter border and drop shadow when K-15 enabled in dark theme; theme.ts constants; notes and hub nodes unaffected; updated Trigger line to V-01 → V-13)*
+
+*Canvas Agent Spec v1.20 — April 2026 (updated Group 4q: V-13 now applies to both dark and light themes; per-theme constants required in theme.ts; removed dark-theme-only condition from ConceptNode.tsx logic)*

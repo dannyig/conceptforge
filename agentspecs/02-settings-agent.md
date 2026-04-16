@@ -210,7 +210,7 @@ Complete all items below in order. Commit after each group.
 - [ ] Add a "High contrast nodes" toggle to `SettingsPanel.tsx`, positioned below the Theme selector (T-01) and above the AI Assist toggle (K-05):
   - Label: "High contrast nodes"
   - Default state: off (no `localStorage` entry present)
-  - The toggle is only shown when the active theme is Dark; hide or disable it when the Light theme is active (K-15 applies to dark theme only)
+  - The toggle is visible and functional in both the dark and light themes (K-15 applies to all themes)
 - [ ] Create or extend `src/lib/contrastConfig.ts`:
   ```typescript
   export const HIGH_CONTRAST_KEY = 'conceptforge:high-contrast-nodes'
@@ -324,3 +324,5 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 *Settings Agent Spec v1.5 — April 2026 (added Group 7: T-01 theme selector; use-theme.ts hook with OS default detection, localStorage persistence; renamed old Group 7 to Group 8)*
 
 *Settings Agent Spec v1.6 — April 2026 (added Group 8: K-15 high contrast nodes toggle; contrastConfig.ts; live preview; dark-theme-only; renamed old Group 8 to Group 9)*
+
+*Settings Agent Spec v1.7 — April 2026 (updated Group 8: K-15 toggle now visible and active in both dark and light themes; removed dark-theme-only restriction)*
