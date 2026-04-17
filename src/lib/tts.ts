@@ -26,20 +26,20 @@ export function stopSpeaking(): void {
   }
 }
 
-export async function speak(text: string): Promise<void> {
+export async function speak(text: string, onStart?: () => void): Promise<void> {
   stopSpeaking()
   const key = getElevenLabsKey()
   if (key) {
     try {
-      return await speakElevenLabs(text, key)
+      return await speakElevenLabs(text, key, onStart)
     } catch {
       // Fall through to browser TTS if ElevenLabs fails
     }
   }
-  return speakBrowser(text)
+  return speakBrowser(text, onStart)
 }
 
-async function speakElevenLabs(text: string, apiKey: string): Promise<void> {
+async function speakElevenLabs(text: string, apiKey: string, onStart?: () => void): Promise<void> {
   const res = await fetch(`${ELEVENLABS_TTS_BASE}/${getElevenLabsVoiceId()}`, {
     method: 'POST',
     headers: {
@@ -62,6 +62,9 @@ async function speakElevenLabs(text: string, apiKey: string): Promise<void> {
   currentAudio = audio
 
   return new Promise((resolve, reject) => {
+    audio.onplay = (): void => {
+      onStart?.()
+    }
     audio.onended = (): void => {
       if (currentObjectUrl === url) {
         URL.revokeObjectURL(url)
@@ -85,9 +88,12 @@ async function speakElevenLabs(text: string, apiKey: string): Promise<void> {
   })
 }
 
-function speakBrowser(text: string): Promise<void> {
+function speakBrowser(text: string, onStart?: () => void): Promise<void> {
   return new Promise((resolve, reject) => {
     const utterance = new SpeechSynthesisUtterance(text)
+    utterance.onstart = (): void => {
+      onStart?.()
+    }
     utterance.onend = (): void => resolve()
     utterance.onerror = (e: SpeechSynthesisErrorEvent): void => {
       if (e.error === 'interrupted' || e.error === 'canceled') {

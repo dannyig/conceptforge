@@ -177,8 +177,9 @@ export function VoiceChatPanel({
 
         if (!isActiveRef.current) return
 
-        updateState('speaking')
-        await speak(response.speech)
+        await speak(response.speech, (): void => {
+          if (isActiveRef.current) updateState('speaking')
+        })
 
         if (!isActiveRef.current) return
         updateState('listening')
