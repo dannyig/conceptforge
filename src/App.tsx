@@ -15,7 +15,13 @@ import { useTheme } from '@/hooks/use-theme'
 import { generateMap, generateMapFromContent, suggestConcepts } from '@/lib/claude'
 import { fetchUrlContent } from '@/lib/jinaFetch'
 import { autoLayout, ringPositions } from '@/lib/graph'
-import type { SummaryResource } from '@/types'
+import type {
+  BranchingEdge,
+  ConceptEdge,
+  ConceptNode,
+  SummaryResource,
+  VoiceChatConcept,
+} from '@/types'
 
 export function App(): React.JSX.Element {
   const canvasRef = useRef<CanvasHandle>(null)
@@ -109,6 +115,69 @@ export function App(): React.JSX.Element {
       setSummaryData(null)
       setChatNodeInfo(null)
       setVoiceChatNodeInfo({ nodeId, nodeLabel, nodeDescription })
+    },
+    []
+  )
+
+  // VC-08: apply concept suggestions from Voice Chat to the canvas
+  const handleApplyVoiceConcepts = useCallback(
+    (concepts: VoiceChatConcept[], originNodeId: string): void => {
+      const canvas = canvasRef.current
+      if (!canvas) return
+
+      const mapData = canvas.getMapData()
+      const originNode = mapData.nodes.find((n: ConceptNode) => n.id === originNodeId)
+      const originPos = originNode?.position ?? { x: 400, y: 300 }
+
+      const ts = Date.now()
+      const newNodes: ConceptNode[] = concepts.map((c, i) => {
+        const angle = (i / concepts.length) * 2 * Math.PI - Math.PI / 2
+        return {
+          id: `vc-${ts}-${i}`,
+          label: c.label,
+          description: c.description,
+          position: {
+            x: originPos.x + Math.cos(angle) * 260,
+            y: originPos.y + Math.sin(angle) * 200,
+          },
+        }
+      })
+
+      // Group by relationship label for branching-edge promotion
+      const byRelationship = new Map<string, Array<{ idx: number }>>()
+      concepts.forEach((c, i) => {
+        if (!byRelationship.has(c.relationship)) byRelationship.set(c.relationship, [])
+        byRelationship.get(c.relationship)!.push({ idx: i })
+      })
+
+      const newEdges: ConceptEdge[] = []
+      const newBranchingEdges: BranchingEdge[] = []
+
+      byRelationship.forEach((group, relationship) => {
+        const nodeIds = group.map(g => `vc-${ts}-${g.idx}`)
+        if (nodeIds.length === 1) {
+          newEdges.push({
+            id: `vc-edge-${ts}-${nodeIds[0]}`,
+            source: originNodeId,
+            target: nodeIds[0],
+            label: relationship,
+          })
+        } else {
+          newBranchingEdges.push({
+            id: `vc-be-${ts}-${relationship.replace(/\s+/g, '-')}`,
+            source: originNodeId,
+            label: relationship,
+            targets: nodeIds,
+          })
+        }
+      })
+
+      canvas.setMapData({
+        ...mapData,
+        nodes: [...mapData.nodes, ...newNodes],
+        edges: [...mapData.edges, ...newEdges],
+        branchingEdges: [...(mapData.branchingEdges ?? []), ...newBranchingEdges],
+      })
     },
     []
   )
@@ -346,10 +415,12 @@ export function App(): React.JSX.Element {
         )}
         {voiceChatNodeInfo !== null && (
           <VoiceChatPanel
+            nodeId={voiceChatNodeInfo.nodeId}
             nodeLabel={voiceChatNodeInfo.nodeLabel}
             nodeDescription={voiceChatNodeInfo.nodeDescription}
             focusQuestion={focusQuestion}
             onClose={dismissVoiceChat}
+            onApplyConcepts={handleApplyVoiceConcepts}
           />
         )}
       </div>

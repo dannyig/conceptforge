@@ -6,15 +6,21 @@ import { voiceChat } from '@/lib/claude'
 import { speak, stopSpeaking } from '@/lib/tts'
 import { getApiKey } from '@/lib/apiKey'
 import { renderMarkdown } from '@/lib/markdown'
-import type { VoiceChatMessage } from '@/types'
+import type { VoiceChatConcept, VoiceChatMessage } from '@/types'
 
 type VoiceState = 'listening' | 'thinking' | 'speaking' | 'unsupported'
 
+type VisualSegment =
+  | { type: 'text'; content: string }
+  | { type: 'concepts'; id: string; items: VoiceChatConcept[]; applied: boolean }
+
 interface VoiceChatPanelProps {
+  nodeId: string
   nodeLabel: string
   nodeDescription?: string
   focusQuestion?: string
   onClose: () => void
+  onApplyConcepts?: (concepts: VoiceChatConcept[], originNodeId: string) => void
 }
 
 function StateIndicator({
@@ -89,14 +95,18 @@ function StateIndicator({
 }
 
 export function VoiceChatPanel({
+  nodeId,
   nodeLabel,
   nodeDescription,
   focusQuestion,
   onClose,
+  onApplyConcepts,
 }: VoiceChatPanelProps): React.JSX.Element {
   const { tokens } = useTheme()
   const [voiceState, setVoiceState] = useState<VoiceState>('listening')
-  const [visualSegments, setVisualSegments] = useState<string[]>([])
+  const [visualSegments, setVisualSegments] = useState<VisualSegment[]>([])
+  // checkedItems: map from segment id → set of checked item indices
+  const [checkedItems, setCheckedItems] = useState<Record<string, number[]>>({})
   const scrollRef = useRef<HTMLDivElement>(null)
   const voiceStateRef = useRef<VoiceState>('listening')
   const historyRef = useRef<VoiceChatMessage[]>([])
@@ -154,7 +164,15 @@ export function VoiceChatPanel({
         ]
 
         if (response.visual) {
-          setVisualSegments(prev => [...prev, response.visual!])
+          setVisualSegments(prev => [...prev, { type: 'text', content: response.visual! }])
+        }
+
+        if (response.concepts && response.concepts.length > 0) {
+          const segId = `concepts-${Date.now()}`
+          setVisualSegments(prev => [
+            ...prev,
+            { type: 'concepts', id: segId, items: response.concepts!, applied: false },
+          ])
         }
 
         if (!isActiveRef.current) return
@@ -256,6 +274,27 @@ export function VoiceChatPanel({
     return (): void => window.removeEventListener('keydown', handler)
   }, [onClose])
 
+  const toggleCheck = useCallback((segId: string, idx: number): void => {
+    setCheckedItems(prev => {
+      const current = prev[segId] ?? []
+      const next = current.includes(idx) ? current.filter(i => i !== idx) : [...current, idx]
+      return { ...prev, [segId]: next }
+    })
+  }, [])
+
+  const handleApplySegment = useCallback(
+    (segId: string, items: VoiceChatConcept[]): void => {
+      const checked = checkedItems[segId] ?? []
+      if (checked.length === 0 || !onApplyConcepts) return
+      const selected = items.filter((_, i) => checked.includes(i))
+      onApplyConcepts(selected, nodeId)
+      setVisualSegments(prev =>
+        prev.map(s => (s.type === 'concepts' && s.id === segId ? { ...s, applied: true } : s))
+      )
+    },
+    [checkedItems, nodeId, onApplyConcepts]
+  )
+
   const statusLabel =
     voiceState === 'listening'
       ? 'Listening…'
@@ -264,6 +303,153 @@ export function VoiceChatPanel({
         : voiceState === 'speaking'
           ? 'Speaking…'
           : 'Voice input not available in this browser'
+
+  const relationshipTagStyle: React.CSSProperties = {
+    display: 'inline-block',
+    fontFamily: FONT_FAMILY,
+    fontSize: '9px',
+    fontWeight: 600,
+    letterSpacing: '0.04em',
+    color: tokens.COLOR_TEXT_MUTED,
+    border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
+    borderRadius: 3,
+    padding: '1px 5px',
+    marginLeft: 8,
+    verticalAlign: 'middle',
+    whiteSpace: 'nowrap',
+  }
+
+  const renderSegment = (seg: VisualSegment, i: number): React.ReactNode => {
+    const isLast = i === visualSegments.length - 1
+    const dividerStyle: React.CSSProperties = {
+      marginBottom: isLast ? 0 : 20,
+      paddingBottom: isLast ? 0 : 20,
+      borderBottom: isLast ? 'none' : `1px solid ${tokens.COLOR_NODE_BORDER}`,
+    }
+
+    if (seg.type === 'text') {
+      return (
+        <div key={i} style={dividerStyle}>
+          {renderMarkdown(seg.content, tokens)}
+        </div>
+      )
+    }
+
+    // Concept checklist segment
+    const checked = checkedItems[seg.id] ?? []
+    const hasChecked = checked.length > 0
+    const applyAvailable = !!onApplyConcepts
+
+    if (seg.applied) {
+      return (
+        <div
+          key={i}
+          style={{
+            ...dividerStyle,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            fontFamily: FONT_FAMILY,
+            fontSize: FONT_SIZE_SMALL,
+            color: '#34d399',
+          }}
+        >
+          <span>✓</span>
+          <span>
+            {checked.length > 0 ? checked.length : seg.items.length} concept
+            {(checked.length > 0 ? checked.length : seg.items.length) !== 1 ? 's' : ''} added to map
+          </span>
+        </div>
+      )
+    }
+
+    return (
+      <div key={i} style={dividerStyle}>
+        <div
+          style={{
+            fontFamily: FONT_FAMILY,
+            fontSize: '10px',
+            fontWeight: 600,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase' as const,
+            color: tokens.COLOR_TEXT_MUTED,
+            marginBottom: 10,
+          }}
+        >
+          Suggested Concepts
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {seg.items.map((concept, idx) => (
+            <label
+              key={idx}
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 10,
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={checked.includes(idx)}
+                onChange={(): void => toggleCheck(seg.id, idx)}
+                style={{ marginTop: 2, flexShrink: 0, accentColor: tokens.COLOR_NODE_SELECTED }}
+              />
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+                  <span
+                    style={{
+                      fontFamily: FONT_FAMILY,
+                      fontSize: FONT_SIZE_SMALL,
+                      fontWeight: 600,
+                      color: tokens.COLOR_NODE_TEXT,
+                    }}
+                  >
+                    {concept.label}
+                  </span>
+                  <span style={relationshipTagStyle}>{concept.relationship}</span>
+                </div>
+                <p
+                  style={{
+                    margin: '3px 0 0',
+                    fontFamily: FONT_FAMILY,
+                    fontSize: FONT_SIZE_SMALL,
+                    color: tokens.COLOR_TEXT_MUTED,
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {concept.description}
+                </p>
+              </div>
+            </label>
+          ))}
+        </div>
+        {applyAvailable && (
+          <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              onClick={(): void => handleApplySegment(seg.id, seg.items)}
+              disabled={!hasChecked}
+              style={{
+                fontFamily: FONT_FAMILY,
+                fontSize: '11px',
+                fontWeight: 600,
+                padding: '4px 14px',
+                borderRadius: 4,
+                border: `1px solid ${hasChecked ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_NODE_BORDER}`,
+                background: hasChecked ? tokens.COLOR_NODE_SELECTED : 'transparent',
+                color: hasChecked ? '#fff' : tokens.COLOR_TEXT_MUTED,
+                cursor: hasChecked ? 'pointer' : 'default',
+                opacity: hasChecked ? 1 : 0.4,
+                transition: `all ${TRANSITION_FAST}`,
+              }}
+            >
+              Apply
+            </button>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return createPortal(
     <div
@@ -357,7 +543,7 @@ export function VoiceChatPanel({
           </button>
         </div>
 
-        {/* Visual content area — accumulated AI-provided markdown */}
+        {/* Visual content area — accumulated AI-provided markdown and concept checklists */}
         <div
           ref={scrollRef}
           style={{
@@ -382,21 +568,7 @@ export function VoiceChatPanel({
               Start speaking to begin.
             </p>
           ) : (
-            visualSegments.map((seg, i) => (
-              <div
-                key={i}
-                style={{
-                  marginBottom: i < visualSegments.length - 1 ? 20 : 0,
-                  paddingBottom: i < visualSegments.length - 1 ? 20 : 0,
-                  borderBottom:
-                    i < visualSegments.length - 1
-                      ? `1px solid ${tokens.COLOR_NODE_BORDER}`
-                      : 'none',
-                }}
-              >
-                {renderMarkdown(seg, tokens)}
-              </div>
-            ))
+            visualSegments.map((seg, i) => renderSegment(seg, i))
           )}
         </div>
 
