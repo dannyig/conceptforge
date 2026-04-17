@@ -28,7 +28,15 @@ import {
   setJinaApiKey,
   setJinaTokenBudget,
 } from '@/lib/jinaFetch'
-import { clearElevenLabsKey, getElevenLabsKey, setElevenLabsKey } from '@/lib/elevenlabsConfig'
+import {
+  clearElevenLabsKey,
+  clearElevenLabsVoiceId,
+  ELEVENLABS_DEFAULT_VOICE_ID,
+  getElevenLabsKey,
+  getElevenLabsVoiceId,
+  setElevenLabsKey,
+  setElevenLabsVoiceId,
+} from '@/lib/elevenlabsConfig'
 import { useTheme } from '@/hooks/use-theme'
 import {
   FONT_FAMILY,
@@ -62,6 +70,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
   const [jinaApiKeySaved, setJinaApiKeySaved] = useState<boolean>(() => !!getJinaApiKey())
   const [elevenLabsKeyDraft, setElevenLabsKeyDraft] = useState<string>('')
   const [elevenLabsKeySaved, setElevenLabsKeySaved] = useState<boolean>(() => !!getElevenLabsKey())
+  const [elevenLabsVoiceId, setElevenLabsVoiceIdLocal] = useState<string>(() =>
+    getElevenLabsVoiceId()
+  )
   const [jinaTokenBudget, setJinaTokenBudgetLocal] = useState<number>(() => getJinaTokenBudget())
   const [selectedModel, setSelectedModelLocal] = useState<ClaudeModelId>(() => getModel())
   const inputRef = useRef<HTMLInputElement>(null)
@@ -1180,6 +1191,68 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                   ElevenLabs key saved
                 </span>
               )}
+            </div>
+
+            {/* Voice ID */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label
+                style={{
+                  fontFamily: FONT_FAMILY,
+                  fontSize: FONT_SIZE_SMALL,
+                  color: tokens.COLOR_TEXT_MUTED,
+                }}
+              >
+                Voice ID
+                <span style={{ marginLeft: 6, fontSize: '10px', opacity: 0.6 }}>
+                  (leave blank for default — Rachel)
+                </span>
+              </label>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <input
+                  type="text"
+                  value={elevenLabsVoiceId === ELEVENLABS_DEFAULT_VOICE_ID ? '' : elevenLabsVoiceId}
+                  onChange={(e): void => {
+                    const val = e.target.value.trim() || ELEVENLABS_DEFAULT_VOICE_ID
+                    setElevenLabsVoiceIdLocal(val)
+                    if (e.target.value.trim()) {
+                      setElevenLabsVoiceId(val)
+                    } else {
+                      clearElevenLabsVoiceId()
+                    }
+                  }}
+                  placeholder={ELEVENLABS_DEFAULT_VOICE_ID}
+                  aria-label="ElevenLabs voice ID"
+                  spellCheck={false}
+                  style={{
+                    flex: 1,
+                    background: tokens.COLOR_INPUT_BG,
+                    border: `1px solid ${tokens.COLOR_INPUT_BORDER}`,
+                    borderRadius: 4,
+                    color: tokens.COLOR_NODE_TEXT,
+                    fontFamily: FONT_FAMILY,
+                    fontSize: FONT_SIZE_SMALL,
+                    padding: '6px 10px',
+                    outline: 'none',
+                    transition: `border-color ${TRANSITION_FAST}`,
+                  }}
+                  onFocus={(e): void => {
+                    e.currentTarget.style.borderColor = tokens.COLOR_INPUT_FOCUS_BORDER
+                  }}
+                  onBlur={(e): void => {
+                    e.currentTarget.style.borderColor = tokens.COLOR_INPUT_BORDER
+                  }}
+                />
+              </div>
+              <span
+                style={{
+                  fontFamily: FONT_FAMILY,
+                  fontSize: '11px',
+                  color: tokens.COLOR_TEXT_MUTED,
+                  lineHeight: 1.5,
+                }}
+              >
+                Find IDs at elevenlabs.io → Voices → click a voice → copy the ID from the URL.
+              </span>
             </div>
           </div>
         </div>

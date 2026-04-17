@@ -1,5 +1,5 @@
 // TTS service — ElevenLabs when key is stored, speechSynthesis fallback
-import { getElevenLabsKey, ELEVENLABS_DEFAULT_VOICE_ID } from '@/lib/elevenlabsConfig'
+import { getElevenLabsKey, getElevenLabsVoiceId } from '@/lib/elevenlabsConfig'
 
 const ELEVENLABS_TTS_BASE = 'https://api.elevenlabs.io/v1/text-to-speech'
 
@@ -40,7 +40,7 @@ export async function speak(text: string): Promise<void> {
 }
 
 async function speakElevenLabs(text: string, apiKey: string): Promise<void> {
-  const res = await fetch(`${ELEVENLABS_TTS_BASE}/${ELEVENLABS_DEFAULT_VOICE_ID}`, {
+  const res = await fetch(`${ELEVENLABS_TTS_BASE}/${getElevenLabsVoiceId()}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
