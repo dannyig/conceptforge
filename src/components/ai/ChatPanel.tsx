@@ -41,6 +41,7 @@ interface ChatPanelProps {
   nodeDescription?: string
   focusQuestion?: string
   onDismiss: () => void
+  onVoiceChat?: (nodeId: string, nodeLabel: string, nodeDescription?: string) => void
 }
 
 export function ChatPanel({
@@ -49,6 +50,7 @@ export function ChatPanel({
   nodeDescription,
   focusQuestion,
   onDismiss,
+  onVoiceChat,
 }: ChatPanelProps): React.JSX.Element {
   const { tokens } = useTheme()
   const panelBottom = usePanelBottom()
@@ -145,6 +147,8 @@ export function ChatPanel({
         .cf-chat-send:focus-visible { outline: 2px solid ${tokens.COLOR_SUMMARY_LINK}; outline-offset: 2px; }
         .cf-chat-read:hover { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; }
         .cf-chat-read:focus-visible { outline: 2px solid ${tokens.COLOR_SUMMARY_LINK}; outline-offset: 2px; }
+        .cf-chat-voice:hover { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; }
+        .cf-chat-voice:focus-visible { outline: 2px solid ${tokens.COLOR_SUMMARY_LINK}; outline-offset: 2px; }
       `}</style>
 
       {/* Header */}
@@ -176,6 +180,63 @@ export function ChatPanel({
         >
           Chat — {nodeLabel}
         </span>
+        {onVoiceChat !== undefined && (
+          <button
+            className="cf-chat-voice"
+            onClick={(): void => onVoiceChat(nodeId, nodeLabel, nodeDescription)}
+            aria-label="Switch to voice chat"
+            title="Voice chat"
+            style={{
+              padding: '2px 6px',
+              background: 'transparent',
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
+              borderRadius: 4,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: `background-color ${TRANSITION_FAST}`,
+              flexShrink: 0,
+            }}
+          >
+            {/* Microphone icon */}
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect
+                x="9"
+                y="2"
+                width="6"
+                height="12"
+                rx="3"
+                stroke={tokens.COLOR_TEXT_MUTED}
+                strokeWidth="2"
+              />
+              <path
+                d="M5 11a7 7 0 0 0 14 0"
+                stroke={tokens.COLOR_TEXT_MUTED}
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <line
+                x1="12"
+                y1="18"
+                x2="12"
+                y2="22"
+                stroke={tokens.COLOR_TEXT_MUTED}
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <line
+                x1="9"
+                y1="22"
+                x2="15"
+                y2="22"
+                stroke={tokens.COLOR_TEXT_MUTED}
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        )}
         <button
           className="cf-chat-dismiss"
           onClick={onDismiss}

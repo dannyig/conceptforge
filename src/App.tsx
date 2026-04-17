@@ -3,6 +3,7 @@ import { Canvas, type CanvasHandle } from '@/components/canvas/Canvas'
 import { HintTicker } from '@/components/canvas/HintTicker'
 import { FocusQuestionBar } from '@/components/ai/FocusQuestionBar'
 import { ChatPanel } from '@/components/ai/ChatPanel'
+import { VoiceChatPanel } from '@/components/ai/VoiceChatPanel'
 import { SummaryPanel } from '@/components/ai/SummaryPanel'
 import { MissingKeyBanner } from '@/components/settings/MissingKeyBanner'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
@@ -32,6 +33,11 @@ export function App(): React.JSX.Element {
     resources: SummaryResource[]
   } | null>(null)
   const [chatNodeInfo, setChatNodeInfo] = useState<{
+    nodeId: string
+    nodeLabel: string
+    nodeDescription?: string
+  } | null>(null)
+  const [voiceChatNodeInfo, setVoiceChatNodeInfo] = useState<{
     nodeId: string
     nodeLabel: string
     nodeDescription?: string
@@ -95,6 +101,17 @@ export function App(): React.JSX.Element {
   const dismissAiError = useCallback((): void => setAiError(null), [])
   const dismissSummary = useCallback((): void => setSummaryData(null), [])
   const dismissChat = useCallback((): void => setChatNodeInfo(null), [])
+  const dismissVoiceChat = useCallback((): void => setVoiceChatNodeInfo(null), [])
+
+  // VC-03: open Voice Chat — dismiss chat and summary first
+  const handleVoiceChat = useCallback(
+    (nodeId: string, nodeLabel: string, nodeDescription?: string): void => {
+      setSummaryData(null)
+      setChatNodeInfo(null)
+      setVoiceChatNodeInfo({ nodeId, nodeLabel, nodeDescription })
+    },
+    []
+  )
 
   // A-26, A-27: open Chat panel — dismiss Summary Panel first (mutual exclusion)
   const handleChatNode = useCallback(
@@ -324,6 +341,15 @@ export function App(): React.JSX.Element {
             nodeDescription={chatNodeInfo.nodeDescription}
             focusQuestion={focusQuestion}
             onDismiss={dismissChat}
+            onVoiceChat={handleVoiceChat}
+          />
+        )}
+        {voiceChatNodeInfo !== null && (
+          <VoiceChatPanel
+            nodeLabel={voiceChatNodeInfo.nodeLabel}
+            nodeDescription={voiceChatNodeInfo.nodeDescription}
+            focusQuestion={focusQuestion}
+            onClose={dismissVoiceChat}
           />
         )}
       </div>

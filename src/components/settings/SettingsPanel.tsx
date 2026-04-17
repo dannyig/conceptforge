@@ -28,6 +28,15 @@ import {
   setJinaApiKey,
   setJinaTokenBudget,
 } from '@/lib/jinaFetch'
+import {
+  clearElevenLabsKey,
+  clearElevenLabsVoiceId,
+  ELEVENLABS_DEFAULT_VOICE_ID,
+  getElevenLabsKey,
+  getElevenLabsVoiceId,
+  setElevenLabsKey,
+  setElevenLabsVoiceId,
+} from '@/lib/elevenlabsConfig'
 import { useTheme } from '@/hooks/use-theme'
 import {
   FONT_FAMILY,
@@ -59,6 +68,11 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
   const [urlMapPrompt, setUrlMapPromptLocal] = useState<string>(() => getUrlMapPrompt())
   const [jinaApiKeyDraft, setJinaApiKeyDraft] = useState<string>('')
   const [jinaApiKeySaved, setJinaApiKeySaved] = useState<boolean>(() => !!getJinaApiKey())
+  const [elevenLabsKeyDraft, setElevenLabsKeyDraft] = useState<string>('')
+  const [elevenLabsKeySaved, setElevenLabsKeySaved] = useState<boolean>(() => !!getElevenLabsKey())
+  const [elevenLabsVoiceId, setElevenLabsVoiceIdLocal] = useState<string>(() =>
+    getElevenLabsVoiceId()
+  )
   const [jinaTokenBudget, setJinaTokenBudgetLocal] = useState<number>(() => getJinaTokenBudget())
   const [selectedModel, setSelectedModelLocal] = useState<ClaudeModelId>(() => getModel())
   const inputRef = useRef<HTMLInputElement>(null)
@@ -1031,6 +1045,214 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                   e.currentTarget.style.borderColor = tokens.COLOR_INPUT_BORDER
                 }}
               />
+            </div>
+          </div>
+
+          {/* K-16: ElevenLabs TTS API key */}
+          <div
+            style={{
+              borderTop: `1px solid ${tokens.COLOR_NODE_BORDER}`,
+              paddingTop: 20,
+              marginTop: 8,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+            }}
+          >
+            <span
+              style={{
+                fontSize: FONT_SIZE_SMALL,
+                color: tokens.COLOR_TEXT_MUTED,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                fontWeight: '600',
+              }}
+            >
+              Voice TTS (ElevenLabs)
+            </span>
+            <p
+              style={{
+                margin: 0,
+                fontFamily: FONT_FAMILY,
+                fontSize: FONT_SIZE_SMALL,
+                color: tokens.COLOR_TEXT_MUTED,
+                lineHeight: 1.6,
+              }}
+            >
+              Optional — uses browser speech synthesis when no key is stored.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label
+                style={{
+                  fontFamily: FONT_FAMILY,
+                  fontSize: FONT_SIZE_SMALL,
+                  color: tokens.COLOR_TEXT_MUTED,
+                }}
+              >
+                ElevenLabs API Key
+              </label>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <input
+                  type="password"
+                  value={elevenLabsKeyDraft}
+                  onChange={(e): void => setElevenLabsKeyDraft(e.target.value)}
+                  placeholder={elevenLabsKeySaved ? '••••••••••••' : 'el_…'}
+                  aria-label="ElevenLabs API key"
+                  style={{
+                    flex: 1,
+                    background: tokens.COLOR_INPUT_BG,
+                    border: `1px solid ${tokens.COLOR_INPUT_BORDER}`,
+                    borderRadius: 4,
+                    color: tokens.COLOR_NODE_TEXT,
+                    fontFamily: FONT_FAMILY,
+                    fontSize: FONT_SIZE_SMALL,
+                    padding: '6px 10px',
+                    outline: 'none',
+                    transition: `border-color ${TRANSITION_FAST}`,
+                  }}
+                  onFocus={(e): void => {
+                    e.currentTarget.style.borderColor = tokens.COLOR_INPUT_FOCUS_BORDER
+                  }}
+                  onBlur={(e): void => {
+                    e.currentTarget.style.borderColor = tokens.COLOR_INPUT_BORDER
+                  }}
+                  onKeyDown={(e): void => {
+                    if (e.key === 'Enter') {
+                      const trimmed = elevenLabsKeyDraft.trim()
+                      if (trimmed) {
+                        setElevenLabsKey(trimmed)
+                        setElevenLabsKeyDraft('')
+                        setElevenLabsKeySaved(true)
+                      }
+                    }
+                  }}
+                />
+                {elevenLabsKeyDraft.trim() && (
+                  <button
+                    onClick={(): void => {
+                      const trimmed = elevenLabsKeyDraft.trim()
+                      if (trimmed) {
+                        setElevenLabsKey(trimmed)
+                        setElevenLabsKeyDraft('')
+                        setElevenLabsKeySaved(true)
+                      }
+                    }}
+                    aria-label="Save ElevenLabs API key"
+                    style={{
+                      background: tokens.COLOR_BUTTON_PRIMARY_BG,
+                      border: 'none',
+                      borderRadius: 4,
+                      color: tokens.COLOR_BUTTON_PRIMARY_TEXT,
+                      fontFamily: FONT_FAMILY,
+                      fontSize: FONT_SIZE_SMALL,
+                      padding: '6px 12px',
+                      cursor: 'pointer',
+                      transition: `background-color ${TRANSITION_FAST}`,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Save
+                  </button>
+                )}
+                {elevenLabsKeySaved && !elevenLabsKeyDraft.trim() && (
+                  <button
+                    onClick={(): void => {
+                      clearElevenLabsKey()
+                      setElevenLabsKeyDraft('')
+                      setElevenLabsKeySaved(false)
+                    }}
+                    aria-label="Clear ElevenLabs API key"
+                    style={{
+                      background: 'transparent',
+                      border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
+                      borderRadius: 4,
+                      color: tokens.COLOR_TEXT_MUTED,
+                      fontFamily: FONT_FAMILY,
+                      fontSize: FONT_SIZE_SMALL,
+                      padding: '6px 12px',
+                      cursor: 'pointer',
+                      transition: `background-color ${TRANSITION_FAST}`,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {elevenLabsKeySaved && (
+                <span
+                  style={{
+                    fontFamily: FONT_FAMILY,
+                    fontSize: '11px',
+                    color: tokens.COLOR_STATUS_SUCCESS,
+                  }}
+                >
+                  ElevenLabs key saved
+                </span>
+              )}
+            </div>
+
+            {/* Voice ID */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label
+                style={{
+                  fontFamily: FONT_FAMILY,
+                  fontSize: FONT_SIZE_SMALL,
+                  color: tokens.COLOR_TEXT_MUTED,
+                }}
+              >
+                Voice ID
+                <span style={{ marginLeft: 6, fontSize: '10px', opacity: 0.6 }}>
+                  (leave blank for default — Rachel)
+                </span>
+              </label>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <input
+                  type="text"
+                  value={elevenLabsVoiceId === ELEVENLABS_DEFAULT_VOICE_ID ? '' : elevenLabsVoiceId}
+                  onChange={(e): void => {
+                    const val = e.target.value.trim() || ELEVENLABS_DEFAULT_VOICE_ID
+                    setElevenLabsVoiceIdLocal(val)
+                    if (e.target.value.trim()) {
+                      setElevenLabsVoiceId(val)
+                    } else {
+                      clearElevenLabsVoiceId()
+                    }
+                  }}
+                  placeholder={ELEVENLABS_DEFAULT_VOICE_ID}
+                  aria-label="ElevenLabs voice ID"
+                  spellCheck={false}
+                  style={{
+                    flex: 1,
+                    background: tokens.COLOR_INPUT_BG,
+                    border: `1px solid ${tokens.COLOR_INPUT_BORDER}`,
+                    borderRadius: 4,
+                    color: tokens.COLOR_NODE_TEXT,
+                    fontFamily: FONT_FAMILY,
+                    fontSize: FONT_SIZE_SMALL,
+                    padding: '6px 10px',
+                    outline: 'none',
+                    transition: `border-color ${TRANSITION_FAST}`,
+                  }}
+                  onFocus={(e): void => {
+                    e.currentTarget.style.borderColor = tokens.COLOR_INPUT_FOCUS_BORDER
+                  }}
+                  onBlur={(e): void => {
+                    e.currentTarget.style.borderColor = tokens.COLOR_INPUT_BORDER
+                  }}
+                />
+              </div>
+              <span
+                style={{
+                  fontFamily: FONT_FAMILY,
+                  fontSize: '11px',
+                  color: tokens.COLOR_TEXT_MUTED,
+                  lineHeight: 1.5,
+                }}
+              >
+                Find IDs at elevenlabs.io → Voices → click a voice → copy the ID from the URL.
+              </span>
             </div>
           </div>
         </div>

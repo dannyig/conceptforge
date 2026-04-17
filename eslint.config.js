@@ -4,6 +4,7 @@ import tsParser from '@typescript-eslint/parser'
 import prettierConfig from 'eslint-config-prettier'
 
 export default [
+  { ignores: ['src/**/*.d.ts'] },
   js.configs.recommended,
   {
     files: ['src/**/*.{ts,tsx}'],
@@ -66,6 +67,14 @@ export default [
         Node: 'readonly',
         Window: 'readonly',
         DOMException: 'readonly',
+        SpeechRecognition: 'readonly',
+        SpeechRecognitionEvent: 'readonly',
+        SpeechRecognitionErrorEvent: 'readonly',
+        SpeechSynthesisUtterance: 'readonly',
+        SpeechSynthesisErrorEvent: 'readonly',
+        speechSynthesis: 'readonly',
+        Audio: 'readonly',
+        HTMLAudioElement: 'readonly',
       },
     },
     plugins: {

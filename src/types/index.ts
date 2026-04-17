@@ -57,6 +57,16 @@ export interface ClaudeMapResponse {
   resources?: SummaryResource[]
 }
 
+export interface VoiceChatMessage {
+  role: 'user' | 'assistant'
+  content: string // user: transcribed speech; assistant: speech field from VoiceChatResponse
+}
+
+export interface VoiceChatResponse {
+  speech: string // required; read aloud by TTS
+  visual?: string // optional markdown; appended to the visual panel (never replaces)
+}
+
 export interface ExpandNodeRequest {
   nodeId: string
   nodeLabel: string

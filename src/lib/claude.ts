@@ -1,5 +1,11 @@
 // Claude API client
-import type { ClaudeMapResponse, ExpandNodeRequest, SummaryResource } from '@/types'
+import type {
+  ClaudeMapResponse,
+  ExpandNodeRequest,
+  SummaryResource,
+  VoiceChatMessage,
+  VoiceChatResponse,
+} from '@/types'
 import { getModel } from '@/lib/modelConfig'
 import { getUrlMapPrompt } from '@/lib/urlMapPrompts'
 
@@ -515,6 +521,88 @@ export async function explainEdgeLabel(
   const text = data.content.find(c => c.type === 'text')?.text
   if (!text) throw new Error('Empty response from Claude')
   return text
+}
+
+// VC-01: conversational voice chat about a concept node
+// Returns structured response: speech (spoken aloud) + optional visual (appended to panel)
+export async function voiceChat(
+  nodeLabel: string,
+  nodeDescription: string | undefined,
+  focusQuestion: string | undefined,
+  history: VoiceChatMessage[],
+  userSpeech: string,
+  apiKey: string
+): Promise<VoiceChatResponse> {
+  let systemPrompt =
+    `You are a conversational voice assistant helping the user explore the concept: "${nodeLabel}" on an interactive concept map.\n\n` +
+    `Your response MUST be valid JSON with these fields:\n` +
+    `- "speech": (required) What you say aloud. 2–4 sentences, conversational tone, no markdown, no bullet points — plain spoken language only.\n` +
+    `- "visual": (optional) Supporting information to show on screen. Use markdown: headers, lists, code, tables. Omit this field if nothing visual adds value.\n\n` +
+    `Return ONLY the JSON object — no markdown fences, no explanation outside the JSON.`
+
+  if (nodeDescription) {
+    systemPrompt += `\n\nConcept description: ${nodeDescription}`
+  }
+  if (focusQuestion) {
+    systemPrompt += `\n\nMap focus question: "${focusQuestion}"`
+  }
+
+  const messages = [
+    ...history.map(m => ({ role: m.role, content: m.content })),
+    { role: 'user' as const, content: userSpeech },
+  ]
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: getModel(),
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages,
+    }),
+  })
+
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`Claude API error ${res.status}: ${body}`)
+  }
+
+  const data = (await res.json()) as { content: Array<{ type: string; text: string }> }
+  const text = data.content.find(c => c.type === 'text')?.text
+  if (!text) throw new Error('Empty response from Claude')
+
+  let parsed: unknown
+  try {
+    const cleaned = text
+      .replace(/^```(?:json)?\n?/, '')
+      .replace(/\n?```$/, '')
+      .trim()
+    parsed = JSON.parse(cleaned)
+  } catch {
+    throw new Error('Claude returned invalid voice response')
+  }
+
+  return parseVoiceChatResponse(parsed)
+}
+
+function parseVoiceChatResponse(raw: unknown): VoiceChatResponse {
+  if (typeof raw !== 'object' || raw === null) {
+    throw new Error('Invalid voice chat response: expected an object')
+  }
+  const r = raw as Record<string, unknown>
+  if (typeof r.speech !== 'string' || !r.speech) {
+    throw new Error('Voice chat response missing "speech" field')
+  }
+  return {
+    speech: r.speech,
+    visual: typeof r.visual === 'string' && r.visual ? r.visual : undefined,
+  }
 }
 
 export function parseClaudeResponse(raw: unknown): ClaudeMapResponse {
