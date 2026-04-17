@@ -537,7 +537,7 @@ export async function voiceChat(
   let systemPrompt =
     `You are a conversational voice assistant helping the user explore the concept: "${nodeLabel}" on an interactive concept map.\n\n` +
     `Your response MUST be valid JSON with these fields:\n` +
-    `- "speech": (required) What you say aloud. 2–4 sentences, conversational tone, no markdown, no bullet points — plain spoken language only.\n` +
+    `- "speech": (required) What you say aloud. 1–2 sentences maximum, conversational tone, no markdown, no bullet points — plain spoken language only. Be concise.\n` +
     `- "visual": (optional) Supporting information to show on screen. Use markdown: headers, lists, code, tables. Omit this field if nothing visual adds value.\n` +
     `- "concepts": (optional) When the user explicitly asks for concept suggestions, include an array of objects each with "label" (concept name, 1–4 words), "description" (1–2 sentences explaining the concept), and "relationship" (concise 1–4 word edge label describing the directed relationship from "${nodeLabel}" to the suggested concept). Omit entirely if the user has not asked for suggestions.\n\n` +
     `Return ONLY the JSON object — no markdown fences, no explanation outside the JSON.`
@@ -564,7 +564,7 @@ export async function voiceChat(
     },
     body: JSON.stringify({
       model: getModel(),
-      max_tokens: 1024,
+      max_tokens: 512,
       system: systemPrompt,
       messages,
     }),
