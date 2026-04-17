@@ -141,6 +141,16 @@ export function VoiceChatPanel({
     }
   }, [])
 
+  const stopRecognition = useCallback((): void => {
+    const rec = recognitionRef.current
+    if (!rec || !isRecognizingRef.current) return
+    try {
+      rec.stop()
+    } catch {
+      // Ignore
+    }
+  }, [])
+
   // Stable callback ref — always points to latest handleVoiceInput without re-binding recognition
   const handleVoiceInputRef = useRef<(transcript: string) => Promise<void>>(async () => {})
 
@@ -183,6 +193,8 @@ export function VoiceChatPanel({
 
         if (!isActiveRef.current) return
 
+        // Ensure mic is off before TTS starts — prevents AI speech feeding back into STT
+        stopRecognition()
         await speak(response.speech, (): void => {
           if (isActiveRef.current) updateState('speaking')
         })
@@ -197,7 +209,7 @@ export function VoiceChatPanel({
         }
       }
     }
-  }, [nodeLabel, nodeDescription, focusQuestion, updateState, startRecognition])
+  }, [nodeLabel, nodeDescription, focusQuestion, updateState, startRecognition, stopRecognition])
 
   useEffect((): (() => void) => {
     const SpeechRecCtor = window.SpeechRecognition ?? window.webkitSpeechRecognition
@@ -216,7 +228,9 @@ export function VoiceChatPanel({
     }
 
     rec.onresult = (event: SpeechRecognitionEvent): void => {
-      if (voiceStateRef.current === 'thinking') return
+      // Ignore STT results while AI is responding or speaking — prevents TTS audio
+      // feeding back into the mic and being sent to the LLM as user input
+      if (voiceStateRef.current === 'thinking' || voiceStateRef.current === 'speaking') return
 
       const parts: string[] = []
       for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -242,6 +256,12 @@ export function VoiceChatPanel({
         pendingTranscriptRef.current = ''
         if (!transcript || voiceStateRef.current === 'thinking') return
 
+        // Stop mic before going to thinking — mic reopens only when back in listening
+        try {
+          rec.stop()
+        } catch {
+          /* ignore */
+        }
         isRecognizingRef.current = false
         voiceStateRef.current = 'thinking'
         setVoiceState('thinking')
