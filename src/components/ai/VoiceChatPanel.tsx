@@ -8,6 +8,10 @@ import { getApiKey } from '@/lib/apiKey'
 import { renderMarkdown } from '@/lib/markdown'
 import type { VoiceChatConcept, VoiceChatMessage } from '@/types'
 
+// How long of silence (ms) after the last speech segment before sending to AI.
+// Prevents mid-sentence pauses from prematurely triggering a new turn.
+const SPEECH_SEND_DEBOUNCE_MS = 1500
+
 type VoiceState = 'listening' | 'thinking' | 'speaking' | 'unsupported'
 
 type VisualSegment =
@@ -113,6 +117,8 @@ export function VoiceChatPanel({
   const isActiveRef = useRef(true)
   const isRecognizingRef = useRef(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const pendingTranscriptRef = useRef<string>('')
+  const sendTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const updateState = useCallback((s: VoiceState): void => {
     voiceStateRef.current = s
@@ -219,15 +225,28 @@ export function VoiceChatPanel({
           parts.push(result[0].transcript)
         }
       }
-      const transcript = parts.join(' ').trim()
+      const newText = parts.join(' ').trim()
+      if (!newText) return
 
-      if (!transcript) return
-
+      // Interrupt TTS immediately when user speaks
       stopSpeaking()
-      isRecognizingRef.current = false
-      voiceStateRef.current = 'thinking'
-      setVoiceState('thinking')
-      void handleVoiceInputRef.current(transcript)
+
+      // Accumulate — debounce the AI call so natural mid-sentence pauses
+      // don't prematurely end the turn
+      pendingTranscriptRef.current = (pendingTranscriptRef.current + ' ' + newText).trim()
+
+      if (sendTimerRef.current) clearTimeout(sendTimerRef.current)
+      sendTimerRef.current = setTimeout((): void => {
+        sendTimerRef.current = null
+        const transcript = pendingTranscriptRef.current.trim()
+        pendingTranscriptRef.current = ''
+        if (!transcript || voiceStateRef.current === 'thinking') return
+
+        isRecognizingRef.current = false
+        voiceStateRef.current = 'thinking'
+        setVoiceState('thinking')
+        void handleVoiceInputRef.current(transcript)
+      }, SPEECH_SEND_DEBOUNCE_MS)
     }
 
     rec.onerror = (event: SpeechRecognitionErrorEvent): void => {
@@ -258,6 +277,11 @@ export function VoiceChatPanel({
 
     return (): void => {
       isActiveRef.current = false
+      if (sendTimerRef.current) {
+        clearTimeout(sendTimerRef.current)
+        sendTimerRef.current = null
+      }
+      pendingTranscriptRef.current = ''
       try {
         rec.stop()
       } catch {
