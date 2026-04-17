@@ -7,14 +7,19 @@ const ELEVENLABS_VOICE_SETTINGS = { stability: 0.5, similarity_boost: 0.75 }
 
 let currentAudio: HTMLAudioElement | null = null
 let currentObjectUrl: string | null = null
-// Tracked so stopSpeaking() can cancel an in-flight stream read loop
 let currentStreamReader: ReadableStreamDefaultReader<Uint8Array> | null = null
+
+// Monotonically increasing; incremented by speak() so any in-flight call
+// can detect it has been superseded and avoid settling its promise.
+let activeSpeakId = 0
 
 export function isSpeaking(): boolean {
   return currentAudio !== null && !currentAudio.paused
 }
 
 export function stopSpeaking(): void {
+  // Supersede any in-flight speak() call — their settle() will no-op
+  activeSpeakId++
   if (currentStreamReader) {
     void currentStreamReader.cancel()
     currentStreamReader = null
@@ -37,10 +42,11 @@ export function stopSpeaking(): void {
 
 export async function speak(text: string, onStart?: () => void): Promise<void> {
   stopSpeaking()
+  const callId = activeSpeakId
   const key = getElevenLabsKey()
   if (key) {
     try {
-      return await speakElevenLabs(text, key, onStart)
+      return await speakElevenLabs(callId, text, key, onStart)
     } catch {
       // Fall through to browser TTS if ElevenLabs fails
     }
@@ -48,16 +54,21 @@ export async function speak(text: string, onStart?: () => void): Promise<void> {
   return speakBrowser(text, onStart)
 }
 
-async function speakElevenLabs(text: string, apiKey: string, onStart?: () => void): Promise<void> {
-  // Use streaming path on browsers that support MediaSource + audio/mpeg (Chrome, Edge)
+async function speakElevenLabs(
+  callId: number,
+  text: string,
+  apiKey: string,
+  onStart?: () => void
+): Promise<void> {
   if (typeof MediaSource !== 'undefined' && MediaSource.isTypeSupported('audio/mpeg')) {
-    return speakElevenLabsStreaming(text, apiKey, onStart)
+    return speakElevenLabsStreaming(callId, text, apiKey, onStart)
   }
-  return speakElevenLabsBlob(text, apiKey, onStart)
+  return speakElevenLabsBlob(callId, text, apiKey, onStart)
 }
 
 // Streaming path: audio starts playing as first chunks arrive from ElevenLabs
 async function speakElevenLabsStreaming(
+  callId: number,
   text: string,
   apiKey: string,
   onStart?: () => void
@@ -73,6 +84,9 @@ async function speakElevenLabsStreaming(
   })
   if (!res.ok) throw new Error(`ElevenLabs error ${res.status}`)
   if (!res.body) throw new Error('No response body')
+
+  // Abort early if superseded while fetching
+  if (callId !== activeSpeakId) return new Promise(() => {})
 
   const mediaSource = new MediaSource()
   const objectUrl = URL.createObjectURL(mediaSource)
@@ -90,6 +104,9 @@ async function speakElevenLabsStreaming(
       if (settled) return
       settled = true
       currentStreamReader = null
+      // If this call has been superseded by stopSpeaking(), let the promise hang
+      // so the caller's await never completes — preventing stale state transitions.
+      if (callId !== activeSpeakId) return
       if (currentObjectUrl === objectUrl) {
         URL.revokeObjectURL(objectUrl)
         currentObjectUrl = null
@@ -178,6 +195,7 @@ async function speakElevenLabsStreaming(
 
 // Blob fallback: download full audio then play (Safari, Firefox)
 async function speakElevenLabsBlob(
+  callId: number,
   text: string,
   apiKey: string,
   onStart?: () => void
@@ -193,7 +211,12 @@ async function speakElevenLabsBlob(
   })
   if (!res.ok) throw new Error(`ElevenLabs error ${res.status}`)
 
+  if (callId !== activeSpeakId) return new Promise(() => {})
+
   const blob = await res.blob()
+
+  if (callId !== activeSpeakId) return new Promise(() => {})
+
   const url = URL.createObjectURL(blob)
   currentObjectUrl = url
   const audio = new Audio(url)
@@ -204,6 +227,7 @@ async function speakElevenLabsBlob(
       onStart?.()
     }
     audio.onended = (): void => {
+      if (callId !== activeSpeakId) return
       if (currentObjectUrl === url) {
         URL.revokeObjectURL(url)
         currentObjectUrl = null
@@ -212,6 +236,7 @@ async function speakElevenLabsBlob(
       resolve()
     }
     audio.onerror = (): void => {
+      if (callId !== activeSpeakId) return
       if (currentObjectUrl === url) {
         URL.revokeObjectURL(url)
         currentObjectUrl = null
@@ -220,6 +245,7 @@ async function speakElevenLabsBlob(
       reject(new Error('Audio playback failed'))
     }
     void audio.play().catch(err => {
+      if (callId !== activeSpeakId) return
       currentAudio = null
       reject(err)
     })
