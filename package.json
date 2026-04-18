@@ -1,6 +1,6 @@
 {
   "name": "conceptforge",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "description": "AI-assisted concept map creation web application",
   "type": "module",
   "scripts": {
