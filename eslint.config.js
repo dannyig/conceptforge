@@ -75,6 +75,9 @@ export default [
         speechSynthesis: 'readonly',
         Audio: 'readonly',
         HTMLAudioElement: 'readonly',
+        MediaSource: 'readonly',
+        SourceBuffer: 'readonly',
+        ReadableStreamDefaultReader: 'readonly',
       },
     },
     plugins: {

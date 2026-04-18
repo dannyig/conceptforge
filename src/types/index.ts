@@ -62,9 +62,16 @@ export interface VoiceChatMessage {
   content: string // user: transcribed speech; assistant: speech field from VoiceChatResponse
 }
 
+export interface VoiceChatConcept {
+  label: string
+  description: string
+  relationship: string // concise 1–4 word edge label: origin node → this concept
+}
+
 export interface VoiceChatResponse {
   speech: string // required; read aloud by TTS
   visual?: string // optional markdown; appended to the visual panel (never replaces)
+  concepts?: VoiceChatConcept[] // VC-08: optional concept suggestions; absent when not applicable
 }
 
 export interface ExpandNodeRequest {
