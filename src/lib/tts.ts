@@ -47,8 +47,10 @@ export async function speak(text: string, onStart?: () => void): Promise<void> {
   if (key) {
     try {
       return await speakElevenLabs(callId, text, key, onStart)
-    } catch {
-      // Fall through to browser TTS if ElevenLabs fails
+    } catch (err) {
+      // Superseded by a newer speak() call — silently abort, no browser TTS fallback
+      if (err instanceof Error && err.message === 'superseded') return
+      // Fall through to browser TTS for real ElevenLabs errors
     }
   }
   return speakBrowser(text, onStart)
@@ -86,7 +88,7 @@ async function speakElevenLabsStreaming(
   if (!res.body) throw new Error('No response body')
 
   // Abort early if superseded while fetching
-  if (callId !== activeSpeakId) return new Promise(() => {})
+  if (callId !== activeSpeakId) throw new Error('superseded')
 
   const mediaSource = new MediaSource()
   const objectUrl = URL.createObjectURL(mediaSource)
@@ -104,9 +106,10 @@ async function speakElevenLabsStreaming(
       if (settled) return
       settled = true
       currentStreamReader = null
-      // If this call has been superseded by stopSpeaking(), let the promise hang
-      // so the caller's await never completes — preventing stale state transitions.
-      if (callId !== activeSpeakId) return
+      if (callId !== activeSpeakId) {
+        reject(new Error('superseded'))
+        return
+      }
       if (currentObjectUrl === objectUrl) {
         URL.revokeObjectURL(objectUrl)
         currentObjectUrl = null
@@ -211,11 +214,11 @@ async function speakElevenLabsBlob(
   })
   if (!res.ok) throw new Error(`ElevenLabs error ${res.status}`)
 
-  if (callId !== activeSpeakId) return new Promise(() => {})
+  if (callId !== activeSpeakId) throw new Error('superseded')
 
   const blob = await res.blob()
 
-  if (callId !== activeSpeakId) return new Promise(() => {})
+  if (callId !== activeSpeakId) throw new Error('superseded')
 
   const url = URL.createObjectURL(blob)
   currentObjectUrl = url

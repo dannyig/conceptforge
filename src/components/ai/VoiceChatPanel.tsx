@@ -141,16 +141,6 @@ export function VoiceChatPanel({
     }
   }, [])
 
-  const stopRecognition = useCallback((): void => {
-    const rec = recognitionRef.current
-    if (!rec || !isRecognizingRef.current) return
-    try {
-      rec.stop()
-    } catch {
-      // Ignore
-    }
-  }, [])
-
   // Stable callback ref — always points to latest handleVoiceInput without re-binding recognition
   const handleVoiceInputRef = useRef<(transcript: string) => Promise<void>>(async () => {})
 
@@ -193,8 +183,6 @@ export function VoiceChatPanel({
 
         if (!isActiveRef.current) return
 
-        // Ensure mic is off before TTS starts — prevents AI speech feeding back into STT
-        stopRecognition()
         await speak(response.speech, (): void => {
           if (isActiveRef.current) updateState('speaking')
         })
@@ -209,7 +197,7 @@ export function VoiceChatPanel({
         }
       }
     }
-  }, [nodeLabel, nodeDescription, focusQuestion, updateState, startRecognition, stopRecognition])
+  }, [nodeLabel, nodeDescription, focusQuestion, updateState, startRecognition])
 
   useEffect((): (() => void) => {
     const SpeechRecCtor = window.SpeechRecognition ?? window.webkitSpeechRecognition
@@ -256,13 +244,6 @@ export function VoiceChatPanel({
         pendingTranscriptRef.current = ''
         if (!transcript || voiceStateRef.current === 'thinking') return
 
-        // Stop mic before going to thinking — mic reopens only when back in listening
-        try {
-          rec.stop()
-        } catch {
-          /* ignore */
-        }
-        isRecognizingRef.current = false
         voiceStateRef.current = 'thinking'
         setVoiceState('thinking')
         void handleVoiceInputRef.current(transcript)
