@@ -12,7 +12,7 @@
 
 ## Mission
 
-Add a hands-free voice conversation mode to the concept node Chat panel. When this agent is done, users must be able to click a voice icon in the Chat panel header, speak naturally, hear Claude respond via TTS, and see relevant visual supporting content accumulate in a centred panel. The feature uses the browser's Web Speech API for STT and either browser-native `speechSynthesis` or ElevenLabs TTS (if a key is stored). No new backend, no new external dependencies beyond an optional ElevenLabs API call.
+Rebuild the concept node Chat panel as a unified text + voice panel. When this agent is done: the Chat panel is centred at 70% viewport, AI responses accumulate in a scrollable markdown area, a text input + mic button sit in the bottom bar, and clicking the mic button toggles voice mode (SpeechRecognition + TTS) on and off. Text mode is silent; voice mode reads responses aloud via ElevenLabs or browser `speechSynthesis`. There is no separate Voice Chat panel — voice mode is a toggle within the single Chat panel. No new backend, no new external dependencies beyond an optional ElevenLabs API call.
 
 ---
 
@@ -104,47 +104,47 @@ The voice chat Claude response requires a structured two-field format distinct f
 
 ---
 
-### Group 3 — Voice Chat Panel component (VC-01, VC-02, VC-03, VC-05, VC-06, VC-07)
+### Group 3 — Unified Chat Panel (A-28, A-29, VC-01, VC-02, VC-03, VC-05, VC-06, VC-07)
 
-- [ ] Create `src/components/ai/VoiceChatPanel.tsx`:
-  - Centred overlay at 70% viewport width × 70% viewport height (same as Reading panel, A-32)
-  - **Visual support area**: scrollable content area rendering accumulated markdown; starts empty; each new `visual` field from Claude is appended below previous content
-  - **State indicator**: displays one of three states — `Listening`, `Thinking`, `Speaking`; styled with a subtle animated indicator for each state
-  - **Dismiss button**: closes the panel; clears conversation history (VC-07)
-  - Rendered via a React portal (same pattern as Reading panel) so it layers above all canvas content
-- [ ] Voice Chat panel accepts props:
-  ```typescript
-  interface VoiceChatPanelProps {
-    nodeId: string
-    nodeLabel: string
-    nodeDescription?: string
-    focusQuestion?: string
-    onClose: () => void
-  }
-  ```
-- [ ] On mount, check `typeof window.SpeechRecognition !== 'undefined' || typeof window.webkitSpeechRecognition !== 'undefined'`; if unavailable, render the unsupported message (VC-06) and skip microphone initialisation
-- [ ] If `SpeechRecognition` is available:
-  - Instantiate `SpeechRecognition` with `continuous: true` and `interimResults: false`
-  - Start recognition on mount; restart on `onend` event (browser stops after silence by default — auto-restart keeps it active)
-  - On `onresult`: collect the final transcript from `event.results`; when a final result arrives, call `handleUserTurn(transcript)`
-- [ ] `handleUserTurn(transcript)`:
+Rewrite `src/components/ai/ChatPanel.tsx` as the unified text + voice panel. **Delete `src/components/ai/VoiceChatPanel.tsx`** — it is replaced entirely by this unified panel.
+
+- [ ] **Panel layout** (A-28):
+  - Centred overlay at 70% viewport width × 70% viewport height (same as Reading panel, A-32); rendered via React portal
+  - Heading: node label
+  - Scrollable **content area** filling available height: AI responses (text and voice) accumulate here as markdown blocks; never cleared mid-session
+  - **Bottom bar**: text input field (flex-grow) + mic icon button flush to its right + send button
+  - State indicator (Listening / Thinking / Speaking) rendered inside the content area or above the bottom bar when voice mode is active (VC-02)
+  - Dismiss button in the top-right corner, always visible
+
+- [ ] **Text mode** (A-29, default on open):
+  - User types in the text input; submits via Enter or send button
+  - On submit: if voice mode is currently active, deactivate it first (stop `SpeechRecognition`, stop TTS) — VC-01
+  - Call `chatNode(...)` (existing A-33 API call); append the AI response as a markdown block to the content area
+  - No TTS in text mode
+
+- [ ] **Voice mode toggle** (VC-01):
+  - Check `SpeechRecognition` availability once on mount; if unavailable, mic button is permanently dimmed and shows the unsupported message on click (VC-06)
+  - Mic button: `opacity: 0.35 / pointerEvents: none` when AI Assist is off (K-08)
+  - Clicking mic while in text mode → enter voice mode: instantiate `SpeechRecognition` (`continuous: true`, `interimResults: false`), start it, show state indicator `Listening`
+  - Clicking mic while in voice mode → exit voice mode: stop `SpeechRecognition`, stop TTS, hide state indicator
+  - Submitting a text message while in voice mode → exit voice mode (same stop sequence) then process the text turn
+
+- [ ] **Voice turn handler** `handleVoiceTurn(transcript)` (VC-03, VC-04, VC-05):
   1. Stop TTS immediately (`stopSpeaking()`)
   2. Set state to `Thinking`
   3. Call `voiceChat(transcript, nodeLabel, nodeDescription, focusQuestion, history, apiKey)`
-  4. Append `{ role: 'user', content: transcript }` and `{ role: 'assistant', content: response.speech }` to history
-  5. If `response.visual` is present, append its markdown to `accumulatedVisual` state
-  6. Set state to `Speaking`; call `speak(response.speech)`
-  7. When speech ends, set state to `Listening`
-- [ ] On unmount: call `stopSpeaking()`, stop `SpeechRecognition`, clear history
+  4. Append `{ role: 'user', content: transcript }` and `{ role: 'assistant', content: response.speech }` to the shared history (VC-07)
+  5. If `response.visual` is present, append its markdown to the content area when audio playback begins (use `onStart` callback — VC-05)
+  6. Set state to `Speaking`; call `speak(response.speech, onStart)`
+  7. When speech ends, set state back to `Listening`
 
-- [ ] Add a voice icon button to the Chat panel header (`src/components/ai/ChatPanel.tsx`):
-  - Icon: microphone or waveform SVG
-  - On click: close Chat panel and open Voice Chat panel for the same node (VC-01)
-  - Dimmed (`opacity: 0.35`, `pointerEvents: 'none'`) when AI Assist is off (K-08) or when `SpeechRecognition` is unavailable (VC-06)
+- [ ] **Conversation history** (VC-07): single unified `history` array shared across text and voice turns; cleared when panel is closed or a different node's Chat is opened
 
-- [ ] Wire panel visibility into `App.tsx` (or equivalent state manager) alongside the existing `chatPanelOpen` / `summaryPanelOpen` state: add `voiceChatPanelOpen` — only one of the three is `true` at a time (VC-01)
+- [ ] On unmount: call `stopSpeaking()`, stop `SpeechRecognition` if active
 
-**Commit:** `feat(VC-01,VC-02,VC-03,VC-05,VC-06,VC-07): VoiceChatPanel component with continuous STT, TTS, visual accumulation, and browser support fallback`
+- [ ] Remove `voiceChatPanelOpen` from `App.tsx` state; only `chatPanelOpen` and `summaryPanelOpen` remain — the voice toggle lives inside ChatPanel
+
+**Commit:** `feat(VC-01,VC-02,VC-03,VC-05,VC-06,VC-07,A-28,A-29): unified Chat panel — centred 70% viewport, text+voice modes, mic toggle next to input`
 
 ---
 
@@ -191,18 +191,20 @@ Extend the Voice Chat Claude response and VoiceChatPanel to support optional con
 
 Start the dev server and use Playwright MCP + Chrome to verify:
 
-- [ ] Voice icon button is visible in the Chat panel header when a Chat panel is open
-- [ ] Voice icon is dimmed when AI Assist is off
-- [ ] Clicking the voice icon closes the Chat panel and opens the Voice Chat panel
-- [ ] Voice Chat panel is centred on screen at approximately 70% width and height
-- [ ] State indicator shows `Listening` on open
-- [ ] Speaking into the microphone (or simulating speech) transitions to `Thinking` then `Speaking`
-- [ ] AI response is read aloud (browser TTS audible)
-- [ ] If the AI returns visual content, it appears in the panel content area
-- [ ] Visual content from a second turn appends below the first (does not replace)
+- [ ] Chat panel opens centred at approximately 70% viewport width and height (not sidebar)
+- [ ] Text input and mic icon button are both visible in the bottom bar; mic is to the right of the input
+- [ ] Typing a message and submitting produces a markdown response in the content area; no audio plays
+- [ ] Mic button is dimmed when AI Assist is off
+- [ ] Clicking the mic button activates voice mode; state indicator shows `Listening`
+- [ ] Speaking into the microphone transitions to `Thinking` then `Speaking`
+- [ ] AI voice response is read aloud (browser TTS audible)
+- [ ] If the AI returns visual content, it appears in the content area when audio begins
+- [ ] Visual content from a second voice turn appends below the first (does not replace)
+- [ ] Clicking the mic button while in voice mode returns to text mode; state indicator disappears
+- [ ] Typing and submitting a message while in voice mode exits voice mode and sends the text turn
 - [ ] Dismiss button closes the panel
-- [ ] Re-opening Voice Chat for the same node starts with empty visual area (fresh history)
-- [ ] On a browser without SpeechRecognition, the voice icon is dimmed; opening the panel shows the unsupported message
+- [ ] Re-opening Chat for the same node starts with empty content (fresh history)
+- [ ] On a browser without SpeechRecognition, the mic button is dimmed and shows unsupported message on click
 - [ ] When the AI returns a `concepts` array, a checklist block appears in the visual area with checkboxes, labels, relationship tags, and descriptions
 - [ ] Apply button is dimmed until at least one concept is checked
 - [ ] Checking concepts and clicking Apply adds nodes to the canvas connected to the originating node
@@ -226,10 +228,10 @@ Log any visual or interaction issues found as `/feedback` entries before committ
 
 | In scope | Out of scope |
 |---|---|
-| Voice Chat panel component and STT/TTS loop | Text Chat panel (A-26–A-33) — do not modify existing chat behaviour |
-| `tts.ts` service with ElevenLabs + speechSynthesis | Settings UI for K-16 — that is the Settings Agent |
-| `voiceChat` function in `claude.ts` | ElevenLabs voice selection — post-MVP |
-| Voice icon button in Chat panel header | — |
+| Rewriting `ChatPanel.tsx` as unified text + voice panel (A-28, A-29, VC-01–VC-07) | Creating a new separate panel for voice |
+| Deleting `VoiceChatPanel.tsx` (replaced by unified ChatPanel) | Settings UI for K-16/K-17 — already done by Settings Agent |
+| `tts.ts` service with ElevenLabs + speechSynthesis | ElevenLabs voice selection beyond K-17 |
+| `voiceChat` function in `claude.ts` | — |
 | VC-08 concept suggestions checklist + Apply → canvas nodes/edges | — |
 
 ---
@@ -241,12 +243,12 @@ When done, the following must exist or be updated:
 ```
 src/
 ├── components/ai/
-│   ├── ChatPanel.tsx           ✓ voice icon button added to header
-│   └── VoiceChatPanel.tsx      ✓ new component (VC-01–VC-07, VC-08 checklist)
+│   ├── ChatPanel.tsx           ✓ rewritten as unified text+voice panel (A-28, A-29, VC-01–VC-07)
+│   └── VoiceChatPanel.tsx      ✗ deleted — replaced by unified ChatPanel
 ├── lib/
 │   ├── claude.ts               ✓ voiceChat function + VC-08 concepts support
-│   └── tts.ts                  ✓ new service
-├── App.tsx                     ✓ handleApplyVoiceConcepts wired to canvas
+│   └── tts.ts                  ✓ TTS service (already exists)
+├── App.tsx                     ✓ handleApplyVoiceConcepts wired; voiceChatPanelOpen state removed
 └── types/index.ts              ✓ VoiceChatMessage, VoiceChatResponse, VoiceChatConcept added
 ```
 
@@ -260,4 +262,4 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 
 ---
 
-*Voice Agent Spec v1.1 — April 2026 (v1.0: VC-01–VC-07, K-16 dependency, Web Speech API + ElevenLabs TTS; v1.1: added VC-08 — concept suggestions checklist with Apply → canvas nodes/edges)*
+*Voice Agent Spec v1.2 — April 2026 (v1.0: VC-01–VC-07, K-16 dependency, Web Speech API + ElevenLabs TTS; v1.1: added VC-08 — concept suggestions checklist with Apply → canvas nodes/edges; v1.2: unified panel redesign — ChatPanel rewritten as single text+voice surface, mic button next to text input, no separate VoiceChatPanel)*
