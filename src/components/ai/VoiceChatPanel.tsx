@@ -1,7 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTheme } from '@/hooks/use-theme'
-import { FONT_FAMILY, FONT_SIZE_SMALL, TRANSITION_FAST, TRANSITION_NORMAL } from '@/lib/theme'
+import {
+  FONT_FAMILY,
+  FONT_SIZE_SMALL,
+  TRANSITION_FAST,
+  TRANSITION_NORMAL,
+  TYPEWRITER_CHAR_DELAY_MS,
+} from '@/lib/theme'
 import { voiceChat } from '@/lib/claude'
 import { speak, stopSpeaking } from '@/lib/tts'
 import { getApiKey } from '@/lib/apiKey'
@@ -25,6 +31,58 @@ interface VoiceChatPanelProps {
   focusQuestion?: string
   onClose: () => void
   onApplyConcepts?: (concepts: VoiceChatConcept[], originNodeId: string) => void
+}
+
+function TypewriterSegment({ content }: { content: string }): React.JSX.Element {
+  const { tokens } = useTheme()
+  const [displayed, setDisplayed] = useState('')
+  const [done, setDone] = useState(false)
+  const indexRef = useRef(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect((): (() => void) => {
+    timerRef.current = setInterval((): void => {
+      indexRef.current += 1
+      setDisplayed(content.slice(0, indexRef.current))
+      if (indexRef.current >= content.length) {
+        if (timerRef.current !== null) clearInterval(timerRef.current)
+        setDone(true)
+      }
+    }, TYPEWRITER_CHAR_DELAY_MS)
+    return (): void => {
+      if (timerRef.current !== null) clearInterval(timerRef.current)
+    }
+  }, [content])
+
+  if (done) {
+    return <>{renderMarkdown(content, tokens)}</>
+  }
+
+  return (
+    <p
+      style={{
+        margin: 0,
+        fontFamily: FONT_FAMILY,
+        fontSize: FONT_SIZE_SMALL,
+        lineHeight: '1.6',
+        color: tokens.COLOR_NODE_TEXT,
+      }}
+    >
+      {displayed}
+      <span
+        aria-hidden="true"
+        style={{
+          display: 'inline-block',
+          width: 2,
+          height: '1em',
+          backgroundColor: tokens.COLOR_NODE_SELECTED,
+          marginLeft: 1,
+          verticalAlign: 'text-bottom',
+          animation: 'cf-cursor-blink 0.8s step-end infinite',
+        }}
+      />
+    </p>
+  )
 }
 
 function StateIndicator({
@@ -169,22 +227,25 @@ export function VoiceChatPanel({
           { role: 'assistant', content: response.speech },
         ]
 
-        if (response.visual) {
-          setVisualSegments(prev => [...prev, { type: 'text', content: response.visual! }])
-        }
-
-        if (response.concepts && response.concepts.length > 0) {
-          const segId = `concepts-${Date.now()}`
-          setVisualSegments(prev => [
-            ...prev,
-            { type: 'concepts', id: segId, items: response.concepts!, applied: false },
-          ])
-        }
-
         if (!isActiveRef.current) return
 
+        // Capture pending visual content — revealed in onStart so text appears with audio
+        const pendingVisual = response.visual
+        const pendingConcepts = response.concepts?.length ? response.concepts : undefined
+        const pendingSegId = `concepts-${Date.now()}`
+
         await speak(response.speech, (): void => {
-          if (isActiveRef.current) updateState('speaking')
+          if (!isActiveRef.current) return
+          updateState('speaking')
+          if (pendingVisual) {
+            setVisualSegments(prev => [...prev, { type: 'text', content: pendingVisual }])
+          }
+          if (pendingConcepts) {
+            setVisualSegments(prev => [
+              ...prev,
+              { type: 'concepts', id: pendingSegId, items: pendingConcepts, applied: false },
+            ])
+          }
         })
 
         if (!isActiveRef.current) return
@@ -356,7 +417,7 @@ export function VoiceChatPanel({
     if (seg.type === 'text') {
       return (
         <div key={i} style={dividerStyle}>
-          {renderMarkdown(seg.content, tokens)}
+          <TypewriterSegment content={seg.content} />
         </div>
       )
     }
@@ -501,6 +562,7 @@ export function VoiceChatPanel({
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
+        @keyframes cf-cursor-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         .cf-voice-close:hover { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; }
         .cf-voice-close:focus-visible { outline: 2px solid ${tokens.COLOR_NODE_SELECTED}; outline-offset: 2px; }
       `}</style>
