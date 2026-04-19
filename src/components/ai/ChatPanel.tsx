@@ -682,7 +682,7 @@ export function ChatPanel({
           width: '70vw',
           maxWidth: 860,
           height: '70vh',
-          backgroundColor: tokens.COLOR_PANEL_BG,
+          backgroundColor: `${tokens.COLOR_PANEL_BG}cc`,
           border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
           borderRadius: 12,
           display: 'flex',
