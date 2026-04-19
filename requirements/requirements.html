@@ -209,7 +209,7 @@
     <div class="logo">ConceptForge</div>
     <h1>Requirements Definition</h1>
     <p class="subtitle">AI-Assisted Concept Map Creation — Web Application</p>
-    <span class="version-badge">v6.9 &nbsp;·&nbsp; April 2026</span>
+    <span class="version-badge">v7.0 &nbsp;·&nbsp; April 2026</span>
   </header>
 
   <!-- 1. Overview -->
@@ -328,7 +328,7 @@
         <tr><td>✅</td><td class="req-id">A-10</td><td>When expanding a node that has a non-empty description (C-28), include the description as additional context in the AI prompt alongside the node label &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td>✅</td><td class="req-id">A-26</td><td>Add a "Chat" item to the concept node right-click context menu; the item is always visible; when AI Assist is off it is dimmed and non-interactive, matching the availability behaviour of Expand (K-08) &nbsp;<span class="badge badge-core">NEW</span></td></tr>
         <tr><td>✅</td><td class="req-id">A-27</td><td>Selecting "Chat" opens the AI Chat panel; if the Summary Panel is currently visible, dismiss it and replace it with the Chat panel; both panels cannot be visible at the same time &nbsp;<span class="badge badge-core">NEW</span></td></tr>
-        <tr><td>✅</td><td class="req-id">A-28</td><td>Display the Chat panel centred in the viewport at 70% of viewport width and 70% of viewport height; the panel contains a heading identifying the node being discussed, a scrollable accumulating content area where AI responses are rendered as markdown, and a bottom bar containing a text input field and a mic icon button placed immediately to the right of the input &nbsp;<span class="badge badge-updated">UPDATED</span></td></tr>
+        <tr><td>✅</td><td class="req-id">A-28</td><td>Display the Chat panel centred in the viewport at 70% of viewport width and 70% of viewport height; the panel contains a heading identifying the node being discussed, a scrollable accumulating content area where AI responses are rendered as markdown, and a bottom bar containing a text input field and a mic icon button placed immediately to the right of the input; the panel background must be rendered at 80% opacity (20% transparent), allowing the canvas behind it to show through subtly; the backdrop overlay behind the panel is unaffected &nbsp;<span class="badge badge-updated">UPDATED</span></td></tr>
         <tr><td>✅</td><td class="req-id">A-29</td><td>Text mode is the default on open; the user types a message in the text input and submits it (Enter key or send button); the AI responds with markdown text rendered and appended to the accumulating content area; no TTS is triggered in text mode; every AI request includes the node's label, its description (if present), and the current focus question as context &nbsp;<span class="badge badge-updated">UPDATED</span></td></tr>
         <tr><td>✅</td><td class="req-id">A-30</td><td>The conversation history (text and voice turns combined) persists while the Chat panel is open; history is cleared when the panel is dismissed or when Chat is opened for a different node &nbsp;<span class="badge badge-updated">UPDATED</span></td></tr>
         <tr><td>✅</td><td class="req-id">A-32</td><td>The reading panel is centred in the viewport, sized at 70% of viewport width and 70% of viewport height; it renders the AI message content as markdown (bold, headings, bullet lists, code blocks); it contains an explicit dismiss button and also closes when the user clicks outside the panel boundary</td></tr>
@@ -657,7 +657,8 @@
     <p><strong>Version 6.7</strong> — April 2026 — Marked K-15, K-16, VC-01–VC-07 as implemented; added K-17 (ElevenLabs Voice ID — optional custom voice, defaults to Rachel, persisted in localStorage); added VC-08 (voice-chat concept suggestions — optional <code>concepts</code> array in AI response, checklist UI, Apply creates nodes + edges with branching edge promotion); updated VC-05 to reflect that visual content appears when audio begins and that SpeechRecognition results are discarded during TTS playback (feedback prevention)</p>
     <p><strong>Version 6.8</strong> — April 2026 — Updated A-28 (Chat panel redesigned as centred 70% viewport panel with accumulating content area and bottom bar with text input + mic button); updated A-29 (text mode default, no TTS, responses accumulate); retired A-31 (per-message reading view button removed); updated VC-01 (mic button next to text input toggles voice mode on/off; submitting text while in voice mode exits voice mode); updated VC-02 (Chat panel is the single unified surface for text and voice — no separate Voice Chat panel); updated VC-03 (<code>SpeechRecognition</code> active only while voice mode is on, stopped on deactivation); updated VC-07 (single unified conversation history across text and voice turns)</p>
     <p><strong>Version 6.9</strong> — April 2026 — Added K-18 (Enable ElevenLabs TTS toggle: positioned above K-16 API key input, defaults off, persisted to localStorage; when off, all Voice Chat TTS uses browser speechSynthesis regardless of stored key)</p>
-    ConceptForge &nbsp;·&nbsp; Requirements Definition v6.9 &nbsp;·&nbsp; April 2026
+    <p><strong>Version 7.0</strong> — April 2026 — Updated A-28: Chat panel background rendered at 80% opacity (20% transparent); backdrop overlay unaffected</p>
+    ConceptForge &nbsp;·&nbsp; Requirements Definition v7.0 &nbsp;·&nbsp; April 2026
   </footer>
 
 </div>
