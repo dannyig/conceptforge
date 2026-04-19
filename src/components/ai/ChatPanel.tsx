@@ -1,7 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTheme } from '@/hooks/use-theme'
-import { FONT_FAMILY, FONT_SIZE_SMALL, TRANSITION_FAST, TRANSITION_NORMAL } from '@/lib/theme'
+import {
+  FOCUS_BAR_HEIGHT,
+  FONT_FAMILY,
+  FONT_SIZE_SMALL,
+  TRANSITION_FAST,
+  TRANSITION_NORMAL,
+} from '@/lib/theme'
 import { chatNode, voiceChat, type ChatMessage } from '@/lib/claude'
 import { speak, stopSpeaking } from '@/lib/tts'
 import { getApiKey } from '@/lib/apiKey'
@@ -11,6 +17,8 @@ import type { VoiceChatConcept, VoiceChatMessage } from '@/types'
 
 const SPEECH_SEND_DEBOUNCE_MS = 1500
 const VOICE_TURN_TIMEOUT_MS = 60_000
+// Position: below focus bar (52) + AppMenu top offset (16) + button height (~34) + gap (8)
+const MINIMISED_BAR_TOP = FOCUS_BAR_HEIGHT + 16 + 34 + 8
 
 type VoiceState = 'listening' | 'thinking' | 'speaking'
 
@@ -109,6 +117,9 @@ export function ChatPanel({
   const [isVoiceMode, setIsVoiceMode] = useState(false)
   const [voiceState, setVoiceState] = useState<VoiceState | null>(null)
   const [speechSupported, setSpeechSupported] = useState(true)
+
+  // Minimise state (A-42)
+  const [isMinimised, setIsMinimised] = useState(false)
 
   // Refs
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -642,6 +653,188 @@ export function ChatPanel({
     )
   }
 
+  // A-42–A-45: minimised bar — no backdrop so canvas stays interactive
+  if (isMinimised) {
+    return createPortal(
+      <div
+        style={{
+          position: 'fixed',
+          top: MINIMISED_BAR_TOP,
+          right: 16,
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '6px 10px',
+          backgroundColor: `${tokens.COLOR_PANEL_BG}cc`,
+          border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
+          borderRadius: 8,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+          fontFamily: FONT_FAMILY,
+          maxWidth: 320,
+        }}
+        role="region"
+        aria-label={`Chat — ${nodeLabel} (minimised)`}
+      >
+        <style>{`
+          @keyframes cf-chat-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(1.2); } }
+          @keyframes cf-chat-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+          .cf-chat-mic:hover:not(:disabled) { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; }
+          .cf-min-btn:hover { background-color: ${tokens.COLOR_BUTTON_GHOST_HOVER_BG} !important; }
+        `}</style>
+
+        {/* Node label */}
+        <span
+          style={{
+            fontSize: FONT_SIZE_SMALL,
+            color: tokens.COLOR_TEXT_MUTED,
+            fontWeight: 600,
+            letterSpacing: '0.04em',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            maxWidth: 120,
+            flexShrink: 1,
+          }}
+          title={nodeLabel}
+        >
+          {nodeLabel}
+        </span>
+
+        {/* Voice state indicator — only when voice mode active */}
+        {voiceState !== null && (
+          <>
+            <StateIndicator state={voiceState} accentColor={tokens.COLOR_NODE_SELECTED} />
+            <span
+              aria-live="polite"
+              style={{
+                fontSize: FONT_SIZE_SMALL,
+                color: tokens.COLOR_TEXT_MUTED,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {voiceStatusLabel}
+            </span>
+          </>
+        )}
+
+        {/* Mic toggle */}
+        <button
+          className="cf-chat-mic"
+          onClick={handleMicClick}
+          disabled={micDisabled}
+          aria-label={micTitle}
+          title={micTitle}
+          style={{
+            flexShrink: 0,
+            padding: '4px 6px',
+            background: isVoiceMode ? `${tokens.COLOR_NODE_SELECTED}22` : 'transparent',
+            border: `1px solid ${isVoiceMode ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_NODE_BORDER}`,
+            borderRadius: 4,
+            cursor: micDisabled ? 'not-allowed' : 'pointer',
+            opacity: micDisabled ? 0.35 : 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: `background-color ${TRANSITION_FAST}, border-color ${TRANSITION_FAST}`,
+          }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect
+              x="9"
+              y="2"
+              width="6"
+              height="12"
+              rx="3"
+              stroke={isVoiceMode ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_TEXT_MUTED}
+              strokeWidth="2"
+            />
+            <path
+              d="M5 11a7 7 0 0 0 14 0"
+              stroke={isVoiceMode ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_TEXT_MUTED}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <line
+              x1="12"
+              y1="18"
+              x2="12"
+              y2="22"
+              stroke={isVoiceMode ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_TEXT_MUTED}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <line
+              x1="9"
+              y1="22"
+              x2="15"
+              y2="22"
+              stroke={isVoiceMode ? tokens.COLOR_NODE_SELECTED : tokens.COLOR_TEXT_MUTED}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+
+        {/* Maximise button */}
+        <button
+          className="cf-min-btn"
+          onClick={(): void => setIsMinimised(false)}
+          aria-label="Restore chat panel"
+          title="Restore chat panel"
+          style={{
+            flexShrink: 0,
+            padding: '4px 6px',
+            background: 'transparent',
+            border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
+            borderRadius: 4,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: `background-color ${TRANSITION_FAST}`,
+          }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <polyline
+              points="15 3 21 3 21 9"
+              stroke={tokens.COLOR_TEXT_MUTED}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <polyline
+              points="9 21 3 21 3 15"
+              stroke={tokens.COLOR_TEXT_MUTED}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <line
+              x1="21"
+              y1="3"
+              x2="14"
+              y2="10"
+              stroke={tokens.COLOR_TEXT_MUTED}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <line
+              x1="3"
+              y1="21"
+              x2="10"
+              y2="14"
+              stroke={tokens.COLOR_TEXT_MUTED}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+      </div>,
+      document.body
+    )
+  }
+
   return createPortal(
     <div
       role="dialog"
@@ -719,6 +912,41 @@ export function ChatPanel({
           >
             Chat — {nodeLabel}
           </span>
+          {/* Minimise button (A-42) */}
+          <button
+            className="cf-chat-dismiss"
+            onClick={(): void => setIsMinimised(true)}
+            aria-label="Minimise chat panel"
+            title="Minimise"
+            style={{
+              flexShrink: 0,
+              padding: '2px 8px',
+              background: 'transparent',
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
+              borderRadius: 4,
+              fontFamily: FONT_FAMILY,
+              fontSize: '10px',
+              color: tokens.COLOR_TEXT_MUTED,
+              cursor: 'pointer',
+              transition: `background-color ${TRANSITION_FAST}`,
+              marginLeft: 12,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <line
+                x1="5"
+                y1="12"
+                x2="19"
+                y2="12"
+                stroke={tokens.COLOR_TEXT_MUTED}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
           <button
             className="cf-chat-dismiss"
             onClick={onDismiss}
@@ -734,7 +962,7 @@ export function ChatPanel({
               color: tokens.COLOR_TEXT_MUTED,
               cursor: 'pointer',
               transition: `background-color ${TRANSITION_FAST}`,
-              marginLeft: 12,
+              marginLeft: 6,
             }}
           >
             Dismiss
