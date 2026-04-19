@@ -10,6 +10,7 @@ import { renderMarkdown } from '@/lib/markdown'
 import type { VoiceChatConcept, VoiceChatMessage } from '@/types'
 
 const SPEECH_SEND_DEBOUNCE_MS = 1500
+const VOICE_TURN_TIMEOUT_MS = 60_000
 
 type VoiceState = 'listening' | 'thinking' | 'speaking'
 
@@ -186,15 +187,22 @@ export function ChatPanel({
 
       setSegments(prev => [...prev, { type: 'user', text: transcript }])
 
+      const timeoutGuard = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('voice-timeout')), VOICE_TURN_TIMEOUT_MS)
+      )
+
       try {
-        const response = await voiceChat(
-          nodeLabel,
-          nodeDescription,
-          focusQuestion,
-          historyRef.current as VoiceChatMessage[],
-          transcript,
-          apiKey
-        )
+        const response = await Promise.race([
+          voiceChat(
+            nodeLabel,
+            nodeDescription,
+            focusQuestion,
+            historyRef.current as VoiceChatMessage[],
+            transcript,
+            apiKey
+          ),
+          timeoutGuard,
+        ])
 
         if (!isActiveRef.current) return
 
@@ -208,20 +216,23 @@ export function ChatPanel({
         const pendingConcepts = response.concepts?.length ? response.concepts : undefined
         const pendingSegId = `concepts-${Date.now()}`
 
-        await speak(response.speech, (): void => {
-          if (!isActiveRef.current) return
-          voiceStateRef.current = 'speaking'
-          setVoiceState('speaking')
-          if (pendingVisual) {
-            setSegments(prev => [...prev, { type: 'ai', content: pendingVisual }])
-          }
-          if (pendingConcepts) {
-            setSegments(prev => [
-              ...prev,
-              { type: 'concepts', id: pendingSegId, items: pendingConcepts, applied: false },
-            ])
-          }
-        })
+        await Promise.race([
+          speak(response.speech, (): void => {
+            if (!isActiveRef.current) return
+            voiceStateRef.current = 'speaking'
+            setVoiceState('speaking')
+            if (pendingVisual) {
+              setSegments(prev => [...prev, { type: 'ai', content: pendingVisual }])
+            }
+            if (pendingConcepts) {
+              setSegments(prev => [
+                ...prev,
+                { type: 'concepts', id: pendingSegId, items: pendingConcepts, applied: false },
+              ])
+            }
+          }),
+          timeoutGuard,
+        ])
 
         if (!isActiveRef.current) return
         if (isVoiceModeRef.current) {
