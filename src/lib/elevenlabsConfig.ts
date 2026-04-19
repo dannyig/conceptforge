@@ -1,5 +1,6 @@
 const ELEVENLABS_KEY_STORAGE_KEY = 'conceptforge:elevenlabs-api-key'
 const ELEVENLABS_VOICE_ID_STORAGE_KEY = 'conceptforge:elevenlabs-voice-id'
+const ELEVENLABS_ENABLED_STORAGE_KEY = 'conceptforge:elevenlabs-enabled'
 
 // Default voice: Rachel — a warm, neutral English voice suitable for conversation
 export const ELEVENLABS_DEFAULT_VOICE_ID = '21m00Tcm4TlvDq8ikWAM'
@@ -27,4 +28,13 @@ export function setElevenLabsVoiceId(id: string): void {
 
 export function clearElevenLabsVoiceId(): void {
   localStorage.removeItem(ELEVENLABS_VOICE_ID_STORAGE_KEY)
+}
+
+// K-18: ElevenLabs TTS enabled toggle — defaults off
+export function getElevenLabsEnabled(): boolean {
+  return localStorage.getItem(ELEVENLABS_ENABLED_STORAGE_KEY) === 'true'
+}
+
+export function setElevenLabsEnabled(enabled: boolean): void {
+  localStorage.setItem(ELEVENLABS_ENABLED_STORAGE_KEY, String(enabled))
 }

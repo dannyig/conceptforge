@@ -1,5 +1,9 @@
 // TTS service — ElevenLabs streaming when available, blob fallback, speechSynthesis last resort
-import { getElevenLabsKey, getElevenLabsVoiceId } from '@/lib/elevenlabsConfig'
+import {
+  getElevenLabsEnabled,
+  getElevenLabsKey,
+  getElevenLabsVoiceId,
+} from '@/lib/elevenlabsConfig'
 
 const ELEVENLABS_TTS_BASE = 'https://api.elevenlabs.io/v1/text-to-speech'
 const ELEVENLABS_MODEL = 'eleven_turbo_v2_5'
@@ -43,7 +47,7 @@ export function stopSpeaking(): void {
 export async function speak(text: string, onStart?: () => void): Promise<void> {
   stopSpeaking()
   const callId = activeSpeakId
-  const key = getElevenLabsKey()
+  const key = getElevenLabsEnabled() ? getElevenLabsKey() : null
   if (key) {
     try {
       return await speakElevenLabs(callId, text, key, onStart)

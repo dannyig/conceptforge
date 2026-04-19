@@ -32,8 +32,10 @@ import {
   clearElevenLabsKey,
   clearElevenLabsVoiceId,
   ELEVENLABS_DEFAULT_VOICE_ID,
+  getElevenLabsEnabled,
   getElevenLabsKey,
   getElevenLabsVoiceId,
+  setElevenLabsEnabled,
   setElevenLabsKey,
   setElevenLabsVoiceId,
 } from '@/lib/elevenlabsConfig'
@@ -68,6 +70,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
   const [urlMapPrompt, setUrlMapPromptLocal] = useState<string>(() => getUrlMapPrompt())
   const [jinaApiKeyDraft, setJinaApiKeyDraft] = useState<string>('')
   const [jinaApiKeySaved, setJinaApiKeySaved] = useState<boolean>(() => !!getJinaApiKey())
+  const [elevenLabsEnabled, setElevenLabsEnabledLocal] = useState<boolean>(() =>
+    getElevenLabsEnabled()
+  )
   const [elevenLabsKeyDraft, setElevenLabsKeyDraft] = useState<string>('')
   const [elevenLabsKeySaved, setElevenLabsKeySaved] = useState<boolean>(() => !!getElevenLabsKey())
   const [elevenLabsVoiceId, setElevenLabsVoiceIdLocal] = useState<string>(() =>
@@ -1081,6 +1086,57 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
             >
               Optional — uses browser speech synthesis when no key is stored.
             </p>
+
+            {/* K-18: Enable ElevenLabs TTS toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span
+                style={{
+                  fontFamily: FONT_FAMILY,
+                  fontSize: FONT_SIZE_SMALL,
+                  color: tokens.COLOR_NODE_TEXT,
+                }}
+              >
+                {elevenLabsEnabled ? 'ElevenLabs TTS enabled' : 'ElevenLabs TTS disabled'}
+              </span>
+              <button
+                role="switch"
+                aria-checked={elevenLabsEnabled}
+                aria-label="Toggle ElevenLabs TTS"
+                onClick={(): void => {
+                  const next = !elevenLabsEnabled
+                  setElevenLabsEnabled(next)
+                  setElevenLabsEnabledLocal(next)
+                }}
+                style={{
+                  flexShrink: 0,
+                  position: 'relative',
+                  width: 40,
+                  height: 22,
+                  borderRadius: 11,
+                  border: 'none',
+                  backgroundColor: elevenLabsEnabled
+                    ? tokens.COLOR_NODE_SELECTED
+                    : tokens.COLOR_INPUT_BORDER,
+                  cursor: 'pointer',
+                  transition: `background-color ${TRANSITION_NORMAL}`,
+                  padding: 0,
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    top: 3,
+                    left: elevenLabsEnabled ? 21 : 3,
+                    width: 16,
+                    height: 16,
+                    borderRadius: '50%',
+                    backgroundColor: '#fff',
+                    transition: `left ${TRANSITION_NORMAL}`,
+                  }}
+                />
+              </button>
+            </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label
