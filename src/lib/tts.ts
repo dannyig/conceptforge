@@ -258,15 +258,27 @@ async function speakElevenLabsBlob(
 function speakBrowser(text: string, onStart?: () => void): Promise<void> {
   return new Promise((resolve, reject) => {
     const utterance = new SpeechSynthesisUtterance(text)
+
+    // Chrome's speechSynthesis onend often never fires — safety net prevents forever-hang
+    const wordCount = text.split(/\s+/).length
+    const safetyMs = Math.max(10_000, wordCount * 200 + 5_000)
+    const safetyTimer = setTimeout(resolve, safetyMs)
+
+    const finish = (err?: Error): void => {
+      clearTimeout(safetyTimer)
+      if (err) reject(err)
+      else resolve()
+    }
+
     utterance.onstart = (): void => {
       onStart?.()
     }
-    utterance.onend = (): void => resolve()
+    utterance.onend = (): void => finish()
     utterance.onerror = (e: SpeechSynthesisErrorEvent): void => {
       if (e.error === 'interrupted' || e.error === 'canceled') {
-        resolve()
+        finish()
       } else {
-        reject(new Error(`TTS error: ${e.error}`))
+        finish(new Error(`TTS error: ${e.error}`))
       }
     }
     speechSynthesis.speak(utterance)
