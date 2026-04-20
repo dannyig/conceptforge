@@ -227,11 +227,33 @@ export function ChatPanel({
         const pendingConcepts = response.concepts?.length ? response.concepts : undefined
         const pendingSegId = `concepts-${Date.now()}`
 
+        // Transition to speaking — set state immediately (don't wait for onStart,
+        // Chrome's speechSynthesis.onstart often never fires).
+        voiceStateRef.current = 'speaking'
+        setVoiceState('speaking')
+
+        // Stop recognition while TTS plays to prevent audio feedback loop:
+        // Chrome fires delayed onresult after state returns to 'listening', causing
+        // the TTS output to be transcribed and sent as the next user turn.
+        const recForStop = recognitionRef.current
+        if (recForStop && isRecognizingRef.current) {
+          try {
+            recForStop.stop()
+          } catch {
+            /* ignore */
+          }
+        }
+        // Clear any transcript buffered before we stopped
+        if (sendTimerRef.current) {
+          clearTimeout(sendTimerRef.current)
+          sendTimerRef.current = null
+        }
+        pendingTranscriptRef.current = ''
+
         await Promise.race([
           speak(response.speech, (): void => {
+            // onStart: sync visual content with audio playback start
             if (!isActiveRef.current) return
-            voiceStateRef.current = 'speaking'
-            setVoiceState('speaking')
             if (pendingVisual) {
               setSegments(prev => [...prev, { type: 'ai', content: pendingVisual }])
             }
@@ -249,6 +271,10 @@ export function ChatPanel({
         if (isVoiceModeRef.current) {
           voiceStateRef.current = 'listening'
           setVoiceState('listening')
+          // Delay mic restart so any TTS audio still in the capture buffer drains
+          // before recognition resumes — prevents the echo being fed back as input.
+          await new Promise<void>(resolve => setTimeout(resolve, 800))
+          if (!isActiveRef.current || !isVoiceModeRef.current) return
           const rec = recognitionRef.current
           if (rec && !isRecognizingRef.current) {
             try {
@@ -269,6 +295,10 @@ export function ChatPanel({
 
   // Initialize SpeechRecognition once on mount — start/stop driven by voice mode toggle
   useEffect((): (() => void) => {
+    // React StrictMode double-invokes effects in dev: first cleanup sets isActiveRef to false,
+    // second run must reset it to true or all voice API calls bail out immediately.
+    isActiveRef.current = true
+
     const SpeechRecCtor = window.SpeechRecognition ?? window.webkitSpeechRecognition
     if (!SpeechRecCtor) {
       setSpeechSupported(false)
