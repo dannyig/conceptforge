@@ -20,6 +20,11 @@ import {
   setEdgeLabelPrompt,
 } from '@/lib/edgeLabelPrompts'
 import { DEFAULT_URL_MAP_PROMPT, getUrlMapPrompt, setUrlMapPrompt } from '@/lib/urlMapPrompts'
+import {
+  DEFAULT_NODE_DESCRIPTION_PROMPT,
+  getNodeDescriptionPrompt,
+  setNodeDescriptionPrompt,
+} from '@/lib/nodeDescriptionPrompts'
 import { CLAUDE_MODELS, type ClaudeModelId, getModel, setModel } from '@/lib/modelConfig'
 import {
   clearJinaApiKey,
@@ -68,6 +73,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
   )
   const [edgeLabelPrompt, setEdgeLabelPromptLocal] = useState<string>(() => getEdgeLabelPrompt())
   const [urlMapPrompt, setUrlMapPromptLocal] = useState<string>(() => getUrlMapPrompt())
+  const [nodeDescriptionPrompt, setNodeDescriptionPromptLocal] = useState<string>(() =>
+    getNodeDescriptionPrompt()
+  )
   const [jinaApiKeyDraft, setJinaApiKeyDraft] = useState<string>('')
   const [jinaApiKeySaved, setJinaApiKeySaved] = useState<boolean>(() => !!getJinaApiKey())
   const [elevenLabsEnabled, setElevenLabsEnabledLocal] = useState<boolean>(() =>
@@ -840,6 +848,73 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps): React.JS
                 setUrlMapPrompt(e.target.value)
               }}
               aria-label="URL Map Generation system prompt"
+              rows={6}
+              style={{
+                width: '100%',
+                background: tokens.COLOR_INPUT_BG,
+                border: `1px solid ${tokens.COLOR_INPUT_BORDER}`,
+                borderRadius: 4,
+                color: tokens.COLOR_NODE_TEXT,
+                fontFamily: FONT_FAMILY,
+                fontSize: '11px',
+                lineHeight: 1.6,
+                padding: '8px',
+                resize: 'vertical',
+                outline: 'none',
+                boxSizing: 'border-box',
+                transition: `border-color ${TRANSITION_FAST}`,
+              }}
+              onFocus={(e): void => {
+                e.currentTarget.style.borderColor = tokens.COLOR_INPUT_FOCUS_BORDER
+              }}
+              onBlur={(e): void => {
+                e.currentTarget.style.borderColor = tokens.COLOR_INPUT_BORDER
+              }}
+            />
+          </div>
+
+          {/* K-19: Node Description system prompt */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span
+                style={{
+                  fontSize: FONT_SIZE_SMALL,
+                  color: tokens.COLOR_TEXT_MUTED,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  fontWeight: '600',
+                }}
+              >
+                Node Description
+              </span>
+              <button
+                onClick={(): void => {
+                  setNodeDescriptionPromptLocal(DEFAULT_NODE_DESCRIPTION_PROMPT)
+                  setNodeDescriptionPrompt(DEFAULT_NODE_DESCRIPTION_PROMPT)
+                }}
+                style={{
+                  background: 'transparent',
+                  border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
+                  borderRadius: 4,
+                  padding: '2px 8px',
+                  fontFamily: FONT_FAMILY,
+                  fontSize: '10px',
+                  color: tokens.COLOR_TEXT_MUTED,
+                  cursor: 'pointer',
+                  transition: `background-color ${TRANSITION_FAST}`,
+                }}
+                className="cf-settings-reset"
+              >
+                Reset to default
+              </button>
+            </div>
+            <textarea
+              value={nodeDescriptionPrompt}
+              onChange={(e): void => {
+                setNodeDescriptionPromptLocal(e.target.value)
+                setNodeDescriptionPrompt(e.target.value)
+              }}
+              aria-label="Node Description system prompt"
               rows={6}
               style={{
                 width: '100%',
