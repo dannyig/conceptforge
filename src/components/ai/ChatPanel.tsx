@@ -13,7 +13,7 @@ import { speak, stopSpeaking } from '@/lib/tts'
 import { getApiKey } from '@/lib/apiKey'
 import { getConceptChatPrompt } from '@/lib/chatPrompts'
 import { renderMarkdown } from '@/lib/markdown'
-import type { VoiceChatConcept, VoiceChatMessage } from '@/types'
+import type { AdjacentConcept, VoiceChatConcept, VoiceChatMessage } from '@/types'
 
 const SPEECH_SEND_DEBOUNCE_MS = 1500
 const VOICE_TURN_TIMEOUT_MS = 60_000
@@ -31,6 +31,7 @@ interface ChatPanelProps {
   nodeId: string
   nodeLabel: string
   nodeDescription?: string
+  adjacentConcepts?: AdjacentConcept[]
   focusQuestion?: string
   onDismiss: () => void
   onApplyConcepts?: (concepts: VoiceChatConcept[], originNodeId: string) => void
@@ -97,6 +98,7 @@ export function ChatPanel({
   nodeId,
   nodeLabel,
   nodeDescription,
+  adjacentConcepts = [],
   focusQuestion,
   onDismiss,
   onApplyConcepts,
@@ -208,6 +210,7 @@ export function ChatPanel({
             nodeLabel,
             nodeDescription,
             focusQuestion,
+            adjacentConcepts,
             historyRef.current as VoiceChatMessage[],
             transcript,
             apiKey
@@ -291,7 +294,7 @@ export function ChatPanel({
         }
       }
     }
-  }, [nodeLabel, nodeDescription, focusQuestion])
+  }, [nodeLabel, nodeDescription, focusQuestion, adjacentConcepts])
 
   // Initialize SpeechRecognition once on mount — start/stop driven by voice mode toggle
   useEffect((): (() => void) => {
@@ -419,6 +422,7 @@ export function ChatPanel({
         nodeLabel,
         nodeDescription,
         focusQuestion,
+        adjacentConcepts,
         priorHistory,
         text,
         apiKey,
@@ -436,7 +440,15 @@ export function ChatPanel({
     } finally {
       setIsTextLoading(false)
     }
-  }, [draft, isTextLoading, nodeLabel, nodeDescription, focusQuestion, exitVoiceMode])
+  }, [
+    draft,
+    isTextLoading,
+    nodeLabel,
+    nodeDescription,
+    focusQuestion,
+    adjacentConcepts,
+    exitVoiceMode,
+  ])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>): void => {

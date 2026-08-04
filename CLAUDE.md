@@ -251,6 +251,13 @@ interface ExpandNodeRequest {
   nodeLabel: string
   existingNodes: ConceptNode[]
 }
+
+interface AdjacentConcept {
+  label: string
+  description?: string
+  edgeLabel: string           // never '?' — unlabeled edges are excluded
+  direction: 'outgoing' | 'incoming'
+}
 ```
 
 ### Rules

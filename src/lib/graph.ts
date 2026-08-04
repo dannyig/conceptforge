@@ -1,5 +1,5 @@
 // Node layout utilities
-import type { ConceptNode } from '@/types'
+import type { AdjacentConcept, ConceptNode } from '@/types'
 
 // A-24: approximate node bounding box used for clearance calculations
 const NODE_W = 180 // px — wider than the visual node to absorb label overflow
@@ -141,4 +141,92 @@ export function ringPositions(
     x: Math.round(cx + radius * Math.cos((2 * Math.PI * i) / count)),
     y: Math.round(cy + radius * Math.sin((2 * Math.PI * i) / count)),
   }))
+}
+
+// A-29/VC-04: minimal structural shapes accepted by getAdjacentConcepts — the Canvas's
+// internal React Flow nodes/edges satisfy these without any conversion.
+export interface AdjacentConceptNode {
+  id: string
+  type?: string // 'branchHub' identifies a branching-edge label hub
+  data: {
+    label: string
+    description?: string
+  }
+}
+
+export interface AdjacentConceptEdge {
+  source: string
+  target: string
+  data?: {
+    label?: string
+    isStem?: boolean // stem edge: branch source -> hub
+    isBranch?: boolean // branch arrow: hub -> branch target
+  }
+}
+
+// A-29/VC-04: derive the concepts directly adjacent to a node for use as chat context.
+// Shared by the Chat panel (text mode) and Voice Chat (voice mode) — do not duplicate this logic.
+//
+// Rules:
+// - Single edges connected to the node (as source or target) with a label other than '?'
+// - If the node is the source of a branching edge, each of its targets (shared branch label)
+// - If the node is a target of a branching edge, only the hub's source (shared branch label) —
+//   sibling targets under the same hub are not included
+// - No cap on the number of results
+export function getAdjacentConcepts(
+  nodeId: string,
+  nodes: AdjacentConceptNode[],
+  edges: AdjacentConceptEdge[]
+): AdjacentConcept[] {
+  const nodeById = new Map(nodes.map(n => [n.id, n]))
+  const results: AdjacentConcept[] = []
+
+  const addIfValid = (
+    neighbourId: string,
+    edgeLabel: string | undefined,
+    direction: AdjacentConcept['direction']
+  ): void => {
+    if (!edgeLabel || edgeLabel === '?') return
+    const neighbour = nodeById.get(neighbourId)
+    if (!neighbour) return
+    results.push({
+      label: neighbour.data.label,
+      description: neighbour.data.description,
+      edgeLabel,
+      direction,
+    })
+  }
+
+  // Direct single edges (excludes stem/branch edges, handled separately below)
+  for (const edge of edges) {
+    if (edge.data?.isStem || edge.data?.isBranch) continue
+    if (edge.source === nodeId) {
+      addIfValid(edge.target, edge.data?.label, 'outgoing')
+    } else if (edge.target === nodeId) {
+      addIfValid(edge.source, edge.data?.label, 'incoming')
+    }
+  }
+
+  // Node is the source of one or more branching edges — include every target
+  for (const stem of edges) {
+    if (!stem.data?.isStem || stem.source !== nodeId) continue
+    const hubId = stem.target
+    const hubLabel = nodeById.get(hubId)?.data.label
+    for (const branch of edges) {
+      if (branch.data?.isBranch && branch.source === hubId) {
+        addIfValid(branch.target, hubLabel, 'outgoing')
+      }
+    }
+  }
+
+  // Node is a target of a branching edge — include only the hub's source, not siblings
+  for (const branch of edges) {
+    if (!branch.data?.isBranch || branch.target !== nodeId) continue
+    const hubId = branch.source
+    const hubLabel = nodeById.get(hubId)?.data.label
+    const stem = edges.find(e => e.data?.isStem && e.target === hubId)
+    if (stem) addIfValid(stem.source, hubLabel, 'incoming')
+  }
+
+  return results
 }

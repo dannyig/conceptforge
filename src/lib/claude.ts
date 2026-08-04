@@ -1,5 +1,6 @@
 // Claude API client
 import type {
+  AdjacentConcept,
   ClaudeMapResponse,
   ExpandNodeRequest,
   SummaryResource,
@@ -11,6 +12,18 @@ import { getModel } from '@/lib/modelConfig'
 import { getUrlMapPrompt } from '@/lib/urlMapPrompts'
 
 const API_URL = 'https://api.anthropic.com/v1/messages'
+
+// A-29/VC-04: format a node's adjacent concepts as system-prompt context.
+// Shared by chatNode (text mode) and voiceChat (voice mode) — do not duplicate this formatting.
+function formatAdjacentConcepts(adjacentConcepts: AdjacentConcept[]): string {
+  if (adjacentConcepts.length === 0) return ''
+  const lines = adjacentConcepts.map(c => {
+    const relationship = c.direction === 'outgoing' ? `--${c.edgeLabel}-->` : `<--${c.edgeLabel}--`
+    const description = c.description ? ` (${c.description})` : ''
+    return `- ${relationship} ${c.label}${description}`
+  })
+  return `\n\nAdjacent concepts on the map:\n${lines.join('\n')}`
+}
 
 // Internal type for Mode 2 (A-13, A-15) concept suggestions
 export interface ConceptSuggestion {
@@ -328,6 +341,7 @@ export async function chatNode(
   nodeLabel: string,
   nodeDescription: string | undefined,
   focusQuestion: string | undefined,
+  adjacentConcepts: AdjacentConcept[],
   history: ChatMessage[],
   userMessage: string,
   apiKey: string,
@@ -344,6 +358,8 @@ export async function chatNode(
   if (focusQuestion) {
     systemPrompt += `\n\nThe user is exploring this concept in the context of the following focus question: "${focusQuestion}"`
   }
+
+  systemPrompt += formatAdjacentConcepts(adjacentConcepts)
 
   const messages = [
     ...history.map(m => ({ role: m.role, content: m.content })),
@@ -575,6 +591,7 @@ export async function voiceChat(
   nodeLabel: string,
   nodeDescription: string | undefined,
   focusQuestion: string | undefined,
+  adjacentConcepts: AdjacentConcept[],
   history: VoiceChatMessage[],
   userSpeech: string,
   apiKey: string
@@ -593,6 +610,7 @@ export async function voiceChat(
   if (focusQuestion) {
     systemPrompt += `\n\nMap focus question: "${focusQuestion}"`
   }
+  systemPrompt += formatAdjacentConcepts(adjacentConcepts)
 
   const messages = [
     ...history.map(m => ({ role: m.role, content: m.content })),

@@ -81,3 +81,11 @@ export interface ExpandNodeRequest {
   focusQuestion?: string // F-07: included in prompt when present
   existingNodes: ConceptNode[]
 }
+
+// A-29/VC-04: a concept directly connected to the node being chatted about
+export interface AdjacentConcept {
+  label: string
+  description?: string
+  edgeLabel: string // never '?' — unlabeled edges are excluded by the deriving helper
+  direction: 'outgoing' | 'incoming' // outgoing: this node -> neighbour; incoming: neighbour -> this node
+}
