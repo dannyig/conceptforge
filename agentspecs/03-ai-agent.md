@@ -265,7 +265,27 @@ Extend the Mode 1 and Mode 2 API calls to request a narrative and resource links
 
 ---
 
-### Group 7 — UI Verification (Playwright MCP)
+### Group 7 — AI Suggested Node Description (A-46, A-47)
+
+- [ ] **A-46 — "Ask AI" button in the Edit Info popover:**
+  - Add an "Ask AI" button to the Edit Info popover (C-28), positioned adjacent to the description text input
+  - Dimmed (`opacity: 0.35`, `pointerEvents: 'none'`) when AI Assist is off (K-08) or when no focus question is currently set — same dimming pattern used elsewhere
+  - Enabled when AI Assist is on and a focus question is present
+
+- [ ] **A-47 — Ask AI invocation:**
+  - Implement `suggestNodeDescription(nodeLabel: string, neighbours: Array<{ label: string; description?: string }>, focusQuestion: string, apiKey: string): Promise<string>` in `src/lib/claude.ts`
+    - Derive `neighbours` from the current map's edges — any node directly connected to the target node (source or target side), passing each neighbour's label and description if present
+    - Use the K-19 system prompt (`getNodeDescriptionPrompt()` from `src/lib/nodeDescriptionPrompts.ts`) as the `system` parameter — this prompt must not be applied to any other AI operation
+    - Returns the generated description as a plain string (no JSON envelope)
+  - While the request is pending, show a "Thinking" indicator inside or near the popover
+  - On success: replace the popover's text input value with the generated description — overwriting any existing content — leaving it fully editable; the existing C-28 click-outside-to-save behaviour is unchanged
+  - On failure: leave the existing text input value unchanged and show a visible error message in the popover
+
+**Commit:** `feat(A-46,A-47): AI-suggested node description in Edit Info popover`
+
+---
+
+### Group 8 — UI Verification (Playwright MCP)
 
 Before committing Group 6, start the dev server and use Playwright MCP + Chrome to verify:
 
@@ -293,6 +313,12 @@ Before committing Group 6, start the dev server and use Playwright MCP + Chrome 
 - [ ] Chat responses reference citations and include a Resources section with links
 - [ ] Editing the system prompt in Settings → subsequent chat responses reflect the new prompt
 - [ ] Resetting to default in Settings → chat responses reflect the default prompt behaviour
+- [ ] "Ask AI" button is visible in the Edit Info popover (C-28)
+- [ ] "Ask AI" dimmed and non-interactive when AI Assist is off, or when no focus question is set
+- [ ] With AI Assist on and a focus question set, clicking "Ask AI" shows a Thinking indicator, then fills the description textarea with generated text
+- [ ] Generated text is editable and saves normally via the existing click-outside behaviour
+- [ ] Invoking "Ask AI" a second time overwrites the current textarea content
+- [ ] Simulating an API failure leaves the existing textarea content untouched and shows a visible error
 
 Log any issues as `/feedback` entries before committing.
 
@@ -367,3 +393,5 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 ---
 
 *AI Agent Spec v1.8 — March 2026 (added A-33: concept chat system prompt sent via `system` parameter — Group 6c; chatNode updated to accept systemPrompt; ChatPanel reads from chatPrompts.ts)*
+
+*AI Agent Spec v1.9 — August 2026 (added Group 7: A-46/A-47 — "Ask AI" button in Edit Info popover, suggestNodeDescription using K-19 system prompt and connected-neighbour context; renamed old Group 7 to Group 8)*
