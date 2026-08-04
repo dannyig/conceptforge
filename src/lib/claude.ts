@@ -524,6 +524,51 @@ export async function explainEdgeLabel(
   return text
 }
 
+// A-47: suggest a description for a concept node — returns plain description text for the Edit Info popover
+export async function suggestNodeDescription(
+  nodeLabel: string,
+  neighbours: Array<{ label: string; description?: string }>,
+  focusQuestion: string,
+  apiKey: string,
+  systemPrompt: string
+): Promise<string> {
+  let userPrompt = `Concept: "${nodeLabel}"\n`
+  if (neighbours.length > 0) {
+    userPrompt += `Directly connected concepts:\n`
+    for (const n of neighbours) {
+      userPrompt += `- ${n.label}${n.description ? `: ${n.description}` : ''}\n`
+    }
+  }
+  userPrompt += `Focus question: "${focusQuestion}"\n`
+  userPrompt += `\nWrite a concise 1–2 sentence description for "${nodeLabel}". Return only the description text — no preamble, no quotes, no markdown.`
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: getModel(),
+      max_tokens: 256,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  })
+
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`Claude API error ${res.status}: ${body}`)
+  }
+
+  const data = (await res.json()) as { content: Array<{ type: string; text: string }> }
+  const text = data.content.find(c => c.type === 'text')?.text
+  if (!text) throw new Error('Empty response from Claude')
+  return text.trim()
+}
+
 // VC-01: conversational voice chat about a concept node
 // Returns structured response: speech (spoken aloud) + optional visual (appended to panel)
 export async function voiceChat(

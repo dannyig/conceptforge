@@ -50,9 +50,16 @@ import {
   THINKING_BORDER_DURATION_MS,
 } from '@/lib/theme'
 import { useTheme } from '@/hooks/use-theme'
-import { expandNode, suggestEdgeConcepts, suggestEdgeLabels, explainEdgeLabel } from '@/lib/claude'
+import {
+  expandNode,
+  suggestEdgeConcepts,
+  suggestEdgeLabels,
+  suggestNodeDescription,
+  explainEdgeLabel,
+} from '@/lib/claude'
 import { getApiKey, OPEN_SETTINGS_EVENT } from '@/lib/apiKey'
 import { getEdgeLabelPrompt } from '@/lib/edgeLabelPrompts'
+import { getNodeDescriptionPrompt } from '@/lib/nodeDescriptionPrompts'
 import { ChatReadingPanel } from '@/components/ai/ChatReadingPanel'
 import { SuggestionSelectPanel, type SuggestionItem } from '@/components/ai/SuggestionSelectPanel'
 
@@ -363,6 +370,9 @@ function CanvasFlow({
   } | null>(null)
   // Ref used to cancel save when Escape is pressed before onBlur fires
   const nodeInfoCancelledRef = useRef(false)
+  // A-47: "Ask AI" loading/error state for the Edit Info popover
+  const [nodeInfoAiLoading, setNodeInfoAiLoading] = useState(false)
+  const [nodeInfoAiError, setNodeInfoAiError] = useState<string | null>(null)
 
   // A-06–A-10: node expansion state
   const [expandingNodeId, setExpandingNodeId] = useState<string | null>(null)
@@ -1144,6 +1154,52 @@ function CanvasFlow({
         setEdgeLabelError(err instanceof Error ? err.message : 'Request failed')
       } finally {
         setEdgeLabelLoading(false)
+      }
+    },
+    [focusQuestion]
+  )
+
+  // ---------- A-47: suggest a description for a node (Edit Info popover "Ask AI") ----------
+
+  const handleAskAiDescription = useCallback(
+    async (nodeId: string): Promise<void> => {
+      const node = nodesRef.current.find(n => n.id === nodeId)
+      if (!node) return
+
+      const apiKey = getApiKey()
+      if (!apiKey) {
+        window.dispatchEvent(new CustomEvent(OPEN_SETTINGS_EVENT))
+        return
+      }
+
+      const neighbourIds = new Set<string>()
+      for (const edge of edgesRef.current) {
+        if (edge.source === nodeId && edge.target !== nodeId) neighbourIds.add(edge.target)
+        if (edge.target === nodeId && edge.source !== nodeId) neighbourIds.add(edge.source)
+      }
+      const neighbours = Array.from(neighbourIds)
+        .map(id => nodesRef.current.find(n => n.id === id))
+        .filter((n): n is CanvasFlowNode => n !== undefined)
+        .map(n => ({ label: n.data.label, description: n.data.description }))
+
+      setNodeInfoAiLoading(true)
+      setNodeInfoAiError(null)
+
+      try {
+        const description = await suggestNodeDescription(
+          node.data.label,
+          neighbours,
+          focusQuestion,
+          apiKey,
+          getNodeDescriptionPrompt()
+        )
+        setNodeInfoEdit(prev =>
+          prev && prev.nodeId === nodeId ? { ...prev, draft: description } : prev
+        )
+      } catch (err) {
+        setNodeInfoAiError(err instanceof Error ? err.message : 'Request failed')
+      } finally {
+        setNodeInfoAiLoading(false)
       }
     },
     [focusQuestion]
@@ -2088,6 +2144,7 @@ function CanvasFlow({
               onClick={(): void => {
                 const node = nodesRef.current.find(n => n.id === nodeMenu.nodeId)
                 const currentDesc = node?.data.description ?? ''
+                setNodeInfoAiError(null)
                 setNodeInfoEdit({
                   nodeId: nodeMenu.nodeId,
                   x: nodeMenu.x,
@@ -2380,6 +2437,56 @@ function CanvasFlow({
             }}
             aria-label="Node description"
           />
+          {/* A-46/A-47: AI-suggested description */}
+          <button
+            disabled={!aiAssistEnabled || !focusQuestion.trim() || nodeInfoAiLoading}
+            onMouseDown={(e): void => e.preventDefault()}
+            onClick={(): void => {
+              void handleAskAiDescription(nodeInfoEdit.nodeId)
+            }}
+            style={{
+              marginTop: 8,
+              width: '100%',
+              background: 'transparent',
+              border: `1px solid ${tokens.COLOR_NODE_BORDER}`,
+              borderRadius: 4,
+              padding: '6px 8px',
+              fontFamily: FONT_FAMILY,
+              fontSize: '11px',
+              color: tokens.COLOR_TEXT_MUTED,
+              cursor:
+                !aiAssistEnabled || !focusQuestion.trim() || nodeInfoAiLoading
+                  ? 'not-allowed'
+                  : 'pointer',
+              opacity: !aiAssistEnabled || !focusQuestion.trim() ? 0.35 : 1,
+              pointerEvents: !aiAssistEnabled || !focusQuestion.trim() ? 'none' : 'auto',
+              transition: `background-color ${TRANSITION_FAST}, opacity ${TRANSITION_FAST}`,
+            }}
+            onMouseEnter={(e): void => {
+              if (aiAssistEnabled && focusQuestion.trim() && !nodeInfoAiLoading)
+                (e.currentTarget as HTMLButtonElement).style.background =
+                  tokens.COLOR_BUTTON_GHOST_HOVER_BG
+            }}
+            onMouseLeave={(e): void => {
+              ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+            }}
+            aria-label="Ask AI to suggest a description"
+          >
+            {nodeInfoAiLoading ? 'Thinking…' : 'Ask AI'}
+          </button>
+          {nodeInfoAiError !== null && (
+            <div
+              role="alert"
+              style={{
+                marginTop: 6,
+                fontFamily: FONT_FAMILY,
+                fontSize: '10px',
+                color: tokens.COLOR_STATUS_ERROR,
+              }}
+            >
+              {nodeInfoAiError}
+            </div>
+          )}
         </div>
       )}
 
