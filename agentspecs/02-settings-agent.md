@@ -250,7 +250,35 @@ Complete all items below in order. Commit after each group.
 
 ---
 
-### Group 10 — UI Verification (Playwright MCP)
+### Group 10 — Node Description System Prompt (K-19)
+
+- [ ] Add a "Node Description" section to `SettingsPanel.tsx`, positioned below the URL Map Generation section (K-13):
+  - Section heading: `"Node Description"`
+  - Multi-line `<textarea>` pre-filled with the default system prompt (defined as a constant in `src/lib/nodeDescriptionPrompts.ts`)
+  - "Reset to default" button alongside the textarea — restores content to the default without requiring a separate save
+- [ ] Create `src/lib/nodeDescriptionPrompts.ts`, following the exact pattern of `chatPrompts.ts` (K-09):
+  ```typescript
+  export const NODE_DESCRIPTION_PROMPT_KEY = 'conceptforge:node-description-prompt'
+
+  export const DEFAULT_NODE_DESCRIPTION_PROMPT =
+    'You are an expert knowledge assistant embedded in a concept mapping tool. ' +
+    'Your role is to write a concise, accurate description (1–2 sentences) for a concept node, ' +
+    'given its label, its directly connected neighbouring concepts, and the map\'s focus question. ' +
+    'Ground the description in how the concept relates to the focus question. ' +
+    'Be precise and specific — avoid generic filler or restating the label.'
+
+  export function getNodeDescriptionPrompt(): string
+  export function setNodeDescriptionPrompt(prompt: string): void
+  ```
+- [ ] `getNodeDescriptionPrompt`: reads from `localStorage`; returns the stored value if present, `DEFAULT_NODE_DESCRIPTION_PROMPT` otherwise
+- [ ] `setNodeDescriptionPrompt`: writes to `localStorage` under `NODE_DESCRIPTION_PROMPT_KEY`
+- [ ] The textarea updates `localStorage` on every change (live persistence); "Reset to default" writes `DEFAULT_NODE_DESCRIPTION_PROMPT`
+
+**Commit:** `feat(K-19): node description system prompt in settings with default, edit, and reset`
+
+---
+
+### Group 11 — UI Verification (Playwright MCP)
 
 Start the dev server and use Playwright MCP + Chrome to verify:
 
@@ -284,6 +312,10 @@ Start the dev server and use Playwright MCP + Chrome to verify:
 - [ ] Toggle is hidden or disabled when the Light theme is active
 - [ ] ElevenLabs API key input is visible in Settings below the High contrast nodes toggle
 - [ ] Entering a key shows `Key saved` status; Clear button removes it and shows `No key stored`
+- [ ] Node Description system prompt section is visible in Settings below the URL Map Generation section
+- [ ] Textarea is pre-filled with the default prompt text on first load
+- [ ] Editing the textarea and reloading the page — custom prompt is restored
+- [ ] Clicking "Reset to default" restores the default text in the textarea and in localStorage
 - [ ] No errors in browser console
 
 Log any visual or interaction issues found as `/feedback` entries before committing.
@@ -350,3 +382,5 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 *Settings Agent Spec v1.7 — April 2026 (updated Group 8: K-15 toggle now visible and active in both dark and light themes; removed dark-theme-only restriction)*
 
 *Settings Agent Spec v1.8 — April 2026 (added Group 9: K-16 ElevenLabs API key input; elevenlabsConfig.ts; optional, no validation; renamed old Group 9 to Group 10)*
+
+*Settings Agent Spec v1.9 — August 2026 (added Group 10: K-19 Node Description system prompt; nodeDescriptionPrompts.ts following the K-09 pattern; renamed old Group 10 to Group 11)*
