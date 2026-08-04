@@ -86,6 +86,18 @@ The voice chat Claude response requires a structured two-field format distinct f
 
 ---
 
+### Group 1b — Adjacent Concept Context for Voice Chat (VC-04 update)
+
+- [ ] `voiceChat` must also accept and include the node's adjacent concepts in context, using the **same derivation rule and shared helper** as the AI Agent's A-29 update (`agentspecs/03-ai-agent.md` Group 6d) — do not reimplement the derivation logic
+  - Directly connected nodes via non-`?`-labelled single edges (label, connected node label/description, direction)
+  - Branching-edge targets when this node is the hub source
+  - Only the hub source (not sibling targets) when this node is a branching-edge target
+- [ ] Wire the Voice Chat panel to compute adjacent concepts from the current canvas state before each `voiceChat` call, identically to how `ChatPanel.tsx` does it for text mode
+
+**Commit:** `feat(VC-04): include adjacent concepts in voice chat context`
+
+---
+
 ### Group 2 — TTS service abstraction (VC-05)
 
 - [ ] Create `src/lib/tts.ts`:
@@ -263,3 +275,5 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 ---
 
 *Voice Agent Spec v1.2 — April 2026 (v1.0: VC-01–VC-07, K-16 dependency, Web Speech API + ElevenLabs TTS; v1.1: added VC-08 — concept suggestions checklist with Apply → canvas nodes/edges; v1.2: unified panel redesign — ChatPanel rewritten as single text+voice surface, mic button next to text input, no separate VoiceChatPanel)*
+
+*Voice Agent Spec v1.3 — August 2026 (added Group 1b: VC-04 update — adjacent concepts (connected nodes, non-`?` edge labels, branching-edge hub source) added to voice chat context; reuses the shared derivation helper from `agentspecs/03-ai-agent.md` Group 6d rather than duplicating it)*
