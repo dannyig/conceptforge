@@ -265,6 +265,21 @@ Extend the Mode 1 and Mode 2 API calls to request a narrative and resource links
 
 ---
 
+### Group 6d — Adjacent Concept Context for Chat (A-29 update)
+
+- [ ] Add a shared helper (e.g. `getAdjacentConcepts(nodeId, nodes, edges, branchingEdges)` in `src/lib/graph.ts` or `Canvas.tsx`) that derives a node's adjacent concepts:
+  - For each single edge directly connected to the node (as source or target) whose label is not `?`, include `{ label, description, edgeLabel, direction }` for the connected node
+  - For a node that is the **source** of a branching edge, include each target using the same rule (shared branch label)
+  - For a node that is a **target** of a branching edge, include only the hub's source (shared branch label) — do **not** include sibling targets under the same hub
+  - No cap on the number of results
+- [ ] Update `chatNode` in `src/lib/claude.ts` to accept the adjacent-concepts list and include it in the user-facing context alongside node label, description, and focus question
+- [ ] Wire `ChatPanel.tsx` to compute adjacent concepts from the current canvas state before each `chatNode` call
+- [ ] This helper must be reused by the Voice Agent for VC-04 (see `agentspecs/08-voice-agent.md` Group 1) — do not duplicate the derivation logic
+
+**Commit:** `feat(A-29): include adjacent concepts (connected nodes and edge labels) in Chat panel context`
+
+---
+
 ### Group 7 — AI Suggested Node Description (A-46, A-47)
 
 - [ ] **A-46 — "Ask AI" button in the Edit Info popover:**
@@ -313,6 +328,9 @@ Before committing Group 6, start the dev server and use Playwright MCP + Chrome 
 - [ ] Chat responses reference citations and include a Resources section with links
 - [ ] Editing the system prompt in Settings → subsequent chat responses reflect the new prompt
 - [ ] Resetting to default in Settings → chat responses reflect the default prompt behaviour
+- [ ] Chatting about a node with connected neighbours → AI response reflects awareness of adjacent concepts and their edge labels
+- [ ] Chatting about a node connected only via `?`-labelled edges → those neighbours are not referenced in the response
+- [ ] Chatting about a branching-edge target node → response reflects the hub's source but not sibling targets
 - [ ] "Ask AI" button is visible in the Edit Info popover (C-28)
 - [ ] "Ask AI" dimmed and non-interactive when AI Assist is off, or when no focus question is set
 - [ ] With AI Assist on and a focus question set, clicking "Ask AI" shows a Thinking indicator, then fills the description textarea with generated text
@@ -395,3 +413,5 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 *AI Agent Spec v1.8 — March 2026 (added A-33: concept chat system prompt sent via `system` parameter — Group 6c; chatNode updated to accept systemPrompt; ChatPanel reads from chatPrompts.ts)*
 
 *AI Agent Spec v1.9 — August 2026 (added Group 7: A-46/A-47 — "Ask AI" button in Edit Info popover, suggestNodeDescription using K-19 system prompt and connected-neighbour context; renamed old Group 7 to Group 8)*
+
+*AI Agent Spec v2.0 — August 2026 (added Group 6d: A-29 update — adjacent concepts (connected nodes, non-`?` edge labels, branching-edge source when node is a hub target) added to Chat panel context; shared derivation helper reused by Voice Agent for VC-04)*
