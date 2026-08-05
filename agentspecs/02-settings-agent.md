@@ -158,15 +158,19 @@ Complete all items below in order. Commit after each group.
 ### Group 6 — Claude Model Selector (K-14)
 
 - [ ] Add a "Claude Model" label and `<select>` dropdown to `SettingsPanel.tsx`, positioned directly below the API key input (K-01) and above the AI Assist toggle (K-05)
-- [ ] Offer exactly three `<option>` entries:
+- [ ] Offer exactly five `<option>` entries:
+  - `claude-sonnet-5` — displayed as "Sonnet 5"
+  - `claude-opus-5` — displayed as "Opus 5"
   - `claude-sonnet-4-6` — displayed as "Sonnet 4.6"
   - `claude-opus-4-6` — displayed as "Opus 4.6"
   - `claude-haiku-4-5-20251001` — displayed as "Haiku 4.5"
 - [ ] Create `src/lib/modelConfig.ts`:
   ```typescript
   export const MODEL_CONFIG_KEY = 'conceptforge:claude-model'
-  export const DEFAULT_MODEL = 'claude-sonnet-4-6'
+  export const DEFAULT_MODEL = 'claude-sonnet-5'
   export const CLAUDE_MODELS = [
+    { id: 'claude-sonnet-5', label: 'Sonnet 5' },
+    { id: 'claude-opus-5', label: 'Opus 5' },
     { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6' },
     { id: 'claude-opus-4-6', label: 'Opus 4.6' },
     { id: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5' },
@@ -178,9 +182,11 @@ Complete all items below in order. Commit after each group.
 - [ ] `getModel`: reads from `localStorage`; returns the stored value if it is a valid model ID, `DEFAULT_MODEL` otherwise
 - [ ] `setModel`: writes to `localStorage` under `MODEL_CONFIG_KEY`
 - [ ] The dropdown in Settings updates `localStorage` on change (live persistence — no separate Save button required)
-- [ ] Replace the hardcoded `MODEL` constant in `src/lib/claude.ts` with a call to `getModel()` at the start of every exported function that makes a Claude API call (generateMap, generateMapFromContent, suggestConcepts, expandNode, chatNode, suggestEdgeLabels, explainEdgeLabel, suggestEdgeConcepts)
+- [ ] Replace the hardcoded `MODEL` constant in `src/lib/claude.ts` with a call to `getModel()` at the start of every exported function that makes a Claude API call (generateMap, generateMapFromContent, suggestConcepts, expandNode, chatNode, suggestEdgeLabels, explainEdgeLabel, suggestEdgeConcepts, suggestNodeDescription)
 
 **Commit:** `feat(K-14): Claude model selector in settings with localStorage persistence and apply to all API calls`
+
+**Update (2026-08-05):** expanded to five options (added Sonnet 5 / `claude-sonnet-5` and Opus 5 / `claude-opus-5`); default changed to `claude-sonnet-5`; existing stored selections of the prior three models remain valid — `getModel()`'s validity check accepts any ID present in `CLAUDE_MODELS`, so no migration is needed
 
 ---
 
@@ -299,7 +305,7 @@ Start the dev server and use Playwright MCP + Chrome to verify:
 - [ ] Editing the textarea and reloading the page — custom prompt is restored
 - [ ] Clicking "Reset to default" restores the default text in the textarea and in localStorage
 - [ ] Claude Model selector is visible in Settings below the API key input and above the AI Assist toggle
-- [ ] Dropdown shows three options: Sonnet 4.6, Opus 4.6, Haiku 4.5
+- [ ] Dropdown shows five options: Sonnet 5, Opus 5, Sonnet 4.6, Opus 4.6, Haiku 4.5
 - [ ] Selecting a model and reloading the page — selection is restored
 - [ ] Theme selector is visible in Settings below the Claude Model selector
 - [ ] Selector shows two options: Dark and Light
@@ -384,3 +390,5 @@ Run `/feedback` for any issues encountered. Run `/improve` if 3+ feedback entrie
 *Settings Agent Spec v1.8 — April 2026 (added Group 9: K-16 ElevenLabs API key input; elevenlabsConfig.ts; optional, no validation; renamed old Group 9 to Group 10)*
 
 *Settings Agent Spec v1.9 — August 2026 (added Group 10: K-19 Node Description system prompt; nodeDescriptionPrompts.ts following the K-09 pattern; renamed old Group 10 to Group 11)*
+
+*Settings Agent Spec v2.0 — August 2026 (updated Group 6: K-14 model dropdown expanded from three to five options — added Sonnet 5/`claude-sonnet-5` and Opus 5/`claude-opus-5`; default changed to Sonnet 5; suggestNodeDescription added to the list of functions getModel() applies to)*
