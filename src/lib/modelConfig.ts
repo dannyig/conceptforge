@@ -1,9 +1,11 @@
 // K-14: Claude model selector — localStorage get/set with fixed model list
 
 export const MODEL_CONFIG_KEY = 'conceptforge:claude-model'
-export const DEFAULT_MODEL = 'claude-sonnet-4-6'
+export const DEFAULT_MODEL = 'claude-sonnet-5'
 
 export const CLAUDE_MODELS = [
+  { id: 'claude-sonnet-5', label: 'Sonnet 5' },
+  { id: 'claude-opus-5', label: 'Opus 5' },
   { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6' },
   { id: 'claude-opus-4-6', label: 'Opus 4.6' },
   { id: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5' },
