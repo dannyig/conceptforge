@@ -32,7 +32,13 @@ import { BranchStemEdge } from './BranchStemEdge'
 import { ConceptEdge } from './ConceptEdge'
 import { ConceptNode } from './ConceptNode'
 import { NoteNode } from './NoteNode'
-import type { BranchingEdge, ConceptNode as ConceptNodeType, MapData, NoteData } from '@/types'
+import type {
+  AdjacentConcept,
+  BranchingEdge,
+  ConceptNode as ConceptNodeType,
+  MapData,
+  NoteData,
+} from '@/types'
 import {
   BG_DOT_GAP,
   BG_DOT_SIZE,
@@ -50,6 +56,7 @@ import {
   THINKING_BORDER_DURATION_MS,
 } from '@/lib/theme'
 import { useTheme } from '@/hooks/use-theme'
+import { getAdjacentConcepts } from '@/lib/graph'
 import {
   expandNode,
   suggestEdgeConcepts,
@@ -170,7 +177,12 @@ interface CanvasFlowProps {
   onNodeCountChange?: (count: number) => void
   focusQuestion?: string
   aiAssistEnabled?: boolean
-  onChatNode?: (nodeId: string, nodeLabel: string, nodeDescription?: string) => void
+  onChatNode?: (
+    nodeId: string,
+    nodeLabel: string,
+    nodeDescription: string | undefined,
+    adjacentConcepts: AdjacentConcept[]
+  ) => void
 }
 
 // Fan-position new nodes in an arc below/around the source node (A-07)
@@ -2109,7 +2121,13 @@ function CanvasFlow({
                 const node = nodesRef.current.find(n => n.id === nodeMenu.nodeId)
                 if (!node) return
                 setNodeMenu(null)
-                onChatNode?.(node.id, node.data.label, node.data.description)
+                // A-29/VC-04: derive adjacent concepts once, at Chat-open time
+                const adjacentConcepts = getAdjacentConcepts(
+                  node.id,
+                  nodesRef.current,
+                  edgesRef.current
+                )
+                onChatNode?.(node.id, node.data.label, node.data.description, adjacentConcepts)
               }}
               style={{
                 display: 'block',
@@ -2819,7 +2837,12 @@ interface CanvasProps {
   onNodeCountChange?: (count: number) => void
   focusQuestion?: string
   aiAssistEnabled?: boolean
-  onChatNode?: (nodeId: string, nodeLabel: string, nodeDescription?: string) => void
+  onChatNode?: (
+    nodeId: string,
+    nodeLabel: string,
+    nodeDescription: string | undefined,
+    adjacentConcepts: AdjacentConcept[]
+  ) => void
 }
 
 export function Canvas({

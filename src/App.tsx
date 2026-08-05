@@ -15,6 +15,7 @@ import { generateMap, generateMapFromContent, suggestConcepts } from '@/lib/clau
 import { fetchUrlContent } from '@/lib/jinaFetch'
 import { autoLayout, ringPositions } from '@/lib/graph'
 import type {
+  AdjacentConcept,
   BranchingEdge,
   ConceptEdge,
   ConceptNode,
@@ -41,6 +42,7 @@ export function App(): React.JSX.Element {
     nodeId: string
     nodeLabel: string
     nodeDescription?: string
+    adjacentConcepts: AdjacentConcept[]
   } | null>(null)
 
   // P-04, P-05, P-06 — URL autoload via ?autoload=<base64> query parameter
@@ -167,9 +169,14 @@ export function App(): React.JSX.Element {
 
   // A-26, A-27: open Chat panel — dismiss Summary Panel first (mutual exclusion)
   const handleChatNode = useCallback(
-    (nodeId: string, nodeLabel: string, nodeDescription?: string): void => {
+    (
+      nodeId: string,
+      nodeLabel: string,
+      nodeDescription: string | undefined,
+      adjacentConcepts: AdjacentConcept[]
+    ): void => {
       setSummaryData(null)
-      setChatNodeInfo({ nodeId, nodeLabel, nodeDescription })
+      setChatNodeInfo({ nodeId, nodeLabel, nodeDescription, adjacentConcepts })
     },
     []
   )
@@ -391,6 +398,7 @@ export function App(): React.JSX.Element {
             nodeId={chatNodeInfo.nodeId}
             nodeLabel={chatNodeInfo.nodeLabel}
             nodeDescription={chatNodeInfo.nodeDescription}
+            adjacentConcepts={chatNodeInfo.adjacentConcepts}
             focusQuestion={focusQuestion}
             onDismiss={dismissChat}
             onApplyConcepts={handleApplyVoiceConcepts}
