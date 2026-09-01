@@ -54,6 +54,24 @@ function parseJsonResponse(text: string, errorMessage: string): unknown {
   throw new Error(errorMessage)
 }
 
+// Reads a Claude API response, surfacing truncation (stop_reason: "max_tokens") as a distinct,
+// actionable error instead of letting it fall through to the generic "invalid JSON" message —
+// a truncated response has no closing brace to recover, so parseJsonResponse's fallback can't fix it.
+async function parseClaudeJsonResponse(res: Response, errorMessage: string): Promise<unknown> {
+  const data = (await res.json()) as {
+    content: Array<{ type: string; text: string }>
+    stop_reason: string
+  }
+  const text = data.content.find(c => c.type === 'text')?.text
+  if (!text) throw new Error('Empty response from Claude')
+  if (data.stop_reason === 'max_tokens') {
+    throw new Error(
+      'Claude response was cut off before completing (max_tokens reached) — try a narrower topic or fewer concepts'
+    )
+  }
+  return parseJsonResponse(text, errorMessage)
+}
+
 // Internal type for Mode 2 (A-13, A-15) concept suggestions
 export interface ConceptSuggestion {
   id: string
@@ -106,7 +124,7 @@ export async function generateMap(prompt: string, apiKey: string): Promise<Claud
     },
     body: JSON.stringify({
       model: getModel(),
-      max_tokens: 2048,
+      max_tokens: 4096,
       messages: [{ role: 'user', content: userPrompt }],
     }),
   })
@@ -116,11 +134,7 @@ export async function generateMap(prompt: string, apiKey: string): Promise<Claud
     throw new Error(`Claude API error ${res.status}: ${body}`)
   }
 
-  const data = (await res.json()) as { content: Array<{ type: string; text: string }> }
-  const text = data.content.find(c => c.type === 'text')?.text
-  if (!text) throw new Error('Empty response from Claude')
-
-  const parsed = parseJsonResponse(text, 'Claude returned invalid JSON')
+  const parsed = await parseClaudeJsonResponse(res, 'Claude returned invalid JSON')
 
   return parseClaudeResponse(parsed)
 }
@@ -174,7 +188,7 @@ export async function generateMapFromContent(
     },
     body: JSON.stringify({
       model: getModel(),
-      max_tokens: 2048,
+      max_tokens: 4096,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     }),
@@ -185,11 +199,7 @@ export async function generateMapFromContent(
     throw new Error(`Claude API error ${res.status}: ${body}`)
   }
 
-  const data = (await res.json()) as { content: Array<{ type: string; text: string }> }
-  const text = data.content.find(c => c.type === 'text')?.text
-  if (!text) throw new Error('Empty response from Claude')
-
-  const parsed = parseJsonResponse(text, 'Claude returned invalid JSON')
+  const parsed = await parseClaudeJsonResponse(res, 'Claude returned invalid JSON')
 
   return parseClaudeResponse(parsed)
 }
@@ -238,7 +248,7 @@ export async function suggestConcepts(
     },
     body: JSON.stringify({
       model: getModel(),
-      max_tokens: 2048,
+      max_tokens: 4096,
       messages: [{ role: 'user', content: userPrompt }],
     }),
   })
@@ -248,11 +258,7 @@ export async function suggestConcepts(
     throw new Error(`Claude API error ${res.status}: ${body}`)
   }
 
-  const data = (await res.json()) as { content: Array<{ type: string; text: string }> }
-  const text = data.content.find(c => c.type === 'text')?.text
-  if (!text) throw new Error('Empty response from Claude')
-
-  const parsed = parseJsonResponse(text, 'Claude returned invalid JSON')
+  const parsed = await parseClaudeJsonResponse(res, 'Claude returned invalid JSON')
 
   return parseConceptSuggestionsResult(parsed)
 }
@@ -312,11 +318,7 @@ export async function expandNode(
     throw new Error(`Claude API error ${res.status}: ${body}`)
   }
 
-  const data = (await res.json()) as { content: Array<{ type: string; text: string }> }
-  const text = data.content.find(c => c.type === 'text')?.text
-  if (!text) throw new Error('Empty response from Claude')
-
-  const parsed = parseJsonResponse(text, 'Claude returned invalid JSON')
+  const parsed = await parseClaudeJsonResponse(res, 'Claude returned invalid JSON')
 
   return parseClaudeResponse(parsed)
 }
@@ -630,11 +632,7 @@ export async function voiceChat(
     throw new Error(`Claude API error ${res.status}: ${body}`)
   }
 
-  const data = (await res.json()) as { content: Array<{ type: string; text: string }> }
-  const text = data.content.find(c => c.type === 'text')?.text
-  if (!text) throw new Error('Empty response from Claude')
-
-  const parsed = parseJsonResponse(text, 'Claude returned invalid voice response')
+  const parsed = await parseClaudeJsonResponse(res, 'Claude returned invalid voice response')
 
   return parseVoiceChatResponse(parsed)
 }
