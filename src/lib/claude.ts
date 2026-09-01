@@ -25,6 +25,35 @@ function formatAdjacentConcepts(adjacentConcepts: AdjacentConcept[]): string {
   return `\n\nAdjacent concepts on the map:\n${lines.join('\n')}`
 }
 
+// Some models (notably Opus) occasionally prepend or append prose around the
+// requested JSON object despite "Return ONLY JSON" instructions. Strip markdown
+// fences first, then fall back to extracting the outermost {...} span before
+// giving up — this is what "Claude returned invalid JSON" means in practice.
+function parseJsonResponse(text: string, errorMessage: string): unknown {
+  const cleaned = text
+    .replace(/^```(?:json)?\n?/, '')
+    .replace(/\n?```$/, '')
+    .trim()
+
+  try {
+    return JSON.parse(cleaned)
+  } catch {
+    // fall through to prose-stripping recovery below
+  }
+
+  const start = cleaned.indexOf('{')
+  const end = cleaned.lastIndexOf('}')
+  if (start !== -1 && end > start) {
+    try {
+      return JSON.parse(cleaned.slice(start, end + 1))
+    } catch {
+      // fall through to throw below
+    }
+  }
+
+  throw new Error(errorMessage)
+}
+
 // Internal type for Mode 2 (A-13, A-15) concept suggestions
 export interface ConceptSuggestion {
   id: string
@@ -91,16 +120,7 @@ export async function generateMap(prompt: string, apiKey: string): Promise<Claud
   const text = data.content.find(c => c.type === 'text')?.text
   if (!text) throw new Error('Empty response from Claude')
 
-  let parsed: unknown
-  try {
-    const cleaned = text
-      .replace(/^```(?:json)?\n?/, '')
-      .replace(/\n?```$/, '')
-      .trim()
-    parsed = JSON.parse(cleaned)
-  } catch {
-    throw new Error('Claude returned invalid JSON')
-  }
+  const parsed = parseJsonResponse(text, 'Claude returned invalid JSON')
 
   return parseClaudeResponse(parsed)
 }
@@ -169,16 +189,7 @@ export async function generateMapFromContent(
   const text = data.content.find(c => c.type === 'text')?.text
   if (!text) throw new Error('Empty response from Claude')
 
-  let parsed: unknown
-  try {
-    const cleaned = text
-      .replace(/^```(?:json)?\n?/, '')
-      .replace(/\n?```$/, '')
-      .trim()
-    parsed = JSON.parse(cleaned)
-  } catch {
-    throw new Error('Claude returned invalid JSON')
-  }
+  const parsed = parseJsonResponse(text, 'Claude returned invalid JSON')
 
   return parseClaudeResponse(parsed)
 }
@@ -241,16 +252,7 @@ export async function suggestConcepts(
   const text = data.content.find(c => c.type === 'text')?.text
   if (!text) throw new Error('Empty response from Claude')
 
-  let parsed: unknown
-  try {
-    const cleaned = text
-      .replace(/^```(?:json)?\n?/, '')
-      .replace(/\n?```$/, '')
-      .trim()
-    parsed = JSON.parse(cleaned)
-  } catch {
-    throw new Error('Claude returned invalid JSON')
-  }
+  const parsed = parseJsonResponse(text, 'Claude returned invalid JSON')
 
   return parseConceptSuggestionsResult(parsed)
 }
@@ -314,17 +316,7 @@ export async function expandNode(
   const text = data.content.find(c => c.type === 'text')?.text
   if (!text) throw new Error('Empty response from Claude')
 
-  let parsed: unknown
-  try {
-    // Strip markdown code fences if Claude wraps the JSON
-    const cleaned = text
-      .replace(/^```(?:json)?\n?/, '')
-      .replace(/\n?```$/, '')
-      .trim()
-    parsed = JSON.parse(cleaned)
-  } catch {
-    throw new Error('Claude returned invalid JSON')
-  }
+  const parsed = parseJsonResponse(text, 'Claude returned invalid JSON')
 
   return parseClaudeResponse(parsed)
 }
@@ -642,16 +634,7 @@ export async function voiceChat(
   const text = data.content.find(c => c.type === 'text')?.text
   if (!text) throw new Error('Empty response from Claude')
 
-  let parsed: unknown
-  try {
-    const cleaned = text
-      .replace(/^```(?:json)?\n?/, '')
-      .replace(/\n?```$/, '')
-      .trim()
-    parsed = JSON.parse(cleaned)
-  } catch {
-    throw new Error('Claude returned invalid voice response')
-  }
+  const parsed = parseJsonResponse(text, 'Claude returned invalid voice response')
 
   return parseVoiceChatResponse(parsed)
 }
