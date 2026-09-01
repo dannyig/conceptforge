@@ -1,17 +1,20 @@
 import { generateMap } from '@/lib/claude'
 
-// Regression coverage for parseJsonResponse's prose-recovery fallback (fix/opus-5-invalid-json-response-parsing):
-// Opus-class models occasionally add a conversational lead-in/trailer around the requested JSON
-// object despite "Return ONLY JSON" instructions. Sonnet does this far less often, which is why
-// the bug surfaced as "works on Sonnet 5, fails on Opus 5" even though the parsing code is
-// identical for every model.
+// Regression coverage for two related fixes to Claude JSON response parsing:
+// - fix/opus-5-invalid-json-response-parsing: models occasionally add a conversational
+//   lead-in/trailer around the requested JSON object despite "Return ONLY JSON" instructions.
+// - fix/generate-map-max-tokens-truncation: the actual root cause of the reported bug — the
+//   2048 max_tokens cap on generateMap was too tight for a 6–12 node map with descriptions,
+//   narrative, and resources, so Claude's response was cut off mid-object (stop_reason:
+//   "max_tokens") with no closing brace to recover. This is what "invalid JSON" turned out to
+//   mean in practice, and it was model-agnostic — any model could hit the same token ceiling.
 
-function mockClaudeTextResponse(text: string): void {
+function mockClaudeTextResponse(text: string, stopReason = 'end_turn'): void {
   vi.stubGlobal(
     'fetch',
     vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ content: [{ type: 'text', text }] }),
+      json: async () => ({ content: [{ type: 'text', text }], stop_reason: stopReason }),
     })
   )
 }
@@ -55,5 +58,12 @@ describe('generateMap JSON parsing', () => {
     await expect(generateMap('topic', 'test-key')).rejects.toThrow(
       'Claude returned invalid JSON'
     )
+  })
+
+  it('throws a distinct truncation error when stop_reason is max_tokens', async () => {
+    // Simulates the actual reported bug: a well-formed-looking but incomplete JSON body,
+    // cut off mid-object because the response hit the token cap.
+    mockClaudeTextResponse('{"nodes": [{"id": "1", "label": "Concept A", "descrip', 'max_tokens')
+    await expect(generateMap('topic', 'test-key')).rejects.toThrow(/cut off/)
   })
 })
